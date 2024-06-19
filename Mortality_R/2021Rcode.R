@@ -1,15 +1,10 @@
+library(tidyverse)
+
+
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("puldata.csv", header = T, sep = ";")
+data = read.csv("Data/GertPollCardMort.csv", header = T, sep = ";")
 
-## Dataframe should have a column name "Date".
-names(data)[1] <- 'Date'
-
-## The dates must be a "POSIXct" "POSIXt" object. 
-dateTime <- seq(as.POSIXct("2009-01-01"), as.POSIXct("2018-12-31"), by = "24 hours", tz = 'UTC')
-
-## Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-data$Date <- dateTime
-summary(data)
+data$date <- as.Date(data$date, format = "%Y/%m/%d")
 
 ## Repalce NAs with 0
 data[is.na(data)] = 0
@@ -26,54 +21,72 @@ options(na.action="na.exclude")
 # FIGURE 1
 #############
 
-# SET THE PLOTTING PARAMETERS FOR THE PLOT (SEE ?par)
-oldpar <- par(no.readonly=TRUE)
-par(mex=0.8,mfrow=c(2,1))
+ggplot(data, aes(x = date, y = death_count)) +
+  geom_point(size = 0.5) +
+  geom_vline(xintercept = as.numeric(data$date[grep("-01-01", data$date)]), color = "grey60", linetype = "dashed") +
+  labs(title = "Daily Deaths Over Time", y = "Daily Number of Deaths", x = "Date") +
+  theme_minimal()
 
-# SUB-PLOT FOR DAILY DEATHS, WITH VERTICAL LINES DEFINING YEARS
-plot(data$Date,data$Count,pch=".",main="Daily deaths over time",
-     ylab="Daily number of deaths",xlab="Date")
-abline(v=data$date[grep("-01-01",data$date)],col=grey(0.6),lty=2)
 
-# THE SAME FOR PM LEVELS
-plot(data$Date,data$PM2.5,pch=".",main="PM levels over time",
-     ylab="Daily mean PM level (ug/m3)",xlab="Date")
-abline(v=data$date[grep("-01-01",data$date)],col=grey(0.6),lty=2)
-par(oldpar)
-layout(1)
+ggplot(data, aes(x = date, y = PM2.5)) +
+  geom_point(size = 0.5) +
+  geom_vline(xintercept = as.numeric(data$date[grep("-01-01", data$date)]), color = "grey60", linetype = "dashed") +
+  labs(title = "Daily Deaths Over Time", y = "Daily Number of Deaths", x = "Date") +
+  theme_minimal()
 
-library(dplyr)
-df <- data %>% mutate_at(c('Rain'), as.numeric)
-df[is.na(df)] = 0
-summary(df)
-sum(df$Count)
+
 
 ########################
 # DESCRIPTIVE STATISTICS
 ########################
 
-# SUMMARY
-summary(data)
 
 # CORRELATIONS
-cor(df[,2:17])
+
+#cor_data <- data %>%
+#  select(-date) %>%
+#  cor(use = "complete.obs")
+
+
+library(corrplot)
+library(Hmisc)
+
+cor_data  <- data %>%
+  select(-date)
+
+
+GertCardcor <- rcorr(as.matrix(cor_data ), type = "pearson")
+GertCardcor.coeff = GertCardcor$r
+GertCardcor.p = GertCardcor$P
+
+
+GertCardcorplot <- corrplot.mixed(GertCardcor.coeff, mar = c(0,0,1,0), lower = 'number', upper = 'ellipse', title = "Air pollutant correlation")
 
 
 # GENERATE FOURIER TERMS
 # (USE FUNCTION harmonic, IN PACKAGE tsModel TO BE INSTALLED AND THEN LOADED)
-#install.packages("tsModel")
 library(tsModel)
 
 # 4 SINE-COSINE PAIRS REPRESENTING DIFFERENT HARMONICS WITH PERIOD 1 YEAR
 data$time <- seq(nrow(data))
 fourier <- harmonic(data$time,nfreq=4,period=365.25)
 
+
+# Convert fourier_terms to a data frame and add to the main data frame
+fourier_df <- as.data.frame(fourier)
+names(fourier_df) <- paste0("Fourier", seq(ncol(fourier_df)))
+
+# Combine the data with Fourier terms
+data_fourier <- bind_cols(data, fourier_df)
+
+
+
 library("dlnm")
-vignette("dlnmOverview")
+#vignette("dlnmOverview")
 
 # CHECK VERSION OF THE PACKAGE
-if(packageVersion("dlnm")<"2.2.0")
-  stop("update dlnm package to version >= 2.2.0")
+#if(packageVersion("dlnm")<"2.2.0")
+#  stop("update dlnm package to version >= 2.2.0")
 
 ####################################################################
 # NON-LINEAR AND DELAYED EFFECTS
@@ -81,48 +94,69 @@ if(packageVersion("dlnm")<"2.2.0")
 
 # NB: THE FUNCTIONS mkbasis and mklagbasis HAVE BEEN REPLACED BY onebasis
 # NB: CENTERING MOVED TO PREDICTION STAGE
-onebasis(1:5, fun="bs", df=4, degree=2)
-onebasis(1:5, fun="strata", breaks=c(2,4))
+b_splines_basis <- onebasis(1:5, fun="bs", df=4, degree=2)
+
+strata_basis <- onebasis(1:5, fun="strata", breaks=c(25,50,75))
 
 ####################################################################
 # SPECIFYING A DLNM
 ####################################################################
 
-basis.PM <- crossbasis(data$PM2.5, lag=10, 
+basis.NO2 <- crossbasis(data$NO2, lag=10, 
   argvar=list(fun="thr",thr.value=40.3,side="h"),
   arglag=list(fun="strata",breaks=c(2,6)))
 
 klag <- exp(((1+log(30))/4 * 1:3)-1)
-basis.temp <- crossbasis(data$Temperature, lag=10,
+basis.temp <- crossbasis(data$Amb.Temp, lag=10,
   argvar=list(fun="bs",degree=3,df=6), arglag=list(knots=klag))
 
 summary(basis.temp)
 
 library("splines")
-model <- glm(Count ~ basis.temp + basis.PM + ns(time,7*14) + weekday1,
+model <- glm(death_count ~ basis.temp + basis.NO2 + ns(time,7*14),
   family=quasipoisson(), data)
 
 ####################################################################
 # PREDICTING A DLNM
 ####################################################################
 
-pred.PM <- crosspred(basis.PM, model, at=c(0:65,40.3,50.3))
+pred.NO2 <- crosspred(basis.NO2, model, at=c(0:65,40.3,50.3))
 pred.temp <- crosspred(basis.temp, model, by=2, cen=25)
 
-pred.PM$allRRfit["50.3"]
-cbind(pred.PM$allRRlow,pred.PM$allRRhigh)["50.3",]
+
+plot(pred.NO2, "overall", main="Effect of NO2 on Cardiovascular Deaths",
+     xlab="NO2 concentration", ylab="Relative Risk", lwd=2, ci="area", col="blue")
+
+pred.NO2$allRRfit["50.3"]
+cbind(pred.NO2$allRRlow,pred.NO2$allRRhigh)["50.3",]
 
 ####################################################################
 # REPRESENTING A DLNM
 ####################################################################
 
-plot(pred.PM, var=50.3, type="p", pch=19, cex=1.5, ci="bars", col=2,
+plot(pred.NO2, var=50.3, type="p", pch=19, cex=1.5, ci="bars", col=2,
   ylab="RR",main="Lag-specific effects")
-plot(pred.PM, "overall", ci="lines", ylim=c(0.95,1.25), lwd=2, col=4,
-  xlab="Ozone", ylab="RR", main="Overall effect")
+
+plot(pred.NO2, "contour", plot.title=title(xlab="Temperature",
+  ylab="Lag", main="Contour graph"), key.title=title("RR"))
+
+plot(pred.NO2, "overall", ci="lines", ylim=c(0.95,1.25), lwd=2, col=4,
+  xlab="NO2", ylab="RR", main="Overall effect")
+
+# Plot overall effect of NO2 across a range of concentrations and lags (contour plot)
+plot(pred.NO2, "contour", xlab = "Lag (days)", ylab = "NO2 concentration",
+     key.title = title("Relative Risk"), main = "Contour plot of NO2 effects")
+
+# Plot perspective plot of NO2 effects
+plot(pred.NO2, "persp", xlab = "Lag (days)", ylab = "NO2 concentration", zlab = "Relative Risk",
+     main = "Perspective plot of NO2 effects", theta = 230, phi = 40, ltheta = 120, shade = 0.75)
+
+
+
 
 plot(pred.temp, xlab="Temperature", theta=240, phi=40, ltheta=-185,
   zlab="RR", main="3D graph")
+
 plot(pred.temp, "contour", plot.title=title(xlab="Temperature",
   ylab="Lag", main="Contour graph"), key.title=title("RR"))
 
@@ -137,10 +171,15 @@ plot(pred.temp,var=c(-20,0,32), lag=c(0,5,20), ci.level=0.99, col=2,
 # MODELING STRATEGIES
 ####################################################################
 
-basis.temp2 <- crossbasis(data$Temperature, argvar=list(fun="poly",degree=6),
+basis.temp2 <- crossbasis(data$Amb.Temp, argvar=list(fun="poly",degree=6),
   arglag=list(knots=klag), lag=30)
 model2 <- update(model, .~. - basis.temp + basis.temp2)
 pred.temp2 <- crosspred(basis.temp2, model2, by=2, cen=25)
+
+
+
+
+
 
 basis.temp3 <- crossbasis(data$Temperature, argvar=list(fun="thr",
   thr.value=25,side="d"), arglag=list(knots=klag), lag=30)
@@ -162,3 +201,26 @@ legend("top", c("natural spline","polynomial","double threshold"), col=2:4,
   lty=c(1:2,4), inset=0.1, cex=0.8)
 
 #
+# Create predictions for a 10 ppb increase in NO2
+# Define the increment of 10 ppb
+increment <- 10
+
+# Create a new prediction object for NO2 with the specified increment
+pred.NO2_increment <- crosspred(basis.NO2, model, at = seq(0, 60, by = 1) + increment)
+
+str(pred.NO2_increment)
+
+# Extract relative risk and confidence intervals
+rr <- pred.NO2_increment$allRRfit  # All relative risks
+ci_lower <- pred.NO2_increment$allRRlow  # Lower confidence interval
+ci_upper <- pred.NO2_increment$allRRhigh  # Upper confidence interval
+
+# Find the index corresponding to the increment value (10 ppb)
+increment <- 10
+index_increment <- which.min(abs(as.numeric(names(rr)) - increment))
+
+# Print relative risk and CI for a 10 ppb increase in NO2
+cat(sprintf("Relative Risk (RR) for a %d ppb increase in NO2: %.3f\n", increment, rr[index_increment]))
+cat(sprintf("95%% Confidence Interval (CI) for RR: [%.3f, %.3f]\n", ci_lower[index_increment], ci_upper[index_increment]))
+
+

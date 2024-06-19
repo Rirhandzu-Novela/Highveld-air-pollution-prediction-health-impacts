@@ -3,15 +3,7 @@
 # LOAD THE DATA INTO THE SESSION
 data = read.csv("puldata.csv", header = T, sep = ";")
 
-## Dataframe should have a column name "Date".
-names(data)[1] <- 'Date'
-
-## The dates must be a "POSIXct" "POSIXt" object. 
-dateTime <- seq(as.POSIXct("2009-01-01"), as.POSIXct("2018-12-31"), by = "24 hours", tz = 'UTC')
-
-## Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-data$Date <- dateTime
-summary(data)
+data$date <- as.Date(data$date, format = "%Y/%m/%d")
 
 ## Repalce NAs with 0
 data[is.na(data)] = 0

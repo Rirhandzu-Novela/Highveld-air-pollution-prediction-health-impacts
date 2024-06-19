@@ -3,7 +3,7 @@
 
 ### eMalahleni
 
-a = read.csv("eMalahleniDaily.csv", header = T, sep = ";")
+a = read.csv("Data/eMalahleniDaily.csv", header = T, sep = ";")
 summary(a)
 
 plot(a$date,a$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "eMalahleni PM10 daily concentrations", cex.main=1.5) 
@@ -20,7 +20,7 @@ abline(h = 50,col="red",lwd=2)
 
 ### Ermelo
 
-b = read.csv("ErmeloDaily.csv", header = T, sep = ";")
+b = read.csv("Data/ErmeloDaily.csv", header = T, sep = ";")
 summary(a)
 
 
@@ -40,7 +40,7 @@ abline(h = 50,col="red",lwd=2)
 
 ### Hendrina
 
-c = read.csv("HendrinaDaily.csv", header = T, sep = ";")
+c = read.csv("Data/HendrinaDaily.csv", header = T, sep = ";")
 
 plot(daily$Day,daily$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Hendrina PM10 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
@@ -56,7 +56,7 @@ abline(h = 50,col="red",lwd=2)
 
 ### Middelburg
 
-d = read.csv("MiddelburgDaily.csv", header = T, sep = ";")
+d = read.csv("Data/MiddelburgDaily.csv", header = T, sep = ";")
 
 plot(daily$Day,daily$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Middelburg PM10 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
@@ -72,7 +72,7 @@ abline(h = 50,col="red",lwd=2)
 
 ### Secunda
 
-e = read.csv("SecundaDaily.csv", header = T, sep = ";")
+e = read.csv("Data/SecundaDaily.csv", header = T, sep = ";")
 
 plot(daily$Day,daily$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Secunda PM10 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)

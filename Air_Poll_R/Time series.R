@@ -5,17 +5,8 @@ library("openair")
 
 ### eMalahleni
 
-a = read.csv("eMalahleniIM.csv", header = T, sep = ";")
+a = read.csv("Data/eMalahleniIM.csv", header = T, sep = ";")
 
-# Dataframe should have a column name "Date". It is mandatory for OpenAir
-names(a)[1] <- 'Date'
-
-# The dates must be a "POSIXct" "POSIXt" object. 
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-a$date <- dateTime
-summary(a)
 
 timeVariation(a, pollutant = "O3", main = "eMalahleni O3 Temporal variation", ylab = "O3 (ppb)")
 timeVariation(a, pollutant = "CO", main = "eMalahleni CO Temporal variation", ylab = "CO (ppm)")
@@ -35,17 +26,8 @@ timePlot(a, pollutant = "NO2",main = "eMalahleni NO2 annual concentrations",xlab
 
 ### Ermelo
 
-b = read.csv("ErmeloIM.csv", header = T, sep = ";")
+b = read.csv("Data/ErmeloIM.csv", header = T, sep = ";")
 
-# Dataframe should have a column name "Date". It is mandatory for OpenAir
-names(b)[1] <- 'Date'
-
-# The dates must be a "POSIXct" "POSIXt" object. 
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-b$date <- dateTime
-summary(b)
 
 timeVariation(b, pollutant = "O3", main = "Ermelo O3 Temporal variation", ylab = "O3 (ppb)")
 timeVariation(b, pollutant = "CO", main = "Ermelo CO Temporal variation", ylab = "CO (ppm)")
@@ -68,17 +50,8 @@ timePlot(b, pollutant = "NO2",main = "Ermelo NO2 annual concentrations",xlab = "
 
 ### Hendrina
 
-c = read.csv("HendrinaIM.csv", header = T, sep = ";")
+c = read.csv("Data/HendrinaIM.csv", header = T, sep = ";")
 
-# Dataframe should have a column name "Date". It is mandatory for OpenAir
-names(c)[1] <- 'Date'
-
-# The dates must be a "POSIXct" "POSIXt" object. 
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-c$date <- dateTime
-summary(c)
 
 timeVariation(c, pollutant = "O3", main = "Hendrina O3 Temporal variation", ylab = "O3 (ppb)")
 timeVariation(c, pollutant = "CO", main = "Hendrina CO Temporal variation", ylab = "CO (ppm)")
@@ -98,17 +71,8 @@ timePlot(c, pollutant = "NO2",main = "eMalahleni NO2 annual concentrations", avg
 
 ### Middelburg
 
-d = read.csv("MiddelburgIM.csv", header = T, sep = ";")
+d = read.csv("Data/MiddelburgIM.csv", header = T, sep = ";")
 
-# Dataframe should have a column name "Date". It is mandatory for OpenAir
-names(d)[1] <- 'Date'
-
-# The dates must be a "POSIXct" "POSIXt" object. 
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-d$date <- dateTime
-summary(d)
 
 timeVariation(d, pollutant = "O3", main = "Middelburg O3 Temporal variation", ylab = "O3 (ppb)")
 timeVariation(d, pollutant = "CO", main = "Middelburg CO Temporal variation", ylab = "CO (ppm)")
@@ -131,17 +95,7 @@ timePlot(d, pollutant = "NO2",main = "eMalahleni NO2 annual concentrations", avg
 
 ### Secunda
 
-e = read.csv("SecundaIM.csv", header = T, sep = ";")
-
-# Dataframe should have a column name "Date". It is mandatory for OpenAir
-names(e)[1] <- 'Date'
-
-# The dates must be a "POSIXct" "POSIXt" object. 
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-e$date <- dateTime
-summary(e)
+e = read.csv("Data/SecundaIM.csv", header = T, sep = ";")
 
 timeVariation(e, pollutant = "O3", main = "Secunda O3 Temporal variation", ylab = "O3 (ppb)")
 timeVariation(e, pollutant = "CO", main = "Secunda CO Temporal variation", ylab = "CO (ppm)")
@@ -158,34 +112,3 @@ timePlot(e, pollutant = "PM2.5", main = "Secunda PM2.5 daily concentrations", xl
 
 timePlot(e, pollutant = "NO2", main = "eMalahleni NO2 daily concentrations", avg.time = "day")
 timePlot(e, pollutant = "NO2",main = "eMalahleni NO2 annual concentrations", avg.time = "year")
-
-### Averages
-
-f = read.csv("Averages.csv", header = T, sep = ";")
-
-# Dataframe should have a column name "Date". It is mandatory for OpenAir
-names(f)[1] <- 'Date'
-
-# The dates must be a "POSIXct" "POSIXt" object. 
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-f$date <- dateTime
-summary(f)
-
-timeVariation(f, pollutant = "O3", main = "Highveld O3 Temporal variation", ylab = "O3 (ppb)")
-timeVariation(f, pollutant = "CO", main = "Highveld CO Temporal variation", ylab = "CO (ppm)")
-timeVariation(f, pollutant = "PM10", main = "Highveld PM10 Temporal variation", ylab = "PM10 (ug/m3)")
-timeVariation(f, pollutant = "PM2.5",main = "Highveld PM2.5 Temporal variation", ylab = "PM2.5 (ug/m3)")
-timeVariation(f, pollutant = "SO2", main = "Highveld SO2 Temporal variation", ylab = "SO2 (ppb)")
-timeVariation(f, pollutant = "NO2", main = "Highveld N02 Temporal variation", ylab = "NO2 (ppb)")
-
-
-timePlot(f, pollutant = "NO2", main = "Highveld NO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "NO2 (ppb)")
-timePlot(f, pollutant = "SO2", main = "Highveld SO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day",  ylab = "SO2 (ppb)")
-timePlot(f, pollutant = "PM10", main = "Highveld PM10 daily concentrations", xlab = "Time (Daily)", avg.time = "day",  ylab = "PM10 (ug/m3)")
-timePlot(f, pollutant = "PM2.5", main = "Highveld PM2.5 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM2.5 (ug/m3)")
-
-timePlot(f, pollutant = "NO2", main = "Highveld NO2 monthly concentrations", xlab = "Time", avg.time = "month")
-timePlot(f, pollutant = "NO2",main = "Highveld NO2 annual concentrations",xlab = "Time", avg.time = "year")
-
