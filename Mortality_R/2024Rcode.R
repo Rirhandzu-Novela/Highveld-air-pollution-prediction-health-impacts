@@ -92,12 +92,12 @@ GertCardcorplot <- corrplot.mixed(GertCardcor.coeff, mar = c(0,0,1,0), lower = '
 ##################################
 
 # GENERATE MONTH AND YEAR
-data$month <- as.factor(months(data$Date,abbr=TRUE))
-data$year <- as.factor(substr(data$Date,1,4))
+data$month <- as.factor(months(data$date,abbr=TRUE))
+data$year <- as.factor(substr(data$date,1,4))
 
 # FIT A POISSON MODEL WITH A STRATUM FOR EACH MONTH NESTED IN YEAR
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model1 <- glm(Count ~ month/year,data,family=quasipoisson)
+model1 <- glm(death_count ~ month/year,data,family=quasipoisson)
 summary(model1)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -107,10 +107,19 @@ pred1 <- predict(model1,type="response")
 # FIGURE 2A
 #############
 
-plot(data$Date,data$Count,ylim=c(0,30),pch=19,cex=0.2,col=grey(0.6),
+plot(data$date,data$death_count,ylim=c(0,30),pch=19,cex=0.2,col=grey(0.6),
      main="Time-stratified model (month strata)",ylab="Daily number of deaths",
      xlab="Date")
-lines(data$Date,pred1,lwd=2)
+lines(data$date,pred1,lwd=2)
+
+#Plot the predicted and observed values
+
+plot(data$date, data$death_count, ylim = c(0, 30), pch = 19, cex = 0.2, col = grey(0.6),
+     main = "Observed vs Predicted Daily Deaths", ylab = "Daily number of deaths",
+     xlab = "Date")
+lines(data$date, pred1, lwd = 2, col = "blue")  # Overlay predicted values
+legend("topright", legend = c("Observed", "Predicted"), col = c(grey(0.6), "blue"), lty = 1, lwd = 2, cex = 0.8)
+
 
 
 #####################################
@@ -129,7 +138,7 @@ fourier <- harmonic(data$time,nfreq=4,period=365.25)
 
 #FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model2 <- glm(Count ~ fourier + time,data,family=quasipoisson)
+model2 <- glm(death_count ~ fourier + time,data,family=quasipoisson)
 summary(model2)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -139,10 +148,16 @@ pred2 <- predict(model2,type="response")
 # FIGURE 2B
 #############
 
-plot(data$Date,data$Count,ylim=c(0,30),pch=19,cex=0.2,col=grey(0.6),
+plot(data$date,data$death_count,ylim=c(0,30),pch=19,cex=0.2,col=grey(0.6),
      main="Sine-cosine functions (Fourier terms)",ylab="Daily number of deaths",
      xlab="Date")
-lines(data$Date,pred2,lwd=2)
+lines(data$date,pred2,lwd=2)
+
+plot(data$date, data$death_count, ylim = c(0, 30), pch = 19, cex = 0.2, col = grey(0.6),
+     main = "Observed vs Predicted Daily Deaths", ylab = "Daily number of deaths",
+     xlab = "Date")
+lines(data$date, pred2, lwd = 2, col = "blue")  # Overlay predicted values
+legend("topright", legend = c("Observed", "Predicted"), col = c(grey(0.6), "blue"), lty = 1, lwd = 2, cex = 0.8)
 
 #####################################
 # OPTION 3: SPLINE MODEL
@@ -161,7 +176,7 @@ spl <- bs(data$time,degree=3,df=35)
 
 # FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model3 <- glm(Count ~ spl,data,family=quasipoisson)
+model3 <- glm(death_count ~ spl,data,family=quasipoisson)
 summary(model3)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -171,10 +186,10 @@ pred3 <- predict(model3,type="response")
 # FIGURE 2C
 #############
 
-plot(data$Date,data$Count,ylim=c(0,30),pch=19,cex=0.2,col=grey(0.6),
+plot(data$date,data$death_count,ylim=c(0,30),pch=19,cex=0.2,col=grey(0.6),
      main="Flexible cubic spline model",ylab="Daily number of deaths",
      xlab="Date")
-lines(data$Date,pred3,lwd=2)
+lines(data$date,pred3,lwd=2)
 
 #####################################
 # PLOT RESPONSE RESIDUALS OVER TIME
@@ -188,7 +203,7 @@ res3 <- residuals(model3,type="response")
 # FIGURE 3
 ############
 
-plot(data$Date,res3,ylim=c(-20,20),pch=19,cex=0.4,col=grey(0.6),
+plot(data$date,res3,ylim=c(-20,20),pch=19,cex=0.4,col=grey(0.6),
      main="Residuals over time",ylab="Residuals (observed-fitted)",xlab="Date")
 abline(h=1,lty=2,lwd=2)
 
@@ -202,26 +217,27 @@ abline(h=1,lty=2,lwd=2)
 
 
 # UNADJUSTED MODEL
-model4 <- glm(Count ~ PM2.5,data,family=quasipoisson)
+model4 <- glm(death_count ~ NO2,data,family=quasipoisson)
 summary(model4)
-(eff4 <- ci.lin(model4,subset="PM2.5",Exp=T))
+(eff4 <- ci.lin(model4,subset="NO2",Exp=T))
+
 
 # CONTROLLING FOR SEASONALITY (WITH SPLINE AS IN MODEL 3)
 model5 <- update(model4,.~.+spl)
 summary(model5)
-(eff5 <- ci.lin(model5,subset="PM2.5",Exp=T))
+(eff5 <- ci.lin(model5,subset="NO2",Exp=T))
 
-mode120 <- glm(Count ~ PM2.5 + PM10,data,family=quasipoisson)
-summary(mode120)
+#mode120 <- glm(Count ~ PM2.5 + PM10,data,family=quasipoisson)
+#summary(mode120)
 
 # CONTROLLING FOR TEMPERATURE
 # (TEMPERATURE MODELLED WITH CATEGORICAL VARIABLES FOR DECILES)
 # (MORE SOPHISTICATED APPROACHES ARE AVAILABLE - SEE ARMSTRONG EPIDEMIOLOGY 2006)
-cutoffs <- quantile(data$Temperature,probs=0:10/10)
-tempdecile <- cut(data$Temperature,breaks=cutoffs,include.lowest=TRUE)
+cutoffs <- quantile(data$Amb.Temp,probs=0:10/10)
+tempdecile <- cut(data$Amb.Temp,breaks=cutoffs,include.lowest=TRUE)
 model6 <- update(model5,.~.+tempdecile)
 summary(model6)
-(eff6 <- ci.lin(model6,subset="PM2.5",Exp=T))
+(eff6 <- ci.lin(model6,subset="NO2",Exp=T))
 
 # BUILD A SUMMARY TABLE
 tabeff <- rbind(eff4,eff5,eff6)[,5:7]
@@ -244,14 +260,14 @@ tablag <- matrix(NA,7+1,3,dimnames=list(paste("Lag",0:7),
 # RUN THE LOOP
 for(i in 0:7) {
   # LAG PM AND TEMPERATURE VARIABLES
-  PM2.5lag <- Lag(data$PM2.5,i)
-  tempdecilelag <- cut(Lag(data$Temperature,i),breaks=cutoffs,
+  NO2lag <- Lag(data$NO2,i)
+  tempdecilelag <- cut(Lag(data$Amb.Temp,i),breaks=cutoffs,
                        include.lowest=TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(Count ~ PM2.5lag + tempdecilelag + spl,data,
+  mod <- glm(death_count ~ NO2lag + tempdecilelag + spl,data,
              family=quasipoisson)
-  tablag[i+1,] <- ci.lin(mod,subset="PM2.5",Exp=T)[5:7]
+  tablag[i+1,] <- ci.lin(mod,subset="NO2",Exp=T)[5:7]
 }
 tablag
 
@@ -276,19 +292,19 @@ points(0:7,tablag[,1],pch=19)
 
 # PRODUCE THE CROSS-BASIS FOR OZONE (SCALING NOT NEEDED)
 # A SIMPLE UNSTRANSFORMED LINEAR TERM AND THE UNCONSTRAINED LAG STRUCTURE
-cbPMunc <- crossbasis(data$PM2.5,lag=c(0,7),argvar=list(fun="lin"),
+cbPMunc <- crossbasis(data$NO2,lag=c(0,7),argvar=list(fun="lin"),
                       arglag=list(fun="integer"))
 summary(cbPMunc)
 
 # PRODUCE THE CROSS-BASIS FOR TEMPERATURE
 # AS ABOVE, BUT WITH STRATA DEFINED BY INTERNAL CUT-OFFS
-cbtempunc <- crossbasis(data$Temperature,lag=c(0,7),
+cbtempunc <- crossbasis(data$Amb.Temp,lag=c(0,7),
                         argvar=list(fun="strata",breaks=cutoffs[2:10]),
                         arglag=list(fun="integer"))
 summary(cbtempunc)
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR OZONE LEVEL 10ug/m3
-model7 <- glm(Count ~ cbPMunc + cbtempunc + spl,data,family=quasipoisson)
+model7 <- glm(death_count ~ cbPMunc + cbtempunc + spl,data,family=quasipoisson)
 pred7 <- crosspred(cbPMunc,model7,at=10)
 summary(model7)
 
@@ -314,12 +330,12 @@ plot(pred7,var=10,type="p",ci="bars",col=1,pch=19,ylim=c(0.60,1.40),
 
 # PRODUCE A DIFFERENT CROSS-BASIS FOR PM2.5
 # USE STRATA FOR LAG STRUCTURE, WITH CUT-OFFS DEFINING RIGHT-OPEN INTERVALS 
-cbo3constr <- crossbasis(data$PM2.5,lag=c(0,7),argvar=list(fun="lin"),
+cbo3constr <- crossbasis(data$NO2,lag=c(0,7),argvar=list(fun="lin"),
                          arglag=list(fun="strata",breaks=c(1,3)))
 summary(cbo3constr)
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR PM2.5 LEVEL 10ug/m3
-model8 <- glm(Count ~ cbo3constr + cbtempunc + spl,data,family=quasipoisson)
+model8 <- glm(death_count ~ cbo3constr + cbtempunc + spl,data,family=quasipoisson)
 pred8 <- crosspred(cbo3constr,model8,at=10)
 summary(model8)
 
@@ -350,7 +366,7 @@ res7 <- residuals(model7,type="deviance")
 # FIGURE A1
 #############
 
-plot(data$Date,res7,ylim=c(-5,10),pch=19,cex=0.7,col=grey(0.6),
+plot(data$date,res7,ylim=c(-5,10),pch=19,cex=0.7,col=grey(0.6),
      main="Residuals over time",ylab="Deviance residuals",xlab="Date")
 abline(h=0,lty=2,lwd=2)
 
@@ -370,29 +386,5 @@ model9 <- update(model7,.~.+Lag(res7,1))
 
 pacf(residuals(model9,type="deviance"),na.action=na.omit,
      main="From model adjusted for residual autocorrelation")
-
-#
-# Create predictions for a 10 ppb increase in NO2
-# Define the increment of 10 ppb
-increment <- 10
-
-# Create a new prediction object for NO2 with the specified increment
-pred.NO2_increment <- crosspred(basis.NO2, model, at = seq(0, 60, by = 1) + increment)
-
-str(pred.NO2_increment)
-
-# Extract relative risk and confidence intervals
-rr <- pred.NO2_increment$allRRfit  # All relative risks
-ci_lower <- pred.NO2_increment$allRRlow  # Lower confidence interval
-ci_upper <- pred.NO2_increment$allRRhigh  # Upper confidence interval
-
-# Find the index corresponding to the increment value (10 ppb)
-increment <- 10
-index_increment <- which.min(abs(as.numeric(names(rr)) - increment))
-
-# Print relative risk and CI for a 10 ppb increase in NO2
-cat(sprintf("Relative Risk (RR) for a %d ppb increase in NO2: %.3f\n", increment, rr[index_increment]))
-cat(sprintf("95%% Confidence Interval (CI) for RR: [%.3f, %.3f]\n", ci_lower[index_increment], ci_upper[index_increment]))
-
 
 
