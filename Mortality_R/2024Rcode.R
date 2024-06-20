@@ -7,7 +7,7 @@ library(Epi)
 library(dlnm)
 
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("Data/GertPollCardMort.csv", header = T, sep = ";")
+data = read.csv("Data/GertPollPulMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 
@@ -36,7 +36,7 @@ plot(data$date,data$death_count,pch=".",main="Daily deaths over time",
 abline(v=data$date[grep("-01-01",data$date)],col=grey(0.6),lty=2)
 
 # THE SAME FOR PM LEVELS
-plot(data$date,data$PM2.5,pch=".",main="PM levels over time",
+plot(data$date,data$pm2.5,pch=".",main="PM levels over time",
      ylab="Daily mean PM level (ug/m3)",xlab="Date")
 abline(v=data$date[grep("-01-01",data$date)],col=grey(0.6),lty=2)
 par(oldpar)
@@ -217,15 +217,15 @@ abline(h=1,lty=2,lwd=2)
 
 
 # UNADJUSTED MODEL
-model4 <- glm(death_count ~ NO2,data,family=quasipoisson)
+model4 <- glm(death_count ~ pm2.5,data,family=quasipoisson)
 summary(model4)
-(eff4 <- ci.lin(model4,subset="NO2",Exp=T))
+(eff4 <- ci.lin(model4,subset="pm2.5",Exp=T))
 
 
 # CONTROLLING FOR SEASONALITY (WITH SPLINE AS IN MODEL 3)
 model5 <- update(model4,.~.+spl)
 summary(model5)
-(eff5 <- ci.lin(model5,subset="NO2",Exp=T))
+(eff5 <- ci.lin(model5,subset="pm2.5",Exp=T))
 
 #mode120 <- glm(Count ~ PM2.5 + PM10,data,family=quasipoisson)
 #summary(mode120)
@@ -233,11 +233,11 @@ summary(model5)
 # CONTROLLING FOR TEMPERATURE
 # (TEMPERATURE MODELLED WITH CATEGORICAL VARIABLES FOR DECILES)
 # (MORE SOPHISTICATED APPROACHES ARE AVAILABLE - SEE ARMSTRONG EPIDEMIOLOGY 2006)
-cutoffs <- quantile(data$Amb.Temp,probs=0:10/10)
-tempdecile <- cut(data$Amb.Temp,breaks=cutoffs,include.lowest=TRUE)
+cutoffs <- quantile(data$temp,probs=0:10/10)
+tempdecile <- cut(data$temp,breaks=cutoffs,include.lowest=TRUE)
 model6 <- update(model5,.~.+tempdecile)
 summary(model6)
-(eff6 <- ci.lin(model6,subset="NO2",Exp=T))
+(eff6 <- ci.lin(model6,subset="pm2.5",Exp=T))
 
 # BUILD A SUMMARY TABLE
 tabeff <- rbind(eff4,eff5,eff6)[,5:7]
@@ -260,14 +260,14 @@ tablag <- matrix(NA,7+1,3,dimnames=list(paste("Lag",0:7),
 # RUN THE LOOP
 for(i in 0:7) {
   # LAG PM AND TEMPERATURE VARIABLES
-  NO2lag <- Lag(data$NO2,i)
-  tempdecilelag <- cut(Lag(data$Amb.Temp,i),breaks=cutoffs,
+  pm2.5lag <- Lag(data$pm2.5,i)
+  tempdecilelag <- cut(Lag(data$temp,i),breaks=cutoffs,
                        include.lowest=TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(death_count ~ NO2lag + tempdecilelag + spl,data,
+  mod <- glm(death_count ~ pm2.5lag + tempdecilelag + spl,data,
              family=quasipoisson)
-  tablag[i+1,] <- ci.lin(mod,subset="NO2",Exp=T)[5:7]
+  tablag[i+1,] <- ci.lin(mod,subset="pm2.5",Exp=T)[5:7]
 }
 tablag
 
@@ -292,13 +292,13 @@ points(0:7,tablag[,1],pch=19)
 
 # PRODUCE THE CROSS-BASIS FOR OZONE (SCALING NOT NEEDED)
 # A SIMPLE UNSTRANSFORMED LINEAR TERM AND THE UNCONSTRAINED LAG STRUCTURE
-cbPMunc <- crossbasis(data$NO2,lag=c(0,7),argvar=list(fun="lin"),
+cbPMunc <- crossbasis(data$pm2.5,lag=c(0,7),argvar=list(fun="lin"),
                       arglag=list(fun="integer"))
 summary(cbPMunc)
 
 # PRODUCE THE CROSS-BASIS FOR TEMPERATURE
 # AS ABOVE, BUT WITH STRATA DEFINED BY INTERNAL CUT-OFFS
-cbtempunc <- crossbasis(data$Amb.Temp,lag=c(0,7),
+cbtempunc <- crossbasis(data$temp,lag=c(0,7),
                         argvar=list(fun="strata",breaks=cutoffs[2:10]),
                         arglag=list(fun="integer"))
 summary(cbtempunc)
@@ -330,13 +330,13 @@ plot(pred7,var=10,type="p",ci="bars",col=1,pch=19,ylim=c(0.60,1.40),
 
 # PRODUCE A DIFFERENT CROSS-BASIS FOR PM2.5
 # USE STRATA FOR LAG STRUCTURE, WITH CUT-OFFS DEFINING RIGHT-OPEN INTERVALS 
-cbo3constr <- crossbasis(data$NO2,lag=c(0,7),argvar=list(fun="lin"),
+cbpmconstr <- crossbasis(data$pm2.5,lag=c(0,7),argvar=list(fun="lin"),
                          arglag=list(fun="strata",breaks=c(1,3)))
-summary(cbo3constr)
+summary(cbpmconstr)
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR PM2.5 LEVEL 10ug/m3
-model8 <- glm(death_count ~ cbo3constr + cbtempunc + spl,data,family=quasipoisson)
-pred8 <- crosspred(cbo3constr,model8,at=10)
+model8 <- glm(death_count ~ cbpmconstr + cbtempunc + spl,data,family=quasipoisson)
+pred8 <- crosspred(cbpmconstr,model8,at=10)
 summary(model8)
 
 # ESTIMATED EFFECTS AT EACH LAG
