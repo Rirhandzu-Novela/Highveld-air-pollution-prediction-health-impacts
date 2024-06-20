@@ -1,88 +1,51 @@
 ### Temporal variation
 
 
-### eMalahleni
+### Gert Sibande
 
-a = read.csv("Data/eMalahleniDaily.csv", header = T, sep = ";")
-summary(a)
+Gerts = read.csv("Data/GertsDaily.csv", header = T, sep = ";")
 
-plot(a$date,a$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "eMalahleni PM10 daily concentrations", cex.main=1.5) 
+# the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+Gerts$date <- dateTime
+
+plot(Gerts$date,Gerts$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Gert Sibande PM10 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
 
-plot(daily$Day,daily$PM2.5, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM2.5 (ug/m3)",  main = "eMalahleni PM2.5 daily concentrations", cex.main=1.5) 
+plot(Gerts$date,Gerts$PM2.5, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM2.5 (ug/m3)",  main = "Gert Sibande PM2.5 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
 
-plot(daily$Day,daily$NO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "NO2 (PPb)",  main = "eMalahleni NO2 daily concentrations", cex.main=1.5) 
+plot(Gerts$date,Gerts$NO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "NO2 (PPb)",  main = "Gert Sibande NO2 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
 
-plot(daily$Day,daily$SO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "SO2 (ug/m3)",  main = "eMalahleni SO2 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-### Ermelo
-
-b = read.csv("Data/ErmeloDaily.csv", header = T, sep = ";")
-summary(a)
-
-
-plot(daily$Day,daily$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Ermelo PM10 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$PM2.5, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM2.5 (ug/m3)",  main = "Ermelo PM2.5 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$NO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "NO2 (PPb)",  main = "Ermelo NO2 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$SO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "SO2 (ug/m3)",  main = "Ermelo SO2 daily concentrations", cex.main=1.5) 
+plot(Gerts$date,Gerts$SO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "SO2 (ug/m3)",  main = "Gert Sibande SO2 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
 
 
+### Nkangala
 
-### Hendrina
+Nka = read.csv("Data/NkangalaDaily.csv", header = T, sep = ";")
 
-c = read.csv("Data/HendrinaDaily.csv", header = T, sep = ";")
+# the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
 
-plot(daily$Day,daily$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Hendrina PM10 daily concentrations", cex.main=1.5) 
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+Nka$date <- dateTime
+
+
+plot(Nka$Day,Nka$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Nkangala PM10 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
 
-plot(daily$Day,daily$PM2.5, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM2.5 (ug/m3)",  main = "Hendrina PM2.5 daily concentrations", cex.main=1.5) 
+plot(Nka$Day,Nka$PM2.5, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM2.5 (ug/m3)",  main = "Nkangala PM2.5 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
 
-plot(daily$Day,daily$NO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "NO2 (PPb)",  main = "Hendrina NO2 daily concentrations", cex.main=1.5) 
+plot(Nka$Day,Nka$NO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "NO2 (PPb)",  main = "Nkangala NO2 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
 
-plot(daily$Day,daily$SO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "SO2 (ug/m3)",  main = "Hendrina SO2 daily concentrations", cex.main=1.5) 
+plot(Nka$Day,Nka$SO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "SO2 (ug/m3)",  main = "Nkangala SO2 daily concentrations", cex.main=1.5) 
 abline(h = 50,col="red",lwd=2)
 
-### Middelburg
 
-d = read.csv("Data/MiddelburgDaily.csv", header = T, sep = ";")
-
-plot(daily$Day,daily$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Middelburg PM10 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$PM2.5, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM2.5 (ug/m3)",  main = "Middelburg PM2.5 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$NO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "NO2 (PPb)",  main = "Middelburg NO2 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$SO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "SO2 (ug/m3)",  main = "Middelburg SO2 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-### Secunda
-
-e = read.csv("Data/SecundaDaily.csv", header = T, sep = ";")
-
-plot(daily$Day,daily$PM10, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM10 (ug/m3)",  main = "Secunda PM10 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$PM2.5, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "PM2.5 (ug/m3)",  main = "Secunda PM2.5 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$NO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "NO2 (PPb)",  main = "Secunda NO2 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
-
-plot(daily$Day,daily$SO2, type = "l", lwd=2, cex.lab=1.5, cex.axis=1.5, xlab = "Time (Daily)",  ylab = "SO2 (ug/m3)",  main = "Secunda SO2 daily concentrations", cex.main=1.5) 
-abline(h = 50,col="red",lwd=2)
 

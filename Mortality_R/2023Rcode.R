@@ -1,7 +1,7 @@
 
 #
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("puldata.csv", header = T, sep = ";")
+data = read.csv("GertPollCardMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 

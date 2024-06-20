@@ -3,112 +3,57 @@
 library("openair")
 
 
-### eMalahleni
+### Gert Sibande
 
-a = read.csv("Data/eMalahleniIM.csv", header = T, sep = ";")
+Gerts = read.csv("Data/Gerts.csv", header = T, sep = ";")
 
+# the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
 
-timeVariation(a, pollutant = "O3", main = "eMalahleni O3 Temporal variation", ylab = "O3 (ppb)")
-timeVariation(a, pollutant = "CO", main = "eMalahleni CO Temporal variation", ylab = "CO (ppm)")
-timeVariation(a, pollutant = "PM10", main = "eMalahleni PM10 Temporal variation", ylab = "PM10 (ug/m3)")
-timeVariation(a, pollutant = "PM2.5",main = "eMalahleni PM2.5 Temporal variation", ylab = "PM2.5 (ug/m3)")
-timeVariation(a, pollutant = "SO2", main = "eMalahleni SO2 Temporal variation", ylab = "SO2 (ppb)")
-timeVariation(a, pollutant = "NO2", main = "eMalahleni N02 Temporal variation", ylab = "NO2 (ppb)")
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+Gerts$date <- dateTime
 
 
-timePlot(a, pollutant = "NO2", main = "eMalahleni NO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "NO2 (ppb)")
-timePlot(a, pollutant = "SO2", main = "eMalahleni SO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day",  ylab = "SO2 (ppb)")
-timePlot(a, pollutant = "PM10", main = "eMalahleni PM10 daily concentrations", xlab = "Time (Daily)", avg.time = "day",  ylab = "PM10 (ug/m3)")
-timePlot(a, pollutant = "PM2.5", main = "eMalahleni PM2.5 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM2.5 (ug/m3)")
-
-timePlot(a, pollutant = "NO2", main = "eMalahleni NO2 monthly concentrations", xlab = "Time", avg.time = "month")
-timePlot(a, pollutant = "NO2",main = "eMalahleni NO2 annual concentrations",xlab = "Time", avg.time = "year")
-
-### Ermelo
-
-b = read.csv("Data/ErmeloIM.csv", header = T, sep = ";")
+timeVariation(Gerts, pollutant = "O3", main = "Gert Sibande O3 Temporal variation", ylab = "O3 (ppb)")
+timeVariation(Gerts, pollutant = "CO", main = "Gert Sibande CO Temporal variation", ylab = "CO (ppm)")
+timeVariation(Gerts, pollutant = "PM10", main = "Gert Sibande PM10 Temporal variation", ylab = "PM10 (ug/m3)")
+timeVariation(Gerts, pollutant = "PM2.5",main = "Gert Sibande PM2.5 Temporal variation", ylab = "PM2.5 (ug/m3)")
+timeVariation(Gerts, pollutant = "SO2", main = "Gert Sibande SO2 Temporal variation", ylab = "SO2 (ppb)")
+timeVariation(Gerts, pollutant = "NO2", main = "Gert Sibande N02 Temporal variation", ylab = "NO2 (ppb)")
 
 
-timeVariation(b, pollutant = "O3", main = "Ermelo O3 Temporal variation", ylab = "O3 (ppb)")
-timeVariation(b, pollutant = "CO", main = "Ermelo CO Temporal variation", ylab = "CO (ppm)")
-timeVariation(b, pollutant = "PM10", main = "Ermelo PM10 Temporal variation", ylab = "PM10 (ug/m3)")
-timeVariation(b, pollutant = "PM2.5",main = "Ermelo PM2.5 Temporal variation", ylab = "PM2.5 (ug/m3)")
-timeVariation(b, pollutant = "SO2", main = "Ermelo SO2 Temporal variation", ylab = "SO2 (ppb)")
-timeVariation(b, pollutant = "NO2", main = "Ermelo N02 Temporal variation", ylab = "NO2 (ppb)")
+timePlot(Gerts, pollutant = "NO2", main = "Gert Sibande NO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "NO2 (ppb)")
+timePlot(Gerts, pollutant = "SO2", main = "Gert Sibande SO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day",  ylab = "SO2 (ppb)")
+timePlot(Gerts, pollutant = "PM10", main = "Gert Sibande PM10 daily concentrations", xlab = "Time (Daily)", avg.time = "day",  ylab = "PM10 (ug/m3)")
+timePlot(a, pollutant = "PM2.5", main = "Gert Sibande PM2.5 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM2.5 (ug/m3)")
+
+timePlot(Gerts, pollutant = "NO2", main = "Gert Sibande NO2 monthly concentrations", xlab = "Time", avg.time = "month")
+timePlot(Gerts, pollutant = "NO2",main = "Gert Sibande NO2 annual concentrations",xlab = "Time", avg.time = "year")
+
+### Nkangala
+
+Nka = read.csv("Data/Nkangala.csv", header = T, sep = ";")
+
+# the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+Nka$date <- dateTime
 
 
-timePlot(b, pollutant = "NO2", main = "Ermelo NO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "NO2 (ppb)")
-timePlot(b, pollutant = "SO2", main = "Ermelo SO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "SO2 (ppb)")
-timePlot(b, pollutant = "PM10", main = "Ermelo PM10 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM10 (ug/m3)" )
-timePlot(b, pollutant = "PM2.5", main = "Ermelo PM2.5 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM2.5 (ug/m3)")
-
-timePlot(b, pollutant = "NO2", main = "Ermelo NO2 monthly concentrations", xlab = "Time", avg.time = "month")
-timePlot(b, pollutant = "NO2",main = "Ermelo NO2 annual concentrations",xlab = "Time", avg.time = "year")
-
+timeVariation(Nka, pollutant = "O3", main = "Nkangala O3 Temporal variation", ylab = "O3 (ppb)")
+timeVariation(Nka, pollutant = "CO", main = "Nkangala CO Temporal variation", ylab = "CO (ppm)")
+timeVariation(Nka, pollutant = "PM10", main = "Nkangala PM10 Temporal variation", ylab = "PM10 (ug/m3)")
+timeVariation(Nka, pollutant = "PM2.5",main = "Nkangala PM2.5 Temporal variation", ylab = "PM2.5 (ug/m3)")
+timeVariation(Nka, pollutant = "SO2", main = "Nkangala SO2 Temporal variation", ylab = "SO2 (ppb)")
+timeVariation(Nka, pollutant = "NO2", main = "Nkangala N02 Temporal variation", ylab = "NO2 (ppb)")
 
 
+timePlot(Nka, pollutant = "NO2", main = "Nkangala NO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "NO2 (ppb)")
+timePlot(Nka, pollutant = "SO2", main = "Nkangala SO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "SO2 (ppb)")
+timePlot(Nka, pollutant = "PM10", main = "Nkangala PM10 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM10 (ug/m3)" )
+timePlot(Nka, pollutant = "PM2.5", main = "Nkangala PM2.5 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM2.5 (ug/m3)")
 
-### Hendrina
+timePlot(Nka, pollutant = "NO2", main = "Nkangala NO2 monthly concentrations", xlab = "Time", avg.time = "month")
+timePlot(Nka, pollutant = "NO2",main = "Nkangala NO2 annual concentrations",xlab = "Time", avg.time = "year")
 
-c = read.csv("Data/HendrinaIM.csv", header = T, sep = ";")
-
-
-timeVariation(c, pollutant = "O3", main = "Hendrina O3 Temporal variation", ylab = "O3 (ppb)")
-timeVariation(c, pollutant = "CO", main = "Hendrina CO Temporal variation", ylab = "CO (ppm)")
-timeVariation(c, pollutant = "PM10",  main = "Hendrina PM10 Temporal variation", ylab = "PM10 (ug/m3)")
-timeVariation(c, pollutant = "PM2.5", main = "Hendrina PM2.5 Temporal variation", ylab = "PM2.5 (ug/m3)")
-timeVariation(c, pollutant = "SO2", main = "Hendrina SO2 Temporal variation", ylab = "SO2 (ppb)")
-timeVariation(c, pollutant = "NO2", main = "Hendrina NO2 Temporal variation", ylab = "NO2 (ppb)")
-
-timePlot(c, pollutant = "NO2", main = "Hendrina NO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "NO2 (ppb)")
-timePlot(c, pollutant = "SO2", main = "Hendrina SO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "SO2 (ppb)")
-timePlot(c, pollutant = "PM10", main = "Hendrina PM10 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM10 (ug/m3)")
-timePlot(c, pollutant = "PM2.5", main = "Hendrina PM2.5 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM2.5 (ug/m3)")
-
-timePlot(c, pollutant = "NO2", main = "eMalahleni NO2 daily concentrations", avg.time = "day")
-timePlot(c, pollutant = "NO2",main = "eMalahleni NO2 annual concentrations", avg.time = "year")
-
-
-### Middelburg
-
-d = read.csv("Data/MiddelburgIM.csv", header = T, sep = ";")
-
-
-timeVariation(d, pollutant = "O3", main = "Middelburg O3 Temporal variation", ylab = "O3 (ppb)")
-timeVariation(d, pollutant = "CO", main = "Middelburg CO Temporal variation", ylab = "CO (ppm)")
-timeVariation(d, pollutant = "PM10", main = "Middelburg PM10 Temporal variation", ylab = "PM10 (ug/m3)")
-timeVariation(d, pollutant = "PM2.5", main = "Middelburg PM2.5 Temporal variation", ylab = "PM2.5 (ug/m3)")
-timeVariation(d, pollutant = "SO2", main = "Middelburg SO2 Temporal variation", ylab = "SO2 (ppb)")
-timeVariation(d, pollutant = "NO2", main = "Middelurg NO2 Temporal variation", ylab = "NO2 (ppb)")
-
-timePlot(d, pollutant = "NO2", main = "Middelburg NO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "NO2 (ppb)")
-timePlot(d, pollutant = "SO2", main = "Middelburg SO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "SO2 (ppb)")
-timePlot(d, pollutant = "PM10", main = "Middelburg PM10 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM10 (ug/m3)")
-timePlot(d, pollutant = "PM2.5", main = "Middelburg PM2.5 daily concentrations", xlab = "Time (Daily)", avg.time = "day",  ylab = "PM2.5 (ug/m3)")
-
-
-
-timePlot(d, pollutant = "NO2", main = "eMalahleni NO2 daily concentrations", avg.time = "day")
-timePlot(d, pollutant = "NO2",main = "eMalahleni NO2 annual concentrations", avg.time = "year")
-
-
-
-### Secunda
-
-e = read.csv("Data/SecundaIM.csv", header = T, sep = ";")
-
-timeVariation(e, pollutant = "O3", main = "Secunda O3 Temporal variation", ylab = "O3 (ppb)")
-timeVariation(e, pollutant = "CO", main = "Secunda CO Temporal variation", ylab = "CO (ppm)")
-timeVariation(e, pollutant = "PM10", main = "Secunda PM10 Temporal variation", ylab = "PM10 (ug/m3)")
-timeVariation(e, pollutant = "PM2.5", main = "Secunda PM2.5 Temporal variation", ylab = "PM2.5 (ug/m3)")
-timeVariation(e, pollutant = "SO2", main = "Secunda SO2 Temporal variation", ylab = "SO2 (ppb)")
-timeVariation(e, pollutant = "NO2", main = "Secunda NO2 Temporal variation", ylab = "NO2 (ppb)")
-
-timePlot(e, pollutant = "NO2", main = "Secunda NO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "NO2 (ppb)")
-timePlot(e, pollutant = "SO2", main = "Secunda SO2 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "SO2 (ppb)")
-timePlot(e, pollutant = "PM10", main = "Secunda PM10 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM10 (ug/m3)")
-timePlot(e, pollutant = "PM2.5", main = "Secunda PM2.5 daily concentrations", xlab = "Time (Daily)", avg.time = "day", ylab = "PM2.5 (ug/m3)")
-
-
-timePlot(e, pollutant = "NO2", main = "eMalahleni NO2 daily concentrations", avg.time = "day")
-timePlot(e, pollutant = "NO2",main = "eMalahleni NO2 annual concentrations", avg.time = "year")
