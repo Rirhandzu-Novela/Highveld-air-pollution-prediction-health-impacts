@@ -102,54 +102,54 @@ strata_basis <- onebasis(1:5, fun="strata", breaks=c(25,50,75))
 # SPECIFYING A DLNM
 ####################################################################
 
-basis.NO2 <- crossbasis(data$NO2, lag=10, 
+basis.pm <- crossbasis(data$pm2.5, lag=10, 
   argvar=list(fun="thr",thr.value=40.3,side="h"),
   arglag=list(fun="strata",breaks=c(2,6)))
 
 klag <- exp(((1+log(30))/4 * 1:3)-1)
-basis.temp <- crossbasis(data$Amb.Temp, lag=10,
+basis.temp <- crossbasis(data$temp, lag=10,
   argvar=list(fun="bs",degree=3,df=6), arglag=list(knots=klag))
 
 summary(basis.temp)
 
 library("splines")
-model <- glm(death_count ~ basis.temp + basis.NO2 + ns(time,7*14),
+model <- glm(death_count ~ basis.temp + basis.pm + ns(time,7*14),
   family=quasipoisson(), data)
 
 ####################################################################
 # PREDICTING A DLNM
 ####################################################################
 
-pred.NO2 <- crosspred(basis.NO2, model, at=c(0:65,40.3,50.3))
+pred.pm <- crosspred(basis.pm, model, at=c(0:65,40.3,50.3))
 pred.temp <- crosspred(basis.temp, model, by=2, cen=25)
 
 
-plot(pred.NO2, "overall", main="Effect of NO2 on Cardiovascular Deaths",
-     xlab="NO2 concentration", ylab="Relative Risk", lwd=2, ci="area", col="blue")
+plot(pred.pm, "overall", main="Effect of PM on Cardiovascular Deaths",
+     xlab="PM concentration", ylab="Relative Risk", lwd=2, ci="area", col="blue")
 
-pred.NO2$allRRfit["50.3"]
-cbind(pred.NO2$allRRlow,pred.NO2$allRRhigh)["50.3",]
+pred.pm$allRRfit["50.3"]
+cbind(pred.pm$allRRlow,pred.pm$allRRhigh)["50.3",]
 
 ####################################################################
 # REPRESENTING A DLNM
 ####################################################################
 
-plot(pred.NO2, var=50.3, type="p", pch=19, cex=1.5, ci="bars", col=2,
+plot(pred.pm, var=50.3, type="p", pch=19, cex=1.5, ci="bars", col=2,
   ylab="RR",main="Lag-specific effects")
 
-plot(pred.NO2, "contour", plot.title=title(xlab="Temperature",
+plot(pred.pm, "contour", plot.title=title(xlab="Temperature",
   ylab="Lag", main="Contour graph"), key.title=title("RR"))
 
-plot(pred.NO2, "overall", ci="lines", ylim=c(0.95,1.25), lwd=2, col=4,
-  xlab="NO2", ylab="RR", main="Overall effect")
+plot(pred.pm, "overall", ci="lines", ylim=c(0.95,1.25), lwd=2, col=4,
+  xlab="PM", ylab="RR", main="Overall effect")
 
 # Plot overall effect of NO2 across a range of concentrations and lags (contour plot)
-plot(pred.NO2, "contour", xlab = "Lag (days)", ylab = "NO2 concentration",
-     key.title = title("Relative Risk"), main = "Contour plot of NO2 effects")
+plot(pred.pm, "contour", xlab = "Lag (days)", ylab = "PM concentration",
+     key.title = title("Relative Risk"), main = "Contour plot of PM effects")
 
 # Plot perspective plot of NO2 effects
-plot(pred.NO2, "persp", xlab = "Lag (days)", ylab = "NO2 concentration", zlab = "Relative Risk",
-     main = "Perspective plot of NO2 effects", theta = 230, phi = 40, ltheta = 120, shade = 0.75)
+plot(pred.pm, "persp", xlab = "Lag (days)", ylab = "PM concentration", zlab = "Relative Risk",
+     main = "Perspective plot of PM effects", theta = 230, phi = 40, ltheta = 120, shade = 0.75)
 
 
 
@@ -171,7 +171,7 @@ plot(pred.temp,var=c(-20,0,32), lag=c(0,5,20), ci.level=0.99, col=2,
 # MODELING STRATEGIES
 ####################################################################
 
-basis.temp2 <- crossbasis(data$Amb.Temp, argvar=list(fun="poly",degree=6),
+basis.temp2 <- crossbasis(data$temp, argvar=list(fun="poly",degree=6),
   arglag=list(knots=klag), lag=30)
 model2 <- update(model, .~. - basis.temp + basis.temp2)
 pred.temp2 <- crosspred(basis.temp2, model2, by=2, cen=25)
@@ -181,7 +181,7 @@ pred.temp2 <- crosspred(basis.temp2, model2, by=2, cen=25)
 
 
 
-basis.temp3 <- crossbasis(data$Temperature, argvar=list(fun="thr",
+basis.temp3 <- crossbasis(data$temp, argvar=list(fun="thr",
   thr.value=25,side="d"), arglag=list(knots=klag), lag=30)
 model3 <- update(model, .~. - basis.temp + basis.temp3)
 pred.temp3 <- crosspred(basis.temp3, model3, by=2)
@@ -206,14 +206,14 @@ legend("top", c("natural spline","polynomial","double threshold"), col=2:4,
 increment <- 10
 
 # Create a new prediction object for NO2 with the specified increment
-pred.NO2_increment <- crosspred(basis.NO2, model, at = seq(0, 60, by = 1) + increment)
+pred.pm_increment <- crosspred(basis.pm, model, at = seq(0, 60, by = 1) + increment)
 
-str(pred.NO2_increment)
+str(pred.pm_increment)
 
 # Extract relative risk and confidence intervals
-rr <- pred.NO2_increment$allRRfit  # All relative risks
-ci_lower <- pred.NO2_increment$allRRlow  # Lower confidence interval
-ci_upper <- pred.NO2_increment$allRRhigh  # Upper confidence interval
+rr <- pred.pm_increment$allRRfit  # All relative risks
+ci_lower <- pred.pm_increment$allRRlow  # Lower confidence interval
+ci_upper <- pred.pm_increment$allRRhigh  # Upper confidence interval
 
 # Find the index corresponding to the increment value (10 ppb)
 increment <- 10
