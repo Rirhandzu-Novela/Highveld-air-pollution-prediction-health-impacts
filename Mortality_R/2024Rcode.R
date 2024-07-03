@@ -7,7 +7,7 @@ library(Epi)
 library(dlnm)
 
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("Data/GertPollCardMort.csv", header = T, sep = ";")
+data = read.csv("Data/NkaPollCardMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 
@@ -17,6 +17,8 @@ data[is.na(data)] = 0
 # SET THE DEFAULT ACTION FOR MISSING DATA TO na.exclude
 # (MISSING EXCLUDED IN ESTIMATION BUT RE-INSERTED IN PREDICTION/RESIDUALS)
 options(na.action = "na.exclude")
+
+summary(data)
 
 #################################################################
 # PRELIMINARY ANALYSIS
@@ -162,7 +164,7 @@ lines(data$date, pred2, lwd = 2)
 # (NOTE: THIS PARAMETERIZATION IS SLIGHTLY DIFFERENT THAN STATA'S)
 # (THE 35 BASIS VARIABLES ARE SET AS df, WITH DEFAULT KNOTS PLACEMENT. SEE ?bs)
 # (OTHER TYPES OF SPLINES CAN BE PRODUCED WITH THE FUNCTION ns. SEE ?ns)
-spl <- bs(data$time, degree = 3, df = 35)
+spl <- bs(data$time, degree = 3, df = 70)
 
 # FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
@@ -215,41 +217,53 @@ model41 <- glm(TenToSixtyFour ~ so2, data, family = quasipoisson)
 summary(model41)
 (eff41 <- ci.lin(model41, subset = "so2", Exp = T))
 
-model40 <- glm(TenToSixtyFour ~ no2, data, family = quasipoisson)
-summary(model40)
-(eff40 <- ci.lin(model40, subset = "no2", Exp = T))
-
-model42 <- glm(TenToSixtyFour ~ pm2.5  + so2 + no2, data, family = quasipoisson)
+model42 <- glm(TenToSixtyFour ~ no2, data, family = quasipoisson)
 summary(model42)
-(eff42 <- ci.lin(model42, subset = "pm2.5", Exp = T))
-(eff421 <- ci.lin(model42, subset = "so2", Exp = T))
-(eff422 <- ci.lin(model42, subset = "no2", Exp = T))
+(eff42 <- ci.lin(model42, subset = "no2", Exp = T))
+
+model43 <- glm(TenToSixtyFour ~ pm2.5  + so2 + no2, data, family = quasipoisson)
+summary(model43)
+(eff43 <- ci.lin(model43, subset = "pm2.5", Exp = T))
+(eff431 <- ci.lin(model43, subset = "so2", Exp = T))
+(eff432 <- ci.lin(model43, subset = "no2", Exp = T))
 
 # CONTROLLING FOR SEASONALITY (WITH SPLINE AS IN MODEL 3)
 model5 <- update(model4, .~. + spl)
 summary(model5)
 (eff5 <- ci.lin(model5, subset = "pm2.5", Exp = T))
 
-model50 <- update(model41, .~. + spl)
-summary(model50)
-(eff50 <- ci.lin(model50, subset = "so2", Exp = T))
-
-model500 <- update(model40, .~. + spl)
-summary(model500)
-(eff500 <- ci.lin(model500, subset = "no2", Exp = T))
-
-
-model51 <- update(model4, .~. + fourier)
+model51 <- update(model41, .~. + spl)
 summary(model51)
-(eff51 <- ci.lin(model51, subset = "pm2.5", Exp = T))
+(eff51 <- ci.lin(model51, subset = "so2", Exp = T))
 
-model510 <- update(model41, .~. + fourier)
-summary(model510)
-(eff510 <- ci.lin(model510, subset = "so2", Exp = T))
+model52 <- update(model42, .~. + spl)
+summary(model52)
+(eff52 <- ci.lin(model52, subset = "no2", Exp = T))
 
-model5100 <- update(model40, .~. + fourier)
-summary(model5100)
-(eff5100 <- ci.lin(model5100, subset = "no2", Exp = T))
+model53 <- update(model43, .~. + spl)
+summary(model53)
+(eff53 <- ci.lin(model53, subset = "pm2.5", Exp = T))
+(eff531 <- ci.lin(model53, subset = "so2", Exp = T))
+(eff532 <- ci.lin(model53, subset = "no2", Exp = T))
+
+
+model00 <- update(model4, .~. + fourier)
+summary(model00)
+(eff00 <- ci.lin(model00, subset = "pm2.5", Exp = T))
+
+model01 <- update(model41, .~. + fourier)
+summary(model01)
+(eff01 <- ci.lin(model01, subset = "so2", Exp = T))
+
+model02 <- update(model42, .~. + fourier)
+summary(model02)
+(eff02 <- ci.lin(model02, subset = "no2", Exp = T))
+
+model03 <- update(model43, .~. + fourier)
+summary(model53)
+(eff03 <- ci.lin(model03, subset = "pm2.5", Exp = T))
+(eff031 <- ci.lin(model03, subset = "so2", Exp = T))
+(eff032 <- ci.lin(model03, subset = "no2", Exp = T))
 
 # CONTROLLING FOR TEMPERATURE
 # (TEMPERATURE MODELLED WITH CATEGORICAL VARIABLES FOR DECILES)
@@ -261,36 +275,49 @@ model6 <- update(model4, .~. + tempdecile)
 summary(model6)
 (eff6 <- ci.lin(model6, subset = "pm2.5", Exp = T))
 
-model60 <- update(model41, .~. + tempdecile)
-summary(model60)
-(eff60 <- ci.lin(model60, subset = "so2", Exp = T))
-
-model600 <- update(model40, .~. + tempdecile)
-summary(model600)
-(eff600 <- ci.lin(model600, subset = "no2", Exp = T))
-
-model61 <- update(model51, .~. + tempdecile)
+model61 <- update(model41, .~. + tempdecile)
 summary(model61)
-(eff61 <- ci.lin(model61, subset = "pm2.5", Exp = T))
+(eff61 <- ci.lin(model61, subset = "so2", Exp = T))
 
-model610 <- update(model510, .~. + tempdecile)
-summary(model610)
-(eff610 <- ci.lin(model610, subset = "so2", Exp = T))
+model62 <- update(model42, .~. + tempdecile)
+summary(model62)
+(eff62 <- ci.lin(model62, subset = "no2", Exp = T))
 
-model6100 <- update(model5100, .~. + tempdecile)
-summary(model6100)
-(eff6100 <- ci.lin(model6100, subset = "no2", Exp = T))
+model63 <- update(model43, .~. + tempdecile)
+summary(model63)
+(eff63 <- ci.lin(model63, subset = "pm2.5", Exp = T))
+(eff631 <- ci.lin(model63, subset = "so2", Exp = T))
+(eff632 <- ci.lin(model63, subset = "no2", Exp = T))
 
 
-# BUILD A SUMMARY TABLE
+model9 <- update(model00, .~. + tempdecile)
+summary(model9)
+(eff9 <- ci.lin(model9, subset = "pm2.5", Exp = T))
 
-tabeff <- rbind(eff4,eff41,eff40,eff42,eff421,eff42,eff51,eff510,eff5100,eff6,eff60,eff600,eff61,eff610,eff6100)[,5:7]
-dimnames(tabeff) <- list(c("Unadjusted PM2.5","Unadjusted SO2","Unadjusted NO2","Unadjusted All PollPM", "Unadjusted All PollSO","Unadjusted All PollNO",
-                             "PM2.5 Plus season/trend", "SO2 Plus season/trend","NO2 Plus season/trend",
-                           "PM2.5 Plus temperature ", "SO2 Plus temperature ", "NO2 Plus temperature ", 
-                           "PM2.5 Plus season/trend/temperature ", "Plus season/trend/temperature SO2", "Plus season/trend/temperature NO2"),
-                         c("RR","ci.low","ci.hi"))
-round(tabeff,3)
+model91 <- update(model01, .~. + tempdecile)
+summary(model91)
+(eff91 <- ci.lin(model91, subset = "so2", Exp = T))
+
+model92 <- update(model02, .~. + tempdecile)
+summary(model92)
+(eff92 <- ci.lin(model92, subset = "no2", Exp = T))
+
+model93 <- update(model03, .~. + tempdecile)
+summary(model93)
+(eff93 <- ci.lin(model93, subset = "pm2.5", Exp = T))
+(eff931 <- ci.lin(model93, subset = "so2", Exp = T))
+(eff932 <- ci.lin(model93, subset = "no2", Exp = T))
+
+
+## BUILD A SUMMARY TABLE
+
+#tabeff <- rbind(eff4,eff41,eff40,eff42,eff421,eff42,eff51,eff510,eff5100,eff6,eff60,eff600,eff61,eff610,eff6100)[,5:7]
+#dimnames(tabeff) <- list(c("Unadjusted PM2.5","Unadjusted SO2","Unadjusted NO2","Unadjusted All PollPM", "Unadjusted All PollSO","Unadjusted All PollNO",
+#                             "PM2.5 Plus season/trend", "SO2 Plus season/trend","NO2 Plus season/trend",
+#                           "PM2.5 Plus temperature ", "SO2 Plus temperature ", "NO2 Plus temperature ", 
+#                           "PM2.5 Plus season/trend/temperature ", "Plus season/trend/temperature SO2", "Plus season/trend/temperature NO2"),
+#                         c("RR","ci.low","ci.hi"))
+#round(tabeff,3)
 
 ################################################################################
 # EXPLORING THE LAGGED (DELAYED) EFFECTS
@@ -391,22 +418,22 @@ points(0:7, tablagNO[,1], pch = 19)
 
 # PRODUCE THE CROSS-BASIS FOR POLL(SCALING NOT NEEDED)
 # A SIMPLE UNSTRANSFORMED LINEAR TERM AND THE UNCONSTRAINED LAG STRUCTURE
-cbPMunc <- crossbasis(data$pm2.5, lag = c(0,4), argvar = list(fun = "lin"),
+cbPMunc <- crossbasis(data$pm2.5, lag = c(0,7), argvar = list(fun = "lin"),
                       arglag = list(fun = "integer"))
 summary(cbPMunc)
 
-cbSOunc <- crossbasis(data$so2, lag = c(0,4), argvar = list(fun = "lin"),
+cbSOunc <- crossbasis(data$so2, lag = c(0,7), argvar = list(fun = "lin"),
                       arglag = list(fun = "integer"))
 summary(cbSOunc)
 
-cbNOunc <- crossbasis(data$no2, lag = c(0,4), argvar = list(fun = "lin"),
+cbNOunc <- crossbasis(data$no2, lag = c(0,7), argvar = list(fun = "lin"),
                       arglag = list(fun = "integer"))
 summary(cbNOunc)
 
 
 # PRODUCE THE CROSS-BASIS FOR TEMPERATURE
 # AS ABOVE, BUT WITH STRATA DEFINED BY INTERNAL CUT-OFFS
-cbtempunc <- crossbasis(data$temp, lag = c(0,4),
+cbtempunc <- crossbasis(data$temp, lag = c(0,7),
                         argvar = list(fun = "strata", breaks = cutoffs[2:10]),
                         arglag = list(fun = "integer"))
 summary(cbtempunc)
@@ -416,30 +443,34 @@ model7 <- glm(TenToSixtyFour ~ cbPMunc + cbtempunc + fourier, data, family = qua
 pred7 <- crosspred(cbPMunc, model7, at = 10)
 summary(model7)
 
-model70 <- glm(TenToSixtyFour ~ cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
-pred70 <- crosspred(cbSOunc, model70, at = 10)
-summary(model70)
+model71 <- glm(TenToSixtyFour ~ cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+pred71 <- crosspred(cbSOunc, model71, at = 10)
+summary(model71)
 
-model700 <- glm(TenToSixtyFour ~ cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
-pred700 <- crosspred(cbNOunc, model700, at = 10)
-summary(model700)
+model72 <- glm(TenToSixtyFour ~ cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+pred72 <- crosspred(cbNOunc, model72, at = 10)
+summary(model72)
 
 # ESTIMATED EFFECTS AT EACH LAG
 tablag2 <- with(pred7,t(rbind(matRRfit, matRRlow, matRRhigh)))
 colnames(tablag2) <- c("RR","ci.low","ci.hi")
 tablag2
 
-tablag20 <- with(pred70,t(rbind(matRRfit, matRRlow, matRRhigh)))
-colnames(tablag20) <- c("RR","ci.low","ci.hi")
-tablag20
+tablag21 <- with(pred71,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablag21) <- c("RR","ci.low","ci.hi")
+tablag21
 
 
-tablag200 <- with(pred700,t(rbind(matRRfit, matRRlow, matRRhigh)))
-colnames(tablag200) <- c("RR","ci.low","ci.hi")
-tablag200
+tablag22 <- with(pred72,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablag22) <- c("RR","ci.low","ci.hi")
+tablag22
 
 # OVERALL CUMULATIVE (NET) EFFECT
 pred7$allRRfit ; pred7$allRRlow ; pred7$allRRhigh
+
+pred71$allRRfit ; pred71$allRRlow ; pred71$allRRhigh
+
+pred72$allRRfit ; pred72$allRRlow ; pred72$allRRhigh
 
 #############
 # FIGURE 4B
@@ -449,11 +480,11 @@ plot(pred7, var = 10, type = "p", ci = "bars", col = 1, pch = 19, ylim = c(0.80,
      main = "All lag terms modelled together (unconstrained)", xlab = "Lag (days)",
      ylab = "RR and 95%CI per 10 ug/m3 PM2.5 increase")
 
-plot(pred70, var = 10, type = "p", ci = "bars", col = 1, pch = 19, ylim = c(0.80,1.30),
+plot(pred71, var = 10, type = "p", ci = "bars", col = 1, pch = 19, ylim = c(0.80,1.30),
      main = "All lag terms modelled together (unconstrained)", xlab = "Lag (days)",
      ylab = "RR and 95%CI per 10 ppb SO2 increase")
 
-plot(pred700, var = 10, type = "p", ci = "bars", col = 1, pch = 19, ylim = c(0.80,1.30),
+plot(pred72, var = 10, type = "p", ci = "bars", col = 1, pch = 19, ylim = c(0.80,1.30),
      main = "All lag terms modelled together (unconstrained)", xlab = "Lag (days)",
      ylab = "RR and 95%CI per 10 ppb NO2 increase")
 
@@ -463,15 +494,15 @@ plot(pred700, var = 10, type = "p", ci = "bars", col = 1, pch = 19, ylim = c(0.8
 
 # PRODUCE A DIFFERENT CROSS-BASIS FOR PM2.5
 # USE STRATA FOR LAG STRUCTURE, WITH CUT-OFFS DEFINING RIGHT-OPEN INTERVALS 
-cbpmconstr <- crossbasis(data$pm2.5, lag = 4, argvar = list(fun = "lin"),
+cbpmconstr <- crossbasis(data$pm2.5, lag = c(0,7), argvar = list(fun = "lin"),
                          arglag = list(fun = "strata", breaks = c(1,3)))
 summary(cbpmconstr)
 
-cbsoconstr <- crossbasis(data$so2, lag = 4, argvar = list(fun = "lin"),
+cbsoconstr <- crossbasis(data$so2, lag = c(0,7), argvar = list(fun = "lin"),
                          arglag = list(fun = "strata", breaks = c(1,3)))
 summary(cbsoconstr)
 
-cbnoconstr <- crossbasis(data$no2, lag = 4, argvar = list(fun = "lin"),
+cbnoconstr <- crossbasis(data$no2, lag = c(0,7), argvar = list(fun = "lin"),
                          arglag = list(fun = "strata", breaks = c(1,3)))
 summary(cbnoconstr)
 
@@ -480,29 +511,33 @@ model8 <- glm(TenToSixtyFour ~ cbpmconstr + cbtempunc + fourier, data, family = 
 pred8 <- crosspred(cbpmconstr, model8, at = 10)
 summary(model8)
 
-model80 <- glm(TenToSixtyFour ~ cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
-pred80 <- crosspred(cbsoconstr, model80, at = 10)
-summary(model80)
+model81 <- glm(TenToSixtyFour ~ cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+pred81 <- crosspred(cbsoconstr, model81, at = 10)
+summary(model81)
 
-model800 <- glm(TenToSixtyFour ~ cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
-pred800 <- crosspred(cbnoconstr, model800, at = 10)
-summary(model800)
+model82 <- glm(TenToSixtyFour ~ cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+pred82 <- crosspred(cbnoconstr, model82, at = 10)
+summary(model82)
 
 # ESTIMATED EFFECTS AT EACH LAG
 tablag3 <- with(pred8,t(rbind(matRRfit, matRRlow, matRRhigh)))
 colnames(tablag3) <- c("RR","ci.low","ci.hi")
 tablag3
 
-tablag30 <- with(pred80,t(rbind(matRRfit, matRRlow, matRRhigh)))
-colnames(tablag30) <- c("RR","ci.low","ci.hi")
-tablag30
+tablag31 <- with(pred81,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablag31) <- c("RR","ci.low","ci.hi")
+tablag31
 
-tablag300 <- with(pred800,t(rbind(matRRfit, matRRlow, matRRhigh)))
-colnames(tablag300) <- c("RR","ci.low","ci.hi")
-tablag300
+tablag32 <- with(pred82,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablag32) <- c("RR","ci.low","ci.hi")
+tablag32
 
 # OVERALL CUMULATIVE (NET) EFFECT
 pred8$allRRfit ; pred8$allRRlow ; pred8$allRRhigh
+
+pred81$allRRfit ; pred81$allRRlow ; pred81$allRRhigh
+
+pred82$allRRfit ; pred82$allRRlow ; pred82$allRRhigh
 
 #############
 # FIGURE 4C
@@ -543,13 +578,13 @@ pacf(res7, na.action = na.omit, main = "From original model")
 
 
 # INCLUDE THE 1-DAY LAGGED RESIDUAL IN THE MODEL
-model9 <- update(model7, .~. + Lag(res7,1))
+model10 <- update(model7, .~. + Lag(res7,1))
 
 #############################
 # FIGURE A2b
 #############################
 
-pacf(residuals(model9, type = "deviance"), na.action = na.omit,
+pacf(residuals(model10, type = "deviance"), na.action = na.omit,
      main = "From model adjusted for residual autocorrelation")
 
 
