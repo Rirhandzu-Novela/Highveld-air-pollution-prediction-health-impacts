@@ -7,7 +7,7 @@ library(Epi)
 library(dlnm)
 
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("Data/NkaPollCardMort.csv", header = T, sep = ";")
+data = read.csv("Data/GertPollPulMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 
@@ -18,7 +18,7 @@ data[is.na(data)] = 0
 # (MISSING EXCLUDED IN ESTIMATION BUT RE-INSERTED IN PREDICTION/RESIDUALS)
 options(na.action = "na.exclude")
 
-sum <- data %>% 
+sumYear <- data %>% 
   novaAQM::datify() %>%
   select(date, year, death_count, Male, Female, TenToSixtyFour, SixtyFivePlus) %>%
   group_by(year) %>%
@@ -32,18 +32,19 @@ sum <- data %>%
                values_to = "value")
 
 
-df <-  data  %>%
+dfYear <-  data  %>%
   pivot_longer(cols = pm2.5:SixtyFivePlus, names_to = "variable") %>%
   novaAQM::datify() %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(year, variable)
   ) %>% 
-  left_join(sum, by = c("year", "variable")) %>% 
+  left_join(sumYear, by = c("year", "variable")) %>% 
   select(-n, -NAs) %>% 
   rename("Total" = "value") %>% 
   relocate("Total", .after = "variable") %>%
   arrange(year, variable) 
 
+write.csv(dfYear,"RDA/GertPollPulMortYearSum.csv")
 
 sum <- data %>% 
   select(date, death_count, Male, Female, TenToSixtyFour, SixtyFivePlus) %>%
@@ -67,6 +68,8 @@ df <-  data  %>%
   rename("Total" = "value") %>% 
   relocate("Total", .after = "variable") %>%
   arrange(variable)
+
+write.csv(df,"RDA/GertPollPulMortSum.csv")
 
 #################################################################
 # PRELIMINARY ANALYSIS
