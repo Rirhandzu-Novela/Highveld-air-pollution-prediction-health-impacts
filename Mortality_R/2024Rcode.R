@@ -18,7 +18,55 @@ data[is.na(data)] = 0
 # (MISSING EXCLUDED IN ESTIMATION BUT RE-INSERTED IN PREDICTION/RESIDUALS)
 options(na.action = "na.exclude")
 
-summary(data)
+sum <- data %>% 
+  novaAQM::datify() %>%
+  select(date, year, death_count, Male, Female, TenToSixtyFour, SixtyFivePlus) %>%
+  group_by(year) %>%
+  summarise(death_count = sum(death_count, na.rm = T),
+            Male = sum(Male, na.rm = T),
+            Female = sum(Female, na.rm = T),
+            TenToSixtyFour = sum(TenToSixtyFour, na.rm = T),
+            SixtyFivePlus = sum(SixtyFivePlus, na.rm = T)) %>%
+  pivot_longer(cols = c(death_count, Male, Female, TenToSixtyFour, SixtyFivePlus), 
+               names_to = "variable", 
+               values_to = "value")
+
+
+df <-  data  %>%
+  pivot_longer(cols = pm2.5:SixtyFivePlus, names_to = "variable") %>%
+  novaAQM::datify() %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(year, variable)
+  ) %>% 
+  left_join(sum, by = c("year", "variable")) %>% 
+  select(-n, -NAs) %>% 
+  rename("Total" = "value") %>% 
+  relocate("Total", .after = "variable") %>%
+  arrange(year, variable) 
+
+
+sum <- data %>% 
+  select(date, death_count, Male, Female, TenToSixtyFour, SixtyFivePlus) %>%
+  summarise(death_count = sum(death_count, na.rm = T),
+            Male = sum(Male, na.rm = T),
+            Female = sum(Female, na.rm = T),
+            TenToSixtyFour = sum(TenToSixtyFour, na.rm = T),
+            SixtyFivePlus = sum(SixtyFivePlus, na.rm = T)) %>%
+  pivot_longer(cols = c(death_count, Male, Female, TenToSixtyFour, SixtyFivePlus), 
+               names_to = "variable", 
+               values_to = "value")
+
+
+df <-  data  %>%
+  pivot_longer(cols = pm2.5:SixtyFivePlus, names_to = "variable") %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  ) %>% 
+  left_join(sum, by = c("variable")) %>% 
+  select(-n, -NAs) %>% 
+  rename("Total" = "value") %>% 
+  relocate("Total", .after = "variable") %>%
+  arrange(variable)
 
 #################################################################
 # PRELIMINARY ANALYSIS
