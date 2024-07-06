@@ -11,78 +11,14 @@ library(corrplot)
 library(Hmisc)
 library(plotly)
 
-# Read dat files ----------------------------------------------------------
+Hendrina = read.csv("AirData/HendrinaIM.csv", header = T, sep = ";")
 
-Hendrina = read.csv("Data/Hendrina.csv", header = T, sep = ";")
+# the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
 
-Hendrina <- Hendrina %>%
-  rename(so2 = SO2,
-         co = CO,
-         no = NO,
-         no2 = NO2,
-         nox = NOx,
-         pm10 = PM10,
-         pm2.5 = PM2.5,
-         o3 = O3,
-         ws = Amb.Wspeed,
-         wd = Amb.WDirection,
-         temp = Temperature,
-         relHum = Amb.RelHum,
-         pressure = Amb.Pressure,
-         rain = Rain,
-         date = Date.Time)
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+Hendrina$date <- dateTime
 
-# Dataframe should have a column name "date". It is mandatory for OpenAir
-names(Hendrina)[1] <- 'date'
-
-# The dates must be a "POSIXct" "POSIXt" object.
-date <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-#date <- date[-length(date)]
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-Hendrina$date <- date
-
-
-summary(Hendrina)
-
-Hendrina_clean <- Hendrina %>%
-  mutate(across(-date, ~ if_else(. <= 0 | is.infinite(.), NA_real_, .))) %>%
-  mutate(pm10 = case_when(pm10 > 800 ~ NA, .default = pm10)) %>%
-  mutate(pm2.5 = case_when(pm2.5 > 300 ~ NA, .default = pm2.5)) %>%
-  mutate(so2 = case_when(so2 > 400 ~ NA, .default = so2)) %>%
-  mutate(no2 = case_when(no2 > 100 ~ NA, .default = no2)) %>%
-  mutate(no = case_when(no > 250 ~ NA, .default = no)) %>%
-  mutate(nox = case_when(nox > 300 ~ NA, .default = nox)) %>%
-  mutate(o3 = case_when(o3 > 150 ~ NA, .default = o3)) %>%
-  mutate(co = case_when(co > 4 ~ NA, .default = co)) %>%
-  mutate(ws = case_when(ws > 15 ~ NA, .default = ws)) %>%
-  mutate(pressure = case_when(pressure < 825 ~ NA, .default = pressure)) %>%
-  mutate(pressure = case_when(pressure > 850 ~ NA, .default = pressure)) %>%
-  mutate(nox = ifelse(year(date) == 2009 & nox > 250, NA, nox)) %>%
-  mutate(nox = ifelse(year(date) ==  2010 & nox > 250, NA, nox)) %>%
-  mutate(so2 = ifelse(year(date) == 2013 & so2 > 200, NA, so2)) %>%
-  mutate(so2 = ifelse(year(date) == 2014 & so2 > 200, NA, so2)) %>%
-  mutate(so2 = ifelse(year(date) == 2015 & so2 > 200, NA, so2))
-
-Hendrina_clean$date <- format(Hendrina_clean$date, "%Y-%m-%d %H:%M:%S")
-
-summary(Hendrina_clean)
-
-HendrinaIM <- na_kalman(Hendrina_clean, model = "StructTS", smooth = TRUE, type = "trend")
-summary(HendrinaIM)
-
-usermodel <- arima(Hendrina_clean$temp, order = c(1, 0, 1))$model
-HendrinaIMT <- na_kalman(Hendrina_clean$temp, model = usermodel)
-HendrinaIM$temp <- HendrinaIMT
-
-
-usermodel <- arima(Hendrina_clean$relHum, order = c(0, 0, 0))$model
-HendrinaIMRH <- na_kalman(Hendrina_clean$relHum, model = usermodel)
-HendrinaIM$relHum <- HendrinaIMRH
-
-summary(HendrinaIM)
-
-
-write_csv(HendrinaIM, file = "Data/HendrinaIM.csv")
 
 # Time series -------------------------------------------------------------
 
@@ -94,23 +30,23 @@ plot_ly(data = Hendrina, x = ~date, y = ~pm2.5, type = 'scatter', mode = 'lines+
          yaxis = list(title = 'PM2.5'))
 
 
-HendrinaPTS <- timePlot(selectByDate(Hendrina_clean),
+HendrinaPTS <- timePlot(selectByDate(Hendrina),
                       pollutant = c("pm2.5", "pm10", "co", "no", "no2", "nox", "so2"),
                       y.relation = "free")
 
 
 
-HendrinaPTS  <- timePlot(selectByDate(Hendrina_clean),
+HendrinaMTS  <- timePlot(selectByDate(Hendrina),
                        pollutant = c("ws", "wd", "temp", "relHum", "pressure"),
                        y.relation = "free")
 
 
-save(Hendrina, HendrinaMTS , file = "Data/Hendrina_Timeseriesplot.Rda")
+save(HendrinaPTS, HendrinaMTS , file = "Graph/Hendrina_Timeseriesplot.Rda")
 
-PM2.5 <- timePlot(selectByDate(Hendrina_clean, year = 2013),
+PM2.5 <- timePlot(selectByDate(Hendrina, year = 2013),
                   pollutant = "pm2.5")
 
-Hendrina_clean <-Hendrina_clean %>%
+Hendrina_clean <-Hendrina %>%
   datify
 
 HPM10Tempplot09 <- timeVariation(Hendrina_clean %>% filter(year == "2009"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
@@ -133,7 +69,7 @@ HPM10Tempplot17 <- timeVariation(Hendrina_clean %>% filter(year == "2017"), stat
                                  col = "firebrick")
 HPM10Tempplot18 <- timeVariation(Hendrina_clean %>% filter(year == "2018"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
                                  col = "firebrick")
-EPM10Tempplot <- timeVariation(Hendrina_clean, stati="median", poll="pm10", conf.int = c(0.75, 0.99),
+HPM10Tempplot <- timeVariation(Hendrina_clean, stati="median", poll="pm10", conf.int = c(0.75, 0.99),
                                col = "firebrick")
 
 HtrendPM10 <- TheilSen(Hendrina_clean, pollutant = "pm10",
@@ -260,156 +196,11 @@ save(HNO2Tempplot09, HNO2Tempplot10,
      file = "Graph/HTempoaral_plotNO2.Rda")
 
 
-HNOTempplot09 <- timeVariation(Hendrina_clean %>% filter(year == "2009"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2009")
-HNOTempplot10 <- timeVariation(Hendrina_clean %>% filter(year == "2010"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2010")
-HNOTempplot11 <- timeVariation(Hendrina_clean %>% filter(year == "2011"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2011")
-HNOTempplot12 <- timeVariation(Hendrina_clean %>% filter(year == "2012"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2012")
-HNOTempplot13 <- timeVariation(Hendrina_clean %>% filter(year == "2013"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2013")
-HNOTempplot14 <- timeVariation(Hendrina_clean %>% filter(year == "2014"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2014")
-HNOTempplot15 <- timeVariation(Hendrina_clean %>% filter(year == "2015"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2015")
-HNOTempplot16 <- timeVariation(Hendrina_clean %>% filter(year == "2016"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2016")
-HNOTempplot17 <- timeVariation(Hendrina_clean %>% filter(year == "2017"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2017")
-HNOTempplot18 <- timeVariation(Hendrina_clean %>% filter(year == "2018"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Hendrina in 2018")
-
-HNOTempplot <- timeVariation(Hendrina_clean, stati="median", poll="no", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "NO temporal variation at Hendrina")
-
-HtrendNO <- TheilSen(Hendrina_clean, pollutant = "no",
-                     ylab = "NO (µg.m-3)",
-                     deseason = TRUE,
-                     main = "NO trends at Hendrina")
-
-save(HNOTempplot09, WNOTempplot10,
-     HNOTempplot11,WNOTempplot12,
-     HNOTempplot13,WNOTempplot14,
-     HNOTempplot15,WNOTempplot16,
-     HNOTempplot17,WNOTempplot18,
-     HtrendNO,WNOTempplot,
-     file = "Graph/HTempoaral_plotNO.Rda")
-
-HNOXTempplot09 <- timeVariation(Hendrina_clean %>% filter(year == "2009"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2009")
-HNOXTempplot10 <- timeVariation(Hendrina_clean %>% filter(year == "2010"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2010")
-HNOXTempplot11 <- timeVariation(Hendrina_clean %>% filter(year == "2011"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2011")
-HNOXTempplot12 <- timeVariation(Hendrina_clean %>% filter(year == "2012"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2012")
-HNOXTempplot13 <- timeVariation(Hendrina_clean %>% filter(year == "2013"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2013")
-HNOXTempplot14 <- timeVariation(Hendrina_clean %>% filter(year == "2014"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2014")
-HNOXTempplot15 <- timeVariation(Hendrina_clean %>% filter(year == "2015"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2015")
-HNOXTempplot16 <- timeVariation(Hendrina_clean %>% filter(year == "2016"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2016")
-HNOXTempplot17 <- timeVariation(Hendrina_clean %>% filter(year == "2017"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Hendrina in 2017")
-
-HNOXTempplot <- timeVariation(Hendrina_clean, stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                              col = "firebrick", main = "NOX temporal variation at Hendrina")
-
-HtrendNOX <- TheilSen(Hendrina_clean, pollutant = "nox",
-                      ylab = "NOX (µg.m-3)",
-                      deseason = TRUE,
-                      main = "NOX trends at Hendrina")
-
-save(HNOXTempplot09, HNOXTempplot10,
-     HNOXTempplot11,HNOXTempplot12,
-     HNOXTempplot13,HNOXTempplot14,
-     HNOXTempplot15,HNOXTempplot16,
-     HNOXTempplot17,HNOXTempplot18,
-     HtrendNOX,HNOXTempplot,
-     file = "Graph/HTempoaral_plotNOX.Rda")
-
-HCOTempplot09 <- timeVariation(Hendrina_clean %>% filter(year == "2009"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2009")
-HCOTempplot10 <- timeVariation(Hendrina_clean %>% filter(year == "2010"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2010")
-HCOTempplot11 <- timeVariation(Hendrina_clean %>% filter(year == "2011"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2011")
-HCOTempplot12 <- timeVariation(Hendrina_clean %>% filter(year == "2012"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2012")
-HCOTempplot13 <- timeVariation(Hendrina_clean %>% filter(year == "2013"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2013")
-HCOTempplot14 <- timeVariation(Hendrina_clean %>% filter(year == "2014"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2014")
-HCOTempplot15 <- timeVariation(Hendrina_clean %>% filter(year == "2015"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2015")
-HCOTempplot16 <- timeVariation(Hendrina_clean %>% filter(year == "2016"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2016")
-HCOTempplot17 <- timeVariation(Hendrina_clean %>% filter(year == "2017"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2017")
-HCOTempplot18 <- timeVariation(Hendrina_clean %>% filter(year == "2018"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Hendrina in 2018")
-
-HCOTempplot <- timeVariation(Hendrina_clean, stati="median", poll="co", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "CO temporal variation at Hendrina")
-
-HtrendCO <- TheilSen(Hendrina_clean, pollutant = "co",
-                     ylab = "CO (µg.m-3)",
-                     deseason = TRUE,
-                     main = "CO trends at Hendrina")
-
-save(HCOTempplot09, HCOTempplot10,
-     HCOTempplot11,HCOTempplot12,
-     HCOTempplot13,HCOTempplot14,
-     HCOTempplot15,HCOTempplot16,
-     HCOTempplot17,HCOTempplot18,
-     HtrendCO,HCOTempplot,
-     file = "Graph/HTempoaral_plotCO.Rda")
-
-HO3Tempplot09 <- timeVariation(Hendrina_clean %>% filter(year == "2009"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2009")
-HO3Tempplot10 <- timeVariation(Hendrina_clean %>% filter(year == "2010"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2010")
-HO3Tempplot11 <- timeVariation(Hendrina_clean %>% filter(year == "2011"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2011")
-HO3Tempplot12 <- timeVariation(Hendrina_clean %>% filter(year == "2012"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2012")
-HO3Tempplot13 <- timeVariation(Hendrina_clean %>% filter(year == "2013"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2013")
-HO3Tempplot14 <- timeVariation(Hendrina_clean %>% filter(year == "2014"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2014")
-HO3Tempplot15 <- timeVariation(Hendrina_clean %>% filter(year == "2015"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2015")
-HO3Tempplot16 <- timeVariation(Hendrina_clean %>% filter(year == "2016"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2016")
-HO3Tempplot17 <- timeVariation(Hendrina_clean %>% filter(year == "2017"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2017")
-HO3Tempplot18 <- timeVariation(Hendrina_clean %>% filter(year == "2018"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Hendrina in 2018")
-HO3Tempplot <- timeVariation(Hendrina_clean, stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "O3 temporal variation at Hendrina")
-
-HtrendO3 <- TheilSen(Hendrina_clean, pollutant = "o3",
-                     ylab = "O3 (µg.m-3)",
-                     deseason = TRUE,
-                     main = "O3 trends at Hendrina")
-
-save(HO3Tempplot09, HO3Tempplot10,
-     HO3Tempplot11,HO3Tempplot12,
-     HO3Tempplot13,HO3Tempplot14,
-     HO3Tempplot15,HO3Tempplot16,
-     HO3Tempplot17,HO3Tempplot18,
-     HtrendO3,HO3Tempplot,
-     file = "Graph/HTempoaral_plotO3.Rda")
-
 
 # AMS Averages and exceedances --------------------------------------------
 
 Hendrina_date <- Hendrina_clean %>%
-  select(date, station, pm2.5, o3, co, no2, nox, no, so2, pm10) %>%
+  select(date, pm2.5, o3, co, no2, nox, no, so2, pm10) %>%
   pivot_longer(cols = c(pm2.5, o3, no2, no, nox, so2, co, pm10), names_to = "variable") %>%
   mutate(unit = case_when(
     variable == "pm2.5" ~ "Âµg.m-3",
@@ -422,7 +213,8 @@ Hendrina_date <- Hendrina_clean %>%
     variable == "pm10" ~ "Âµg.m-3",
     variable == "so2" ~ "ppb",
     TRUE ~ NA_character_
-  ))
+  )) %>%
+  mutate(station = "Hendrina")
 
 Hendrina_monthly_hour_ex <- novaAQM::compareAQS(df = Hendrina_date %>%
                                                 ungroup() %>%
@@ -525,167 +317,82 @@ save(Hendrina_monthly_hour_ex, Hendrina_season_hour_ex, Hendrina_month_daily_ex,
 
 HBoxPM2.5Compare <- ggplot(data = Hendrina_Daily %>%
                              datify() %>%
-                             select(pm2.5, year) %>%
-                             mutate(perc.obs = length(which(!is.na(pm2.5))) / n(), .by = year),
+                             select(pm2.5, year),
                            aes(x = year, y = pm2.5 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 40, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "PM2.5",
-    title = "Annual statistical summary of PM2.5 at Hendrina",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
+    title = "Annual statistical summary of PM2.5 at Hendrina") +
+  theme(legend.position = "bottom")
 
 HBoxPM2.5Compare
 
 
 HBoxPM10Compare <- ggplot(data = Hendrina_Daily %>%
                             datify() %>%
-                            select(pm10, year) %>%
-                            mutate(perc.obs = length(which(!is.na(pm10))) / n(), .by = year),
+                            select(pm10, year),
                           aes(x = year, y = pm10 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 75, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "PM10",
-    title = "Annual statistical summary of PM10 at Hendrina",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 240)
+    title = "Annual statistical summary of PM10 at Hendrina") +
+  theme(legend.position = "bottom")
 
 HBoxPM10Compare
 
 HBoxso2Compare <- ggplot(data = Hendrina_Daily %>%
                            datify() %>%
-                           select(so2, year) %>%
-                           mutate(perc.obs = length(which(!is.na(so2))) / n(), .by = year),
+                           select(so2, year),
                          aes(x = year, y = so2 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 48, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "SO2",
-    title = "Annual statistical summary of SO2 at Hendrina",
-    caption = "Data from AMS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
+    title = "Annual statistical summary of SO2 at Hendrina") +
+  theme(legend.position = "bottom")
 
 HBoxso2Compare
 
 HBoxno2Compare <- ggplot(data = Hendrina_Daily %>%
                            datify() %>%
-                           select(no2, year) %>%
-                           mutate(perc.obs = length(which(!is.na(no2))) / n(), .by = year),
+                           select(no2, year),
                          aes(x = year, y = no2 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 92, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "NO2",
-    title = "Annual statistical summary of NO2 at Hendrina",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 100)
+    title = "Annual statistical summary of NO2 at Hendrina") +
+  theme(legend.position = "bottom")
 
 HBoxno2Compare
 
-HBoxnoCompare <- ggplot(data = Hendrina_Daily %>%
-                          datify() %>%
-                          select(no, year) %>%
-                          mutate(perc.obs = length(which(!is.na(no))) / n(), .by = year),
-                        aes(x = year, y = no)) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "NO",
-    title = "Annual statistical summary of NO at Hendrina",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 140)
 
-HBoxnoCompare
-
-HBoxnoxCompare <- ggplot(data = Hendrina_Daily %>%
-                           datify() %>%
-                           select(nox, year) %>%
-                           mutate(perc.obs = length(which(!is.na(nox))) / n(), .by = year),
-                         aes(x = year, y = nox)) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "NOX",
-    title = "Annual statistical summary of NOX at Hendrina",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
-
-HBoxnoxCompare
-
-HBoxo3Compare <- ggplot(data = Hendrina_Daily %>%
-                          datify() %>%
-                          select(o3, year) %>%
-                          mutate(perc.obs = length(which(!is.na(o3))) / n(), .by = year),
-                        aes(x = year, y = no )) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "O3",
-    title = "Annual statistical summary of O3 at Hendrina",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 120)
-
-HBoxnoCompare
-
-HBoxcoCompare <- ggplot(data = Hendrina_Daily %>%
-                          datify() %>%
-                          select(co, year) %>%
-                          mutate(perc.obs = length(which(!is.na(co))) / n(), .by = year),
-                        aes(x = year, y = co )) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "CO",
-    title = "Annual statistical summary of CO at Hendrina",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 6)
-
-HBoxcoCompare
 
 save(HBoxPM2.5Compare,
      HBoxPM10Compare,
      HBoxso2Compare,
      HBoxno2Compare,
-     HBoxnoCompare,
-     HBoxcoCompare,
-     HBoxnoxCompare,
-     HBoxo3Compare,
      file = "Graph/HBox_plot.Rda")
 
 # Correlation -------------------------------------------------------------
 
 
 Hendrina_COR <- Hendrina_clean %>%
-  select(pm2.5, pm10, so2, no2, nox, no, co, o3, ws, wd, relHum, temp, pressure, rain)
+  select(pm2.5, pm10, so2, no2, ws, wd, relHum, temp, pressure)
 
 
 Hendrina_hourlycor <- rcorr(as.matrix(Hendrina_COR), type = "pearson")
@@ -694,5 +401,672 @@ Hendrina_hourlycor.p = Hendrina_hourlycor$P
 Hendrina_hourlycor.coeff
 
 Hendrinahourlycorplot <- corrplot.mixed(Hendrina_hourlycor.coeff, mar = c(0,0,1,0), lower = 'number', upper = 'ellipse', title = "Hendrina air pollutant correlation")
+
+
+# Hendrina polar ----------------------------------------------------------
+
+Hpolar <- LAMS_clean %>%
+  datify() %>%
+  mutate(latitude = -26,151197,
+         longitude = 29,716484)
+
+# PM10 --------------------------------------------------------------------
+
+
+
+HPM10allpolar <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM10stdev <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM10weighted <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM10frequency <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM10per50 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+HPM10per60 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50, 60),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM10per70 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60, 70),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM10per80 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70, 80),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM10per90 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80, 90),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM10per98 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90, 98),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM10per99 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+HPM10_CPFplot = list(HPM10allpolar$plot,
+                     HPM10stdev$plot,
+                     HPM10frequency$plot,
+                     HPM10weighted$plot,
+                     HPM10per50$plot,
+                     HPM10per60$plot,
+                     HPM10per70$plot,
+                     HPM10per80$plot,
+                     HPM10per90$plot,
+                     HPM10per98$plot,
+                     PM10per99$plot)
+
+do.call("grid.arrange", HPM10_CPFplot)
+
+
+# PM2.5 -------------------------------------------------------------------
+
+HPM2.5allpolar <- polarMap(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM2.5stdev <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM2.5weighted <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM2.5frequency <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM2.5per50 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+HPM2.5per60 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM2.5per70 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60,70),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM2.5per80 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HPM2.5per90 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80, 90),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM2.5per98 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90, 98),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+HPM2.5per99 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+HPM2.5_CPFplot = list(HPM2.5allpolar$plot,
+                      HPM2.5stdev$plot,
+                      HPM2.5frequency$plot,
+                      HPM2.5weighted$plot,
+                      HPM2.5per50$plot,
+                      HPM2.5per60$plot,
+                      HPM2.5per70$plot,
+                      HPM2.5per80$plot,
+                      HPM2.5per90$plot,
+                      HPM2.5per98$plot,
+                      HPM2.5per99$plot)
+
+do.call("grid.arrange", HPM2.5_CPFplot)
+
+
+# SO2 --------------------------------------------------------------------
+
+
+HSO2allpolar <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+HSO2stdev <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+HSO2weighted <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HSO2frequency <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+HSO2per50 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+HSO2per60 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HSO2per70 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60,70),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HSO2per80 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HSO2per90 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80,90),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HSO2per98 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90,98),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+HSO2per99 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+HSO2_CPFplot = list(HSO2allpolar$plot,
+                    HSO2stdev$plot,
+                    HSO2frequency$plot,
+                    HSO2weighted$plot,
+                    HSO2per50$plot,
+                    HSO2per60$plot,
+                    HSO2per70$plot,
+                    HSO2per80$plot,
+                    HSO2per90$plot,
+                    HSO2per98$plot,
+                    HSO2per99$plot)
+
+do.call("grid.arrange", HSO2_CPFplot)
+
+
+
+# NO2 --------------------------------------------------------------------
+
+HNO2allpolar <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+HNO2stdev <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+HNO2weighted <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HNO2frequency <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HNO2per50 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+HNO2per60 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HNO2per70 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60,70),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HNO2per80 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+HNO2per90 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80,90),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+HNO2per98 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90,98),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+HNO2per99 <- polarPlot(
+  Hpolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+HNO2_CPFplot = list(HNO2allpolar$plot,
+                    HNO2stdev$plot,
+                    HNO2frequency$plot,
+                    HNO2weighted$plot,
+                    HNO2per50$plot,
+                    HNO2per60$plot,
+                    HNO2per70$plot,
+                    HNO2per80$plot,
+                    HNO2per90$plot,
+                    HNO2per98$plot,
+                    HNO2per99$plot)
+
+do.call("grid.arrange", HNO2_CPFplot)
+
 
 

@@ -11,83 +11,14 @@ library(corrplot)
 library(Hmisc)
 library(plotly)
 
-# Read dat files ----------------------------------------------------------
 
-Middelburg = read.csv("Data/Middelburg.csv", header = T, sep = ";")
+Middelburg = read.csv("AirData/MiddelburgIM.csv", header = T, sep = ";")
 
-Middelburg <- Middelburg %>%
-  rename(so2 = SO2,
-         co = CO,
-         no = NO,
-         no2 = NO2,
-         nox = NOx,
-         pm10 = PM10,
-         pm2.5 = PM2.5,
-         o3 = O3,
-         ws = Amb.Wspeed,
-         wd = Amb.WDirection,
-         temp = Temperature,
-         relHum = Amb.RelHum,
-         pressure = Amb.Pressure,
-         rain = Rain,
-         date = Date.Time)
+# the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
 
-# Dataframe should have a column name "date". It is mandatory for OpenAir
-names(Middelburg)[1] <- 'date'
-
-# The dates must be a "POSIXct" "POSIXt" object.
-date <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-# date <- date[-length(date)]
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-Middelburg$date <- date
-
-
-
-summary(Middelburg)
-
-Middelburg_clean <- Middelburg %>%
-  mutate(across(-date, ~ if_else(. <= 0 | is.infinite(.), NA_real_, .))) %>%
-  mutate(pm10 = case_when(pm10 > 600 ~ NA, .default = pm10)) %>%
-  mutate(pm2.5 = case_when(pm2.5 > 300 ~ NA, .default = pm2.5)) %>%
-  mutate(so2 = case_when(so2 > 200 ~ NA, .default = so2)) %>%
-  mutate(no2 = case_when(no2 > 60 ~ NA, .default = no2)) %>%
-  mutate(no = case_when(no > 300 ~ NA, .default = no)) %>%
-  mutate(nox = case_when(nox > 300 ~ NA, .default = nox)) %>%
-  mutate(o3 = case_when(o3 > 150 ~ NA, .default = o3)) %>%
-  mutate(co = case_when(co > 4 ~ NA, .default = co)) %>%
-  mutate(ws = case_when(ws > 15 ~ NA, .default = ws)) %>%
-  mutate(pressure = case_when(pressure < 840 ~ NA, .default = pressure)) %>%
-  mutate(pressure = case_when(pressure > 870 ~ NA, .default = pressure)) %>%
-  mutate(no = ifelse(year(date) == 2010 & no > 150, NA, no)) %>%
-  mutate(nox = ifelse(year(date) ==  2011 & nox > 100, NA, nox)) %>%
-  mutate(so2 = ifelse(year(date) == 2012 & so2 > 80, NA, so2)) %>%
-  mutate(so2 = ifelse(year(date) == 2014 & so2 > 150, NA, so2)) %>%
-  mutate(pm10 = ifelse(year(date) == 2014 & pm10 > 300, NA, pm10)) %>%
-  mutate(pm10 = ifelse(year(date) == 2016 & pm10 > 300, NA, pm10)) %>%
-  mutate(o3 = case_when(between(date, as_datetime("2013-06-01 00:00:00"), as_datetime("2013-06-30 23:00:00")) ~ NA, .default = o3)) %>%
-  mutate(o3 = case_when(between(date, as_datetime("2012-06-01 00:00:00"), as_datetime("2012-06-30 23:00:00")) ~ NA, .default = o3)) %>%
-  mutate(o3 = case_when(between(date, as_datetime("2013-04-01 00:00:00"), as_datetime("2013-04-30 23:00:00")) ~ NA, .default = o3))
-
-Middelburg_clean$date <- format(Middelburg_clean$date, "%Y-%m-%d %H:%M:%S")
-
-summary(Middelburg_clean)
-
-MiddelburgIM <- na_kalman(Middelburg_clean, model = "StructTS", smooth = TRUE, type = "trend")
-summary(MiddelburgIM)
-
-usermodel <- arima(Middelburg_clean$temp, order = c(1, 0, 1))$model
-MiddelburgIMT <- na_kalman(Middelburg_clean$temp, model = usermodel)
-MiddelburgIM$temp <- MiddelburgIMT
-
-
-usermodel <- arima(Middelburg_clean$relHum, order = c(0, 0, 0))$model
-MiddelburgIMRH <- na_kalman(Middelburg_clean$relHum, model = usermodel)
-MiddelburgIM$relHum <- MiddelburgIMRH
-
-summary(MiddelburgIM)
-
-write_csv(MiddelburgIM, file = "Data/MiddelburgIM.csv")
-
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+Middelburg$date <- dateTime
 
 # Time series -------------------------------------------------------------
 
@@ -99,21 +30,21 @@ plot_ly(data = Middelburg, x = ~date, y = ~pm2.5, type = 'scatter', mode = 'line
          yaxis = list(title = 'PM2.5'))
 
 
-MiddelburgPTS <- timePlot(selectByDate(Middelburg_clean),
+MiddelburgPTS <- timePlot(selectByDate(Middelburg),
                         pollutant = c("pm2.5", "pm10", "co", "no", "no2", "nox", "so2"),
                         y.relation = "free")
 
 
 
-MiddelburgPTS  <- timePlot(selectByDate(Middelburg_clean),
+MiddelburgMTS  <- timePlot(selectByDate(Middelburg),
                          pollutant = c("ws", "wd", "temp", "relHum", "pressure"),
                          y.relation = "free")
 
 
-save(Middelburg, MiddelburgMTS , file = "Data/Middelburg_Timeseriesplot.Rda")
+save(MiddelburgPTS, MiddelburgMTS , file = "Graph/Middelburg_Timeseriesplot.Rda")
 
 
-Middelburg_clean <-Middelburg_clean %>%
+Middelburg_clean <-Middelburg %>%
   datify()
 
 PM2.5 <- timePlot(selectByDate(Middelburg_clean, year = 2013),
@@ -206,7 +137,7 @@ MSO2Tempplot15 <- timeVariation(Middelburg_clean %>% filter(year == "2015"), sta
                                 col = "firebrick", main = "SO2 temporal variation at Middelburg in 2015")
 MSO2Tempplot16 <- timeVariation(Middelburg_clean %>% filter(year == "2016"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
                                 col = "firebrick", main = "SO2 temporal variation at Middelburg in 2016")
-WSO2Tempplot17 <- timeVariation(Middelburg_clean %>% filter(year == "2017"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
+MSO2Tempplot17 <- timeVariation(Middelburg_clean %>% filter(year == "2017"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
                                 col = "firebrick", main = "SO2 temporal variation at Middelburg in 2017")
 MSO2Tempplot18 <- timeVariation(Middelburg_clean %>% filter(year == "2018"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
                                 col = "firebrick", main = "SO2 temporal variation at Middelburg in 2018")
@@ -266,156 +197,13 @@ save(MNO2Tempplot09, MNO2Tempplot10,
      file = "Graph/MTempoaral_plotNO2.Rda")
 
 
-MNOTempplot09 <- timeVariation(Middelburg_clean %>% filter(year == "2009"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2009")
-MNOTempplot10 <- timeVariation(Middelburg_clean %>% filter(year == "2010"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2010")
-MNOTempplot11 <- timeVariation(Middelburg_clean %>% filter(year == "2011"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2011")
-MNOTempplot12 <- timeVariation(Middelburg_clean %>% filter(year == "2012"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2012")
-MNOTempplot13 <- timeVariation(Middelburg_clean %>% filter(year == "2013"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2013")
-MNOTempplot14 <- timeVariation(Middelburg_clean %>% filter(year == "2014"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2014")
-MNOTempplot15 <- timeVariation(Middelburg_clean %>% filter(year == "2015"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2015")
-MNOTempplot16 <- timeVariation(Middelburg_clean %>% filter(year == "2016"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2016")
-MNOTempplot17 <- timeVariation(Middelburg_clean %>% filter(year == "2017"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2017")
-WNOTempplot18 <- timeVariation(Middelburg_clean %>% filter(year == "2018"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Middelburg in 2018")
 
-MNOTempplot <- timeVariation(Middelburg_clean, stati="median", poll="no", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "NO temporal variation at Middelburg")
-
-MtrendNO <- TheilSen(Middelburg_clean, pollutant = "no",
-                     ylab = "NO (µg.m-3)",
-                     deseason = TRUE,
-                     main = "NO trends at Middelburg")
-
-save(MNOTempplot09, MNOTempplot10,
-     MNOTempplot11,MNOTempplot12,
-     MNOTempplot13,MNOTempplot14,
-     MNOTempplot15,MNOTempplot16,
-     MNOTempplot17,MNOTempplot18,
-     MtrendNO,MNOTempplot,
-     file = "Graph/MTempoaral_plotNO.Rda")
-
-MNOXTempplot09 <- timeVariation(Middelburg_clean %>% filter(year == "2009"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2009")
-MNOXTempplot10 <- timeVariation(Middelburg_clean %>% filter(year == "2010"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2010")
-MNOXTempplot11 <- timeVariation(Middelburg_clean %>% filter(year == "2011"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2011")
-MNOXTempplot12 <- timeVariation(Middelburg_clean %>% filter(year == "2012"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2012")
-MNOXTempplot13 <- timeVariation(Middelburg_clean %>% filter(year == "2013"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2013")
-MNOXTempplot14 <- timeVariation(Middelburg_clean %>% filter(year == "2014"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2014")
-MNOXTempplot15 <- timeVariation(Middelburg_clean %>% filter(year == "2015"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2015")
-MNOXTempplot16 <- timeVariation(Middelburg_clean %>% filter(year == "2016"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2016")
-MNOXTempplot17 <- timeVariation(Middelburg_clean %>% filter(year == "2017"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Middelburg in 2017")
-
-MNOXTempplot <- timeVariation(Middelburg_clean, stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                              col = "firebrick", main = "NOX temporal variation at Middelburg")
-
-MtrendNOX <- TheilSen(Middelburg_clean, pollutant = "nox",
-                      ylab = "NOX (µg.m-3)",
-                      deseason = TRUE,
-                      main = "NOX trends at Middelburg")
-
-save(MNOXTempplot09, MNOXTempplot10,
-     MNOXTempplot11,MNOXTempplot12,
-     MNOXTempplot13,MNOXTempplot14,
-     MNOXTempplot15,MNOXTempplot16,
-     MNOXTempplot17,MNOXTempplot18,
-     MtrendNOX,MNOXTempplot,
-     file = "Graph/MTempoaral_plotNOX.Rda")
-
-MCOTempplot09 <- timeVariation(Middelburg_clean %>% filter(year == "2009"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2009")
-MCOTempplot10 <- timeVariation(Middelburg_clean %>% filter(year == "2010"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2010")
-MCOTempplot11 <- timeVariation(Middelburg_clean %>% filter(year == "2011"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2011")
-MCOTempplot12 <- timeVariation(Middelburg_clean %>% filter(year == "2012"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2012")
-MCOTempplot13 <- timeVariation(Middelburg_clean %>% filter(year == "2013"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2013")
-MCOTempplot14 <- timeVariation(Middelburg_clean %>% filter(year == "2014"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2014")
-MCOTempplot15 <- timeVariation(Middelburg_clean %>% filter(year == "2015"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2015")
-MCOTempplot16 <- timeVariation(Middelburg_clean %>% filter(year == "2016"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2016")
-MCOTempplot17 <- timeVariation(Middelburg_clean %>% filter(year == "2017"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2017")
-WCOTempplot18 <- timeVariation(Middelburg_clean %>% filter(year == "2018"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Middelburg in 2018")
-
-MCOTempplot <- timeVariation(Middelburg_clean, stati="median", poll="co", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "CO temporal variation at Middelburg")
-
-MtrendCO <- TheilSen(Middelburg_clean, pollutant = "co",
-                     ylab = "CO (µg.m-3)",
-                     deseason = TRUE,
-                     main = "CO trends at Middelburg")
-
-save(MCOTempplot09, MCOTempplot10,
-     MCOTempplot11,MCOTempplot12,
-     MCOTempplot13,MCOTempplot14,
-     MCOTempplot15,MCOTempplot16,
-     MCOTempplot17,MCOTempplot18,
-     MtrendCO,MCOTempplot,
-     file = "Graph/MTempoaral_plotCO.Rda")
-
-MO3Tempplot09 <- timeVariation(Middelburg_clean %>% filter(year == "2009"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2009")
-MO3Tempplot10 <- timeVariation(Middelburg_clean %>% filter(year == "2010"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2010")
-MO3Tempplot11 <- timeVariation(Middelburg_clean %>% filter(year == "2011"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2011")
-MO3Tempplot12 <- timeVariation(Middelburg_clean %>% filter(year == "2012"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2012")
-MO3Tempplot13 <- timeVariation(Middelburg_clean %>% filter(year == "2013"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2013")
-MO3Tempplot14 <- timeVariation(Middelburg_clean %>% filter(year == "2014"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2014")
-MO3Tempplot15 <- timeVariation(Middelburg_clean %>% filter(year == "2015"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2015")
-MO3Tempplot16 <- timeVariation(Middelburg_clean %>% filter(year == "2016"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2016")
-MO3Tempplot17 <- timeVariation(Middelburg_clean %>% filter(year == "2017"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2017")
-MO3Tempplot18 <- timeVariation(Middelburg_clean %>% filter(year == "2018"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Middelburg in 2018")
-MO3Tempplot <- timeVariation(Middelburg_clean, stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "O3 temporal variation at Middelburg")
-
-MtrendO3 <- TheilSen(Middelburg_clean, pollutant = "o3",
-                     ylab = "O3 (µg.m-3)",
-                     deseason = TRUE,
-                     main = "O3 trends at Middelburg")
-
-save(MO3Tempplot09, MO3Tempplot10,
-     MO3Tempplot11,MO3Tempplot12,
-     MO3Tempplot13,MO3Tempplot14,
-     MO3Tempplot15,MO3Tempplot16,
-     MO3Tempplot17,MO3Tempplot18,
-     MtrendO3,MO3Tempplot,
-     file = "Graph/MTempoaral_plotO3.Rda")
 
 
 # AMS Averages and exceedances --------------------------------------------
 
 Middelburg_date <- Middelburg_clean %>%
-  select(date, station, pm2.5, o3, co, no2, nox, no, so2, pm10) %>%
+  select(date, pm2.5, o3, co, no2, nox, no, so2, pm10) %>%
   pivot_longer(cols = c(pm2.5, o3, no2, no, nox, so2, co, pm10), names_to = "variable") %>%
   mutate(unit = case_when(
     variable == "pm2.5" ~ "Âµg.m-3",
@@ -428,7 +216,8 @@ Middelburg_date <- Middelburg_clean %>%
     variable == "pm10" ~ "Âµg.m-3",
     variable == "so2" ~ "ppb",
     TRUE ~ NA_character_
-  ))
+  )) %>%
+  mutate(station = "Middelburg")
 
 Middelburg_monthly_hour_ex <- novaAQM::compareAQS(df = Middelburg_date %>%
                                                 ungroup() %>%
@@ -531,167 +320,82 @@ save(Middelburg_monthly_hour_ex, Middelburg_season_hour_ex, Middelburg_month_dai
 
 MBoxPM2.5Compare <- ggplot(data = Middelburg_Daily %>%
                              datify() %>%
-                             select(pm2.5, year) %>%
-                             mutate(perc.obs = length(which(!is.na(pm2.5))) / n(), .by = year),
+                             select(pm2.5, year),
                            aes(x = year, y = pm2.5 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 40, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "PM2.5",
-    title = "Annual statistical summary of PM2.5 at Middelburg",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
+    title = "Annual statistical summary of PM2.5 at Middelburg") +
+  theme(legend.position = "bottom")
 
 MBoxPM2.5Compare
 
 
 MBoxPM10Compare <- ggplot(data = Middelburg_Daily %>%
                             datify() %>%
-                            select(pm10, year) %>%
-                            mutate(perc.obs = length(which(!is.na(pm10))) / n(), .by = year),
+                            select(pm10, year),
                           aes(x = year, y = pm10 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 75, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "PM10",
-    title = "Annual statistical summary of PM10 at Middelburg",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 240)
+    title = "Annual statistical summary of PM10 at Middelburg") +
+  theme(legend.position = "bottom")
 
 MBoxPM10Compare
 
 MBoxso2Compare <- ggplot(data = Middelburg_Daily %>%
                            datify() %>%
-                           select(so2, year) %>%
-                           mutate(perc.obs = length(which(!is.na(so2))) / n(), .by = year),
+                           select(so2, year),
                          aes(x = year, y = so2 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 48, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "SO2",
-    title = "Annual statistical summary of SO2 at Middelburg",
-    caption = "Data from AMS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
+    title = "Annual statistical summary of SO2 at Middelburg") +
+  theme(legend.position = "bottom")
 
 MBoxso2Compare
 
 MBoxno2Compare <- ggplot(data = Middelburg_Daily %>%
                            datify() %>%
-                           select(no2, year) %>%
-                           mutate(perc.obs = length(which(!is.na(no2))) / n(), .by = year),
+                           select(no2, year),
                          aes(x = year, y = no2 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 92, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "NO2",
-    title = "Annual statistical summary of NO2 at Middelburg",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 100)
+    title = "Annual statistical summary of NO2 at Middelburg") +
+  theme(legend.position = "bottom")
 
 MBoxno2Compare
 
-MBoxnoCompare <- ggplot(data = Middelburg_Daily %>%
-                          datify() %>%
-                          select(no, year) %>%
-                          mutate(perc.obs = length(which(!is.na(no))) / n(), .by = year),
-                        aes(x = year, y = no)) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "NO",
-    title = "Annual statistical summary of NO at Middelburg",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 140)
 
-MBoxnoCompare
-
-MBoxnoxCompare <- ggplot(data = Middelburg_Daily %>%
-                           datify() %>%
-                           select(nox, year) %>%
-                           mutate(perc.obs = length(which(!is.na(nox))) / n(), .by = year),
-                         aes(x = year, y = nox)) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "NOX",
-    title = "Annual statistical summary of NOX at Middelburg",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
-
-MBoxnoxCompare
-
-MBoxo3Compare <- ggplot(data = Middelburg_Daily %>%
-                          datify() %>%
-                          select(o3, year) %>%
-                          mutate(perc.obs = length(which(!is.na(o3))) / n(), .by = year),
-                        aes(x = year, y = no )) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "O3",
-    title = "Annual statistical summary of O3 at Middelburg",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 120)
-
-MBoxnoCompare
-
-MBoxcoCompare <- ggplot(data = Middelburg_Daily %>%
-                          datify() %>%
-                          select(co, year) %>%
-                          mutate(perc.obs = length(which(!is.na(co))) / n(), .by = year),
-                        aes(x = year, y = co )) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "CO",
-    title = "Annual statistical summary of CO at Middelburg",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 6)
-
-MBoxcoCompare
 
 save(MBoxPM2.5Compare,
      MBoxPM10Compare,
      MBoxso2Compare,
      MBoxno2Compare,
-     MBoxnoCompare,
-     MBoxcoCompare,
-     MBoxnoxCompare,
-     MBoxo3Compare,
      file = "Graph/MBox_plot.Rda")
 
 # Correlation -------------------------------------------------------------
 
 
 Middelburg_COR <- Middelburg_clean %>%
-  select(pm2.5, pm10, so2, no2, nox, no, co, o3, ws, wd, relHum, temp, pressure, rain)
+  select(pm2.5, pm10, so2, no2, ws, wd, relHum, temp, pressure)
 
 
 Middelburg_hourlycor <- rcorr(as.matrix(Middelburg_COR), type = "pearson")
@@ -700,5 +404,668 @@ Middelburg_hourlycor.p = Middelburg_hourlycor$P
 Middelburg_hourlycor.coeff
 
 Middelburghourlycorplot <- corrplot.mixed(Middelburg_hourlycor.coeff, mar = c(0,0,1,0), lower = 'number', upper = 'ellipse', title = "Middelburg air pollutant correlation")
+
+# Middelburg polar --------------------------------------------------------
+
+Mpolar <- Middelburg_clean %>%
+  datify() %>%
+  mutate(latitude = -25.796056,
+         longitude = 29.462823)
+
+# PM10 --------------------------------------------------------------------
+
+MPM10allpolar <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+MPM10stdev <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+MPM10weighted <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM10frequency <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM10per50 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+MPM10per60 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10  from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM10per70 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60, 70),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM10per80 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM10per90 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80, 90),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+MPM10per98 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90, 98),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM10per99 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+MPM10_CPFplot = list(MPM10allpolar$plot,
+                     MPM10stdev$plot,
+                     MPM10frequency$plot,
+                     MPM10weighted$plot,
+                     MPM10per50$plot,
+                     MPM10per60$plot,
+                     MPM10per70$plot,
+                     MPM10per80$plot,
+                     MPM10per90$plot,
+                     MPM10per98$plot,
+                     MPM10per99$plot)
+
+do.call("grid.arrange", MPM10_CPFplot)
+
+# PM2.5 -------------------------------------------------------------------
+
+MPM2.5allpolar <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+MPM2.5stdev <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM2.5weighted <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+MPM2.5frequency <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+MPM2.5per50 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+MPM2.5per60 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM2.5per70 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60,70),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM2.5per80 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MPM2.5per90 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80,90),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+MPM2.5per98 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90,98),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+MPM2.5per99 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+MPM2.5_CPFplot = list(MPM2.5allpolar$plot,
+                      MPM2.5stdev$plot,
+                      MPM2.5frequency$plot,
+                      MPM2.5weighted$plot,
+                      MPM2.5per50$plot,
+                      MPM2.5per60$plot,
+                      MPM2.5per70$plot,
+                      MPM2.5per80$plot,
+                      MPM2.5per90$plot,
+                      MPM2.5per98$plot,
+                      MPM2.5per99$plot)
+
+do.call("grid.arrange", MPM2.5_CPFplot)
+
+# SO2 --------------------------------------------------------------------
+
+
+MSO2allpolar <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+MSO2stdev <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+MSO2weighted <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MSO2frequency <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MSO2per50 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+MSO2per60 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MSO2per70 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60,70),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2  from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MSO2per80 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MSO2per90 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80,90),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+MSO2per98 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90,98),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MSO2per99 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+
+MSO2_CPFplot = list(MSO2allpolar$plot,
+                    MSO2stdev$plot,
+                    MSO2frequency$plot,
+                    MSO2weighted$plot,
+                    MSO2per50$plot,
+                    MSO2per60$plot,
+                    MSO2per70$plot,
+                    MSO2per80$plot,
+                    MSO2per90$plot,
+                    MSO2per98$plot,
+                    MSO2per99$plot)
+
+do.call("grid.arrange", MSO2_CPFplot)
+
+# NO2 --------------------------------------------------------------------
+
+MNO2allpolar <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+MNO2stdev <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+MNO2weighted <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MNO2frequency <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MNO2per50 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+MNO2per60 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MNO2per70 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60, 70),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MNO2per80 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MNO2per90 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80,90),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+MNO2per98 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90,98),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+MNO2per99 <- polarPlot(
+  Mpolar,
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+MNO2_CPFplot = list(MNO2allpolar$plot,
+                    MNO2stdev$plot,
+                    MNO2frequency$plot,
+                    MNO2weighted$plot,
+                    MNO2per50$plot,
+                    MNO2per60$plot,
+                    MNO2per70$plot,
+                    MNO2per80$plot,
+                    MNO2per90$plot,
+                    MNO2per98$plot,
+                    MNO2per99$plot)
+
+do.call("grid.arrange", MNO2_CPFplot)
 
 

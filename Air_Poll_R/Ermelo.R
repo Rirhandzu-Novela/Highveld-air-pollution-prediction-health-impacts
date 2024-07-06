@@ -11,83 +11,14 @@ library(corrplot)
 library(Hmisc)
 library(plotly)
 
-# Read dat files ----------------------------------------------------------
 
-Ermelo = read.csv("Data/Ermelo.csv", header = T, sep = ";")
+Ermelo = read.csv("AirData/ErmeloIM.csv", header = T, sep = ";")
 
-Ermelo <- Ermelo %>%
-  rename(so2 = SO2,
-         co = CO,
-         no = NO,
-         no2 = NO2,
-         nox = NOx,
-         pm10 = PM10,
-         pm2.5 = PM2.5,
-         o3 = O3,
-         ws = Amb.Wspeed,
-         wd = Amb.WDirection,
-         temp = Temperature,
-         relHum = Amb.RelHum,
-         pressure = Amb.Pressure,
-         rain = Rain,
-         date = Date.Time)
+# the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
 
-# Dataframe should have a column name "date". It is mandatory for OpenAir
-names(Ermelo)[1] <- 'date'
-
-# The dates must be a "POSIXct" "POSIXt" object.
-date <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
-
-# Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
-Ermelo$date <- date
-
-summary(Ermelo)
-
-Ermelo_clean <- Ermelo %>%
-  mutate(across(-c(date, temp), ~ if_else(. <= 0 | is.infinite(.), NA_real_, .))) %>%
-  mutate(pm10 = case_when(pm10 > 800 ~ NA, .default = pm10)) %>%
-  mutate(pm2.5 = case_when(pm2.5 > 500 ~ NA, .default = pm2.5)) %>%
-  mutate(so2 = case_when(so2 > 200 ~ NA, .default = so2)) %>%
-  mutate(no2 = case_when(no2 > 150 ~ NA, .default = no2)) %>%
-  mutate(no = case_when(no > 200 ~ NA, .default = no)) %>%
-  mutate(nox = case_when(nox > 400 ~ NA, .default = nox)) %>%
-  mutate(o3 = case_when(o3 > 100 ~ NA, .default = o3)) %>%
-  mutate(co = case_when(co > 10 ~ NA, .default = co)) %>%
-  mutate(ws = case_when(ws > 15 ~ NA, .default = ws)) %>%
-  mutate(pressure = case_when(pressure < 800 ~ NA, .default = pressure)) %>%
-  mutate(pressure = case_when(pressure > 840 ~ NA, .default = pressure)) %>%
-  mutate(nox = ifelse(year(date) == 2010 & nox > 150, NA, nox)) %>%
-  mutate(no = case_when(between(date, as_datetime("2011-10-01 00:00:00"), as_datetime("2011-12-30 23:00:00")) ~ NA, .default = no)) %>%
-  mutate(no2 = case_when(between(date, as_datetime("2011-10-01 00:00:00"), as_datetime("2011-12-30 23:00:00")) ~ NA, .default = no2)) %>%
-  mutate(nox = case_when(between(date, as_datetime("2011-10-01 00:00:00"), as_datetime("2011-12-30 23:00:00")) ~ NA, .default = nox)) %>%
-  mutate(pm2.5 = case_when(between(date, as_datetime("2018-05-01 00:00:00"), as_datetime("2018-06-30 23:00:00")) ~ NA, .default = pm2.5)) %>%
-  mutate(pm10 = case_when(between(date, as_datetime("2018-05-01 00:00:00"), as_datetime("2018-06-30 23:00:00")) ~ NA, .default = pm10)) %>%
-  mutate(co = case_when(between(date, as_datetime("2012-05-01 00:00:00"), as_datetime("2012-06-30 23:00:00")) ~ NA, .default = co)) %>%
-  mutate(temp = case_when(between(date, as_datetime("2009-06-01 00:00:00"), as_datetime("2009-08-31 23:00:00")) ~ NA, .default = temp)) %>%
-  mutate(relHum = case_when(between(date, as_datetime("2013-01-15 00:00:00"), as_datetime("2013-04-15 23:00:00")) ~ NA, .default = relHum))
-
-Ermelo_clean$date <- format(Ermelo_clean$date, "%Y-%m-%d %H:%M:%S")
-
-
-summary(Ermelo_clean)
-
-ErmeloIM <- na_kalman(Ermelo_clean, model = "StructTS", smooth = TRUE, type = "trend")
-summary(ErmeloIM)
-
-usermodel <- arima(Ermelo_clean$temp, order = c(1, 0, 1))$model
-ErmeloIMT <- na_kalman(Ermelo_clean$temp, model = usermodel)
-ErmeloIM$temp <- ErmeloIMT
-
-
-usermodel <- arima(Ermelo_clean$relHum, order = c(0, 0, 0))$model
-ErmeloIMRH <- na_kalman(Ermelo_clean$relHum, model = usermodel)
-ErmeloIM$relHum <- ErmeloIMRH
-
-summary(ErmeloIM)
-
-write_csv(ErmeloIM, file = "Data/ErmeloIM.csv")
-
-
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+Ermelo$date <- dateTime
 
 # Time series -------------------------------------------------------------
 
@@ -99,18 +30,18 @@ plot_ly(data = Ermelo, x = ~date, y = ~pm2.5, type = 'scatter', mode = 'lines+ma
          yaxis = list(title = 'PM2.5'))
 
 
-ErmeloPTS <- timePlot(selectByDate(Ermelo_clean),
+ErmeloPTS <- timePlot(selectByDate(Ermelo),
                           pollutant = c("pm2.5", "pm10", "co", "no", "no2", "nox", "so2"),
                           y.relation = "free")
 
-ErmeloMTS  <- timePlot(selectByDate(Ermelo_clean),
+ErmeloMTS  <- timePlot(selectByDate(Ermelo),
                            pollutant = c("ws", "wd", "temp", "relHum", "pressure"),
                            y.relation = "free")
 
-save(Ermelo, ErmeloMTS , file = "Data/Ermelo_Timeseriesplot.Rda")
+save(ErmeloPTS, ErmeloMTS , file = "Graph/Ermelo_Timeseriesplot.Rda")
 
 
-Ermelo_clean <-Ermelo_clean %>%
+Ermelo_clean <-Ermelo %>%
   datify
 
 PM2.5 <- timePlot(selectByDate(Ermelo_clean, year = 2013),
@@ -146,7 +77,7 @@ EtrendPM10 <- TheilSen(Ermelo_clean, pollutant = "pm10",
 
 save(EPM10Tempplot09, EPM10Tempplot10,
      EPM10Tempplot11,EPM10Tempplot12,
-     WPM10Tempplot13,EPM10Tempplot14,
+     EPM10Tempplot13,EPM10Tempplot14,
      EPM10Tempplot15,EPM10Tempplot16,
      EPM10Tempplot17,EPM10Tempplot18,
      EPM10Tempplot,EtrendPM10,
@@ -162,6 +93,7 @@ EPM2.5Tempplot12 <- timeVariation(Ermelo_clean %>% filter(year == "2012"), stati
                                   col = "firebrick", main = "PM2.5 temporal variation at Ermelo in 2012")
 EPM2.5Tempplot13 <- timeVariation(Ermelo_clean %>% filter(year == "2013"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
                                   col = "firebrick", main = "PM2.5 temporal variation at Ermelo in 2013")
+
 EPM2.5Tempplot14 <- timeVariation(Ermelo_clean %>% filter(year == "2014"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
                                   col = "firebrick", main = "PM2.5 temporal variation at Ermelo in 2014")
 EPM2.5Tempplot15 <- timeVariation(Ermelo_clean %>% filter(year == "2015"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
@@ -186,7 +118,7 @@ save(EPM2.5Tempplot09, EPM2.5Tempplot10,
      EPM2.5Tempplot13,EPM2.5Tempplot14,
      EPM2.5Tempplot15,EPM2.5Tempplot16,
      EPM2.5Tempplot17,EPM2.5Tempplot18,
-     EtrendPM2.5,WPM2.5Tempplot,
+     EtrendPM2.5,EPM2.5Tempplot,
      file = "Graph/ETempoaral_plotPM2.5.Rda")
 
 ESO2Tempplot09 <- timeVariation(Ermelo_clean %>% filter(year == "2009"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
@@ -265,156 +197,12 @@ save(ENO2Tempplot09, ENO2Tempplot10,
      file = "Graph/ETempoaral_plotNO2.Rda")
 
 
-ENOTempplot09 <- timeVariation(Ermelo_clean %>% filter(year == "2009"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2009")
-ENOTempplot10 <- timeVariation(Ermelo_clean %>% filter(year == "2010"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2010")
-ENOTempplot11 <- timeVariation(Ermelo_clean %>% filter(year == "2011"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2011")
-ENOTempplot12 <- timeVariation(Ermelo_clean %>% filter(year == "2012"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2012")
-ENOTempplot13 <- timeVariation(Ermelo_clean %>% filter(year == "2013"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2013")
-ENOTempplot14 <- timeVariation(Ermelo_clean %>% filter(year == "2014"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2014")
-ENOTempplot15 <- timeVariation(Ermelo_clean %>% filter(year == "2015"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2015")
-ENOTempplot16 <- timeVariation(Ermelo_clean %>% filter(year == "2016"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2016")
-ENOTempplot17 <- timeVariation(Ermelo_clean %>% filter(year == "2017"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2017")
-ENOTempplot18 <- timeVariation(Ermelo_clean %>% filter(year == "2018"), stati="median", poll="no", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "NO temporal variation at Ermelo in 2018")
-
-ENOTempplot <- timeVariation(Ermelo_clean, stati="median", poll="no", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "NO temporal variation at Ermelo")
-
-EtrendNO <- TheilSen(Ermelo_clean, pollutant = "no",
-                     ylab = "NO (µg.m-3)",
-                     deseason = TRUE,
-                     main = "NO trends at Ermelo")
-
-save(ENOTempplot09, ENOTempplot10,
-     ENOTempplot11,ENOTempplot12,
-     ENOTempplot13,ENOTempplot14,
-     ENOTempplot15,ENOTempplot16,
-     ENOTempplot17,ENOTempplot18,
-     EtrendNO,ENOTempplot,
-     file = "Graph/ETempoaral_plotNO.Rda")
-
-ENOXTempplot09 <- timeVariation(Ermelo_clean %>% filter(year == "2009"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2009")
-ENOXTempplot10 <- timeVariation(Ermelo_clean %>% filter(year == "2010"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2010")
-ENOXTempplot11 <- timeVariation(Ermelo_clean %>% filter(year == "2011"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2011")
-ENOXTempplot12 <- timeVariation(Ermelo_clean %>% filter(year == "2012"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2012")
-ENOXTempplot13 <- timeVariation(Ermelo_clean %>% filter(year == "2013"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2013")
-ENOXTempplot14 <- timeVariation(Ermelo_clean %>% filter(year == "2014"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2014")
-ENOXTempplot15 <- timeVariation(Ermelo_clean %>% filter(year == "2015"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2015")
-ENOXTempplot16 <- timeVariation(Ermelo_clean %>% filter(year == "2016"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2016")
-ENOXTempplot17 <- timeVariation(Ermelo_clean %>% filter(year == "2017"), stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NOX temporal variation at Ermelo in 2017")
-
-ENOXTempplot <- timeVariation(Ermelo_clean, stati="median", poll="nox", conf.int = c(0.75, 0.99),
-                              col = "firebrick", main = "NOX temporal variation at Ermelo")
-
-EtrendNOX <- TheilSen(Ermelo_clean, pollutant = "nox",
-                      ylab = "NOX (µg.m-3)",
-                      deseason = TRUE,
-                      main = "NOX trends at Ermelo")
-
-save(ENOXTempplot09, ENOXTempplot10,
-     ENOXTempplot11,ENOXTempplot12,
-     ENOXTempplot13,ENOXTempplot14,
-     ENOXTempplot15,ENOXTempplot16,
-     ENOXTempplot17,ENOXTempplot18,
-     EtrendNOX,ENOXTempplot,
-     file = "Graph/ETempoaral_plotNOX.Rda")
-
-ECOTempplot09 <- timeVariation(Ermelo_clean %>% filter(year == "2009"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2009")
-ECOTempplot10 <- timeVariation(Ermelo_clean %>% filter(year == "2010"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2010")
-ECOTempplot11 <- timeVariation(Ermelo_clean %>% filter(year == "2011"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2011")
-ECOTempplot12 <- timeVariation(Ermelo_clean %>% filter(year == "2012"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2012")
-ECOTempplot13 <- timeVariation(Ermelo_clean %>% filter(year == "2013"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2013")
-ECOTempplot14 <- timeVariation(Ermelo_clean %>% filter(year == "2014"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2014")
-ECOTempplot15 <- timeVariation(Ermelo_clean %>% filter(year == "2015"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2015")
-ECOTempplot16 <- timeVariation(Ermelo_clean %>% filter(year == "2016"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2016")
-ECOTempplot17 <- timeVariation(Ermelo_clean %>% filter(year == "2017"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2017")
-ECOTempplot18 <- timeVariation(Ermelo_clean %>% filter(year == "2018"), stati="median", poll="co", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "CO temporal variation at Ermelo in 2018")
-
-ECOTempplot <- timeVariation(Ermelo_clean, stati="median", poll="co", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "CO temporal variation at Ermelo")
-
-EtrendCO <- TheilSen(Ermelo_clean, pollutant = "co",
-                     ylab = "CO (µg.m-3)",
-                     deseason = TRUE,
-                     main = "CO trends at Ermelo")
-
-save(ECOTempplot09, ECOTempplot10,
-     ECOTempplot11,ECOTempplot12,
-     ECOTempplot13,ECOTempplot14,
-     ECOTempplot15,ECOTempplot16,
-     ECOTempplot17,ECOTempplot18,
-     EtrendCO,ECOTempplot,
-     file = "Graph/ETempoaral_plotCO.Rda")
-
-EO3Tempplot09 <- timeVariation(Ermelo_clean %>% filter(year == "2009"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2009")
-EO3Tempplot10 <- timeVariation(Ermelo_clean %>% filter(year == "2010"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2010")
-EO3Tempplot11 <- timeVariation(Ermelo_clean %>% filter(year == "2011"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2011")
-EO3Tempplot12 <- timeVariation(Ermelo_clean %>% filter(year == "2012"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2012")
-EO3Tempplot13 <- timeVariation(Ermelo_clean %>% filter(year == "2013"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2013")
-EO3Tempplot14 <- timeVariation(Ermelo_clean %>% filter(year == "2014"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2014")
-EO3Tempplot15 <- timeVariation(Ermelo_clean %>% filter(year == "2015"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2015")
-EO3Tempplot16 <- timeVariation(Ermelo_clean %>% filter(year == "2016"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2016")
-EO3Tempplot17 <- timeVariation(Ermelo_clean %>% filter(year == "2017"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2017")
-EO3Tempplot18 <- timeVariation(Ermelo_clean %>% filter(year == "2018"), stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "O3 temporal variation at Ermelo in 2018")
-EO3Tempplot <- timeVariation(Ermelo_clean, stati="median", poll="o3", conf.int = c(0.75, 0.99),
-                             col = "firebrick", main = "O3 temporal variation at Ermelo")
-
-EtrendO3 <- TheilSen(Ermelo_clean, pollutant = "o3",
-                     ylab = "O3 (µg.m-3)",
-                     deseason = TRUE,
-                     main = "O3 trends at Ermelo")
-
-save(EO3Tempplot09, EO3Tempplot10,
-     EO3Tempplot11,EO3Tempplot12,
-     EO3Tempplot13,EO3Tempplot14,
-     EO3Tempplot15,EO3Tempplot16,
-     EO3Tempplot17,EO3Tempplot18,
-     EtrendO3,EO3Tempplot,
-     file = "Graph/ETempoaral_plotO3.Rda")
 
 
 # AMS Averages and exceedances --------------------------------------------
 
 Ermelo_date <- Ermelo_clean %>%
-  select(date, station, pm2.5, o3, co, no2, nox, no, so2, pm10) %>%
+  select(date, pm2.5, o3, co, no2, nox, no, so2, pm10) %>%
   pivot_longer(cols = c(pm2.5, o3, no2, no, nox, so2, co, pm10), names_to = "variable") %>%
   mutate(unit = case_when(
     variable == "pm2.5" ~ "Âµg.m-3",
@@ -427,7 +215,8 @@ Ermelo_date <- Ermelo_clean %>%
     variable == "pm10" ~ "Âµg.m-3",
     variable == "so2" ~ "ppb",
     TRUE ~ NA_character_
-  ))
+  )) %>%
+  mutate(station = "Ermelo")
 
 Ermelo_monthly_hour_ex <- novaAQM::compareAQS(df = Ermelo_date %>%
                                                     ungroup() %>%
@@ -463,6 +252,7 @@ Ermelo_annual_hour_ex <- novaAQM::compareAQS(df = Ermelo_date %>%
   ungroup() %>%
   arrange(pollutant, year) %>%
   relocate(pollutant, .after = place)
+
 
 # Daily averages
 
@@ -508,6 +298,7 @@ Ermelo_season_daily_ex <- novaAQM::compareAQS(df = Ermelo_Day %>%
   #ungroup() %>%
   arrange(pollutant, season)
 season_order = tibble(season = c("autum", "winter", "spring", "summer"), season_nr = c(1, 2, 3, 4))
+
 Ermelo_season_daily_ex <- Ermelo_season_daily_ex %>% left_join(season_order) %>% arrange(pollutant, season_nr)
 
 
@@ -530,167 +321,82 @@ save(Ermelo_monthly_hour_ex, Ermelo_season_hour_ex, Ermelo_month_daily_ex, Ermel
 
 EBoxPM2.5Compare <- ggplot(data = Ermelo_Daily %>%
                              datify() %>%
-                             select(pm2.5, year) %>%
-                             mutate(perc.obs = length(which(!is.na(pm2.5))) / n(), .by = year),
+                             select(pm2.5, year),
                            aes(x = year, y = pm2.5 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 40, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "PM2.5",
-    title = "Annual statistical summary of PM2.5 at Ermelo",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
+    title = "Annual statistical summary of PM2.5 at Ermelo") +
+  theme(legend.position = "bottom")
 
 EBoxPM2.5Compare
 
 
 EBoxPM10Compare <- ggplot(data = Ermelo_Daily %>%
                             datify() %>%
-                            select(pm10, year) %>%
-                            mutate(perc.obs = length(which(!is.na(pm10))) / n(), .by = year),
+                            select(pm10, year),
                           aes(x = year, y = pm10 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 75, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "PM10",
-    title = "Annual statistical summary of PM10 at Ermelo",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 240)
+    title = "Annual statistical summary of PM10 at Ermelo") +
+  theme(legend.position = "bottom")
 
 EBoxPM10Compare
 
 EBoxso2Compare <- ggplot(data = Ermelo_Daily %>%
                            datify() %>%
-                           select(so2, year) %>%
-                           mutate(perc.obs = length(which(!is.na(so2))) / n(), .by = year),
+                           select(so2, year),
                          aes(x = year, y = so2 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
   geom_hline(yintercept = 48, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "SO2",
-    title = "Annual statistical summary of SO2 at Ermelo",
-    caption = "Data from AMS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
+    title = "Annual statistical summary of SO2 at Ermelo") +
+  theme(legend.position = "bottom")
 
 EBoxso2Compare
 
 EBoxno2Compare <- ggplot(data = Ermelo_Daily %>%
                            datify() %>%
-                           select(no2, year) %>%
-                           mutate(perc.obs = length(which(!is.na(no2))) / n(), .by = year),
+                           select(no2, year),
                          aes(x = year, y = no2 )) +
-  geom_boxplot(aes(fill = perc.obs)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 92, linetype = "dashed", color = "red") +
   theme_bw() +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     x = "YEAR",
     y = "NO2",
-    title = "Annual statistical summary of NO2 at Ermelo",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 100)
+    title = "Annual statistical summary of NO2 at Ermelo") +
+  theme(legend.position = "bottom")
 
 EBoxno2Compare
 
-EBoxnoCompare <- ggplot(data = Ermelo_Daily %>%
-                          datify() %>%
-                          select(no, year) %>%
-                          mutate(perc.obs = length(which(!is.na(no))) / n(), .by = year),
-                        aes(x = year, y = no)) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "NO",
-    title = "Annual statistical summary of NO at Ermelo",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 140)
 
-EBoxnoCompare
-
-EBoxnoxCompare <- ggplot(data = Ermelo_Daily %>%
-                           datify() %>%
-                           select(nox, year) %>%
-                           mutate(perc.obs = length(which(!is.na(nox))) / n(), .by = year),
-                         aes(x = year, y = nox)) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "NOX",
-    title = "Annual statistical summary of NOX at Ermelo",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 160)
-
-EBoxnoxCompare
-
-EBoxo3Compare <- ggplot(data = Ermelo_Daily %>%
-                          datify() %>%
-                          select(o3, year) %>%
-                          mutate(perc.obs = length(which(!is.na(o3))) / n(), .by = year),
-                        aes(x = year, y = no )) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "O3",
-    title = "Annual statistical summary of O3 at Ermelo",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 120)
-
-EBoxnoCompare
-
-EBoxcoCompare <- ggplot(data = Ermelo_Daily %>%
-                          datify() %>%
-                          select(co, year) %>%
-                          mutate(perc.obs = length(which(!is.na(co))) / n(), .by = year),
-                        aes(x = year, y = co )) +
-  geom_boxplot(aes(fill = perc.obs)) +
-  theme_bw() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(
-    x = "YEAR",
-    y = "CO",
-    title = "Annual statistical summary of CO at Ermelo",
-    caption = "Data from SAAQIS") +
-  theme(legend.position = "bottom")+
-  stat_compare_means(label.y = 6)
-
-EBoxcoCompare
 
 save(EBoxPM2.5Compare,
      EBoxPM10Compare,
      EBoxso2Compare,
      EBoxno2Compare,
-     EBoxnoCompare,
-     EBoxcoCompare,
-     EBoxnoxCompare,
-     EBoxo3Compare,
      file = "Graph/EBox_plot.Rda")
 
 # Correlation -------------------------------------------------------------
 
 
 Ermelo_COR <- Ermelo_clean %>%
-  select(pm2.5, pm10, so2, no2, nox, no, co, o3, ws, wd, relHum, temp, pressure, rain)
+  select(pm2.5, pm10, so2, no2, ws, wd, relHum, temp, pressure)
 
 
 Ermelo_hourlycor <- rcorr(as.matrix(Ermelo_COR), type = "pearson")
@@ -713,3 +419,667 @@ date <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by =
 
 # Replace the dates in csv file with the created "POSIXct" "POSIXt" date object
 Ermelo$date <- date
+
+
+# Ermelo polar --------------------------------------------------------
+
+Epolar <- Ermelo_clean %>%
+  datify() %>%
+  mutate(latitude = -26,493348,
+         longitude = 29,968054)
+
+# PM10 --------------------------------------------------------------------
+
+EPM10allpolar <- polarMap(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+EPM10stdev <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+EPM10weighted <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean PM10",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM10frequency <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM10per50 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+EPM10per60 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10  from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM10per70 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60, 70),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM10per80 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM10per90 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80, 90),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+EPM10per98 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90, 98),
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM10per99 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "pm10",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM10 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+EPM10_CPFplot = list(EPM10allpolar$plot,
+                     EPM10stdev$plot,
+                     EPM10frequency$plot,
+                     EPM10weighted$plot,
+                     EPM10per50$plot,
+                     EPM10per60$plot,
+                     EPM10per70$plot,
+                     EPM10per80$plot,
+                     EPM10per90$plot,
+                     EPM10per98$plot,
+                     EPM10per99$plot)
+
+do.call("grid.arrange", EPM10_CPFplot)
+
+# PM2.5 -------------------------------------------------------------------
+
+EPM2.5allpolar <- polarMap(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+EPM2.5stdev <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM2.5weighted <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean PM2.5",
+  key.position = "right",
+  key = TRUE
+)
+
+EPM2.5frequency <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+EPM2.5per50 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+EPM2.5per60 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM2.5per70 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60,70),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM2.5per80 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+EPM2.5per90 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80,90),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+EPM2.5per98 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90,98),
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+EPM2.5per99 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "pm2.5",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "PM2.5 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+EPM2.5_CPFplot = list(EPM2.5allpolar$plot,
+                      EPM2.5stdev$plot,
+                      EPM2.5frequency$plot,
+                      EPM2.5weighted$plot,
+                      EPM2.5per50$plot,
+                      EPM2.5per60$plot,
+                      EPM2.5per70$plot,
+                      EPM2.5per80$plot,
+                      EPM2.5per90$plot,
+                      EPM2.5per98$plot,
+                      EPM2.5per99$plot)
+
+do.call("grid.arrange", EPM2.5_CPFplot)
+
+# SO2 --------------------------------------------------------------------
+
+
+ESO2allpolar <- polarMap(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+ESO2stdev <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+ESO2weighted <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean SO2",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ESO2frequency <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ESO2per50 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+ESO2per60 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ESO2per70 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60,70),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2  from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ESO2per80 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ESO2per90 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80,90),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+ESO2per98 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90,98),
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ESO2per99 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "so2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "SO2 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+ESO2_CPFplot = list(ESO2allpolar$plot,
+                    ESO2stdev$plot,
+                    ESO2frequency$plot,
+                    ESO2weighted$plot,
+                    ESO2per50$plot,
+                    ESO2per60$plot,
+                    ESO2per70$plot,
+                    ESO2per80$plot,
+                    ESO2per90$plot,
+                    ESO2per98$plot,
+                    ESO2per99$plot)
+
+do.call("grid.arrange", ESO2_CPFplot)
+
+# NO2 --------------------------------------------------------------------
+
+ENO2allpolar <- polarMap(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Mean NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+ENO2stdev <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "stdev",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "stdev of NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+ENO2weighted <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "weighted.mean",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Weighted mean NO2",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ENO2frequency <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "frequency",
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "Frequency of wind",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ENO2per50 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 50,
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 at 50th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+ENO2per60 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(50,60),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 50th to 60th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ENO2per70 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(60, 70),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 60th to 70th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ENO2per80 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(70,80),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 70th to 80th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ENO2per90 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(80,90),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 80th to 90th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+ENO2per98 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = c(90,98),
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 from 90th to 98th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+ENO2per99 <- polarPlot(
+  Epolar %>% filter(year == "2009"),
+  latitude = "latitude",
+  longitude = "longitude",
+  statistic = "cpf",
+  percentile = 99,
+  pollutant = "no2",
+  provider = c("Satellite" = "Esri.WorldImagery"),
+  main = "NO2 at 99th percentile",
+  key.position = "right",
+  key = TRUE
+)
+
+
+
+ENO2_CPFplot = list(ENO2allpolar$plot,
+                    ENO2stdev$plot,
+                    ENO2frequency$plot,
+                    ENO2weighted$plot,
+                    ENO2per50$plot,
+                    ENO2per60$plot,
+                    ENO2per70$plot,
+                    ENO2per80$plot,
+                    ENO2per90$plot,
+                    ENO2per98$plot,
+                    ENO2per99$plot)
+
+do.call("grid.arrange", ENO2_CPFplot)
+

@@ -1,0 +1,1245 @@
+---
+title: "Highveld plots"
+author: "Nova Institute (NPC)"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  word_document: default
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    number_sections: yes
+    extra_dependencies: subfig
+  html_document: default
+header-includes: \usepackage{longtable} \usepackage{float} \usepackage{subfig} \usepackage{booktabs}
+  \usepackage{multirow} \usepackage{tabu} \floatplacement{table}{H} \floatplacement{figure}{H}
+  \usepackage{caption} \usepackage{pdflscape} \usepackage{subfig} \usepackage{amsmath}
+editor_options:
+  chunk_output_type: console
+  markdown:
+    wrap: 72
+---
+
+```{r setup,  include=FALSE}
+
+library(knitr)
+library(tidyverse)
+library(kableExtra)
+library(patchwork)
+library(flextable)
+
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE,
+                       # cache = TRUE,
+                      results = "asis", 
+                      fig.width = 10, 
+                      fig.height = 10, 
+                      fig.align = "left", 
+                      fig.asp = 0.6 )
+
+knitr::knit_hooks$set(crop=knitr::hook_pdfcrop, 
+                      root.dir = rprojroot::find_rstudio_root_file())
+options(knitr.kable.NA = '—', tinytex.verbose = TRUE)
+```
+
+```{r}
+options(knitr.kable.NA = '—', tinytex.verbose = TRUE)
+```
+
+
+
+```{=tex}
+\newpage
+\pagenumbering{roman}
+\tableofcontents
+\setcounter{secnumdepth}{2}
+\newpage
+\listoftables
+\newpage
+\listoffigures
+\newpage
+\pagenumbering{arabic}
+```
+
+```{r}
+load("../Graph/eMalahleni_Timeseriesplot.Rda")
+load("../Graph/WTempoaral_plotPM10.Rda")
+load("../Graph/WTempoaral_plotPM2.5.Rda")
+load("../Graph/WTempoaral_plotSO2.Rda")
+load("../Graph/WTempoaral_plotNO2.Rda")
+load("../Graph/eMalahleni_Exceedances.Rda")
+load("../Graph/WBox_plot.Rda")
+
+load("../Graph/Ermelo_Timeseriesplot.Rda")
+load("../Graph/ETempoaral_plotPM10.Rda")
+load("../Graph/ETempoaral_plotPM2.5.Rda")
+load("../Graph/ETempoaral_plotSO2.Rda")
+load("../Graph/ETempoaral_plotNO2.Rda")
+load("../Graph/Ermelo_Exceedances.Rda")
+load("../Graph/EBox_plot.Rda")
+
+load("../Graph/Hendrina_Timeseriesplot.Rda")
+load("../Graph/HTempoaral_plotPM10.Rda")
+load("../Graph/HTempoaral_plotPM2.5.Rda")
+load("../Graph/HTempoaral_plotSO2.Rda")
+load("../Graph/HTempoaral_plotNO2.Rda")
+load("../Graph/Hendrina_Exceedances.Rda")
+load("../Graph/HBox_plot.Rda")
+
+load("../Graph/Middelburg_Timeseriesplot.Rda")
+load("../Graph/MTempoaral_plotPM10.Rda")
+load("../Graph/MTempoaral_plotPM2.5.Rda")
+load("../Graph/MTempoaral_plotSO2.Rda")
+load("../Graph/MTempoaral_plotNO2.Rda")
+load("../Graph/Middelburg_Exceedances.Rda")
+load("../Graph/MBox_plot.Rda")
+
+load("../Graph/Secunda_Timeseriesplot.Rda")
+load("../Graph/STempoaral_plotPM10.Rda")
+load("../Graph/STempoaral_plotPM2.5.Rda")
+load("../Graph/STempoaral_plotSO2.Rda")
+load("../Graph/STempoaral_plotNO2.Rda")
+load("../Graph/Secunda_Exceedances.Rda")
+load("../Graph/SBox_plot.Rda")
+
+```
+
+# eMalahleni
+
+```{r fig.cap="\\label{fig:eMalahleniPTS} Time series of the data captured for each variable at eMalahleni"}
+plot(eMalahleniPTS)
+```
+
+```{r fig.cap="\\label{fig:ErmeloMTS} Time series of the data captured for each variable at eMalahleni"}
+plot(eMalahleniMTS)
+```
+
+\clearpage
+
+```{r fig.cap="\\label{fig:WPM10Tempplot09} 2009 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot10} 2010 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot11} 2011 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot12} 2012 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot13} 2013 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot14} 2014 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot15} 2015 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot16} 2016 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot17} 2017 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot18} 2018 eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:WPM10Tempplot} eMalahleni PM10 Temporal plot"}
+plot(WPM10Tempplot)
+```
+
+```{r fig.cap="\\label{fig:WtrendPM10}  eMalahleni PM10 Trend plot"}
+plot(WtrendPM10)
+```
+
+\clearpage
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot09} 2009 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot10} 2010 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot11} 2011 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot12} 2012 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot13} 2013 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot14} 2014 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot15} 2015 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot16} 2016 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot17} 2017 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot18} 2018 eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:WPM2.5Tempplot}  eMalahleni PM2.5 Temporal plot"}
+plot(WPM2.5Tempplot)
+```
+
+```{r fig.cap="\\label{fig:WtrendPM2.5}  eMalahleni PM2.5 Trend plot"}
+plot(WtrendPM2.5)
+```
+
+\clearpage
+
+```{r fig.cap="\\label{fig:WSO2Tempplot09} 2009 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot10} 2010 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot11} 2011 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot12} 2012 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot13} 2013 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot14} 2014 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot15} 2015 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot16} 2016 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot17} 2017 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot18} 2018 eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:WSO2Tempplot}  eMalahleni SO2 Temporal plot"}
+plot(WSO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:WtrendSO2}  eMalahleni SO2 Trend plot"}
+plot(WtrendSO2)
+```
+
+\clearpage
+
+
+```{r fig.cap="\\label{fig:WNO2Tempplot09} 2009 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot10} 2010 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot11} 2011 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot12} 2012 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot13} 2013 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot14} 2014 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot15} 2015 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot16} 2016 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot17} 2017 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot18} 2018 eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:WNO2Tempplot}  eMalahleni NO2 Temporal plot"}
+plot(WNO2Tempplot)
+```
+
+
+```{r fig.cap="\\label{fig:WtrendNO2}  eMalahleni NO2 Trend plot"}
+plot(WtrendNO2)
+```
+\clearpage
+
+
+```{r}
+kbl(x = eMalahleni_annual_daily_ex %>%  
+      select(-place, -instrument, -avg_period, -unit, -std_nEx, -standard) %>% 
+      select(year, pollutant, everything()) %>% 
+      arrange(year), 
+    digits = 2, format = "pipe", booktabs = T, escape = T, caption = "\\label{tab:eMalahleni_annual_daily_ex} Summary of daily exceedaces.") %>%  
+        kableExtra::collapse_rows(c(1, 2))
+```
+
+
+
+
+# Ermelo
+
+```{r fig.cap="\\label{fig:ErmeloPTS} Time series of the data captured for each variable at Ermelo"}
+plot(ErmeloPTS)
+```
+
+```{r fig.cap="\\label{fig:ErmeloMTS} Time series of the data captured for each variable at Ermelo"}
+plot(ErmeloMTS)
+```
+
+\clearpage
+
+```{r fig.cap="\\label{fig:EPM10Tempplot09} 2009 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot10} 2010 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot11} 2011 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot12} 2012 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot13} 2013 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot14} 2014 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot15} 2015 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot16} 2016 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot17} 2017 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot18} 2018 Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:EPM10Tempplot} Ermelo PM10 Temporal plot"}
+plot(EPM10Tempplot)
+```
+
+```{r fig.cap="\\label{fig:EtrendPM10}  Ermelo PM10 Trend plot"}
+plot(EtrendPM10)
+```
+
+\clearpage
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot09} 2009 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot10} 2010 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot11} 2011 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot12} 2012 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot13} 2013 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot14} 2014 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot15} 2015 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot16} 2016 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot17} 2017 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot18} 2018 Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:EPM2.5Tempplot}  Ermelo PM2.5 Temporal plot"}
+plot(EPM2.5Tempplot)
+```
+
+```{r fig.cap="\\label{fig:EtrendPM2.5}  Ermelo PM2.5 Trend plot"}
+plot(EtrendPM2.5)
+```
+
+
+\clearpage
+
+```{r fig.cap="\\label{fig:ESO2Tempplot09} 2009 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot10} 2010 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot11} 2011 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot12} 2012 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot13} 2013 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot14} 2014 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot15} 2015 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot16} 2016 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot17} 2017 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot18} 2018 Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:ESO2Tempplot}  Ermelo SO2 Temporal plot"}
+plot(ESO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:EtrendSO2}  Ermelo SO2 Trend plot"}
+plot(EtrendSO2)
+```
+
+
+\clearpage
+
+
+```{r fig.cap="\\label{fig:ENO2Tempplot09} 2009 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot10} 2010 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot11} 2011 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot12} 2012 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot13} 2013 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot14} 2014 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot15} 2015 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot16} 2016 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot17} 2017 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot18} 2018 Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:ENO2Tempplot}  Ermelo NO2 Temporal plot"}
+plot(ENO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:EtrendNO2}  Ermelo NO2 Trend plot"}
+plot(EtrendNO2)
+```
+
+
+\clearpage
+
+
+
+```{r}
+kbl(x = Ermelo_annual_daily_ex %>%  
+      select(-place, -instrument, -avg_period, -unit, -std_nEx, -standard) %>% 
+      select(year, pollutant, everything()) %>% 
+      arrange(year), 
+    digits = 2, format = "pipe", booktabs = T, escape = T, caption = "\\label{tab:Ermelo_annual_daily_ex} Summary of daily exceedaces.") %>%  
+        kableExtra::collapse_rows(c(1, 2))
+```
+
+
+# Hendrina
+
+```{r fig.cap="\\label{fig:HendrinaPTS} Time series of the data captured for each variable at Hendrina"}
+plot(HendrinaPTS)
+```
+
+```{r fig.cap="\\label{fig:HendrinaMTS} Time series of the data captured for each variable at Hendrina"}
+plot(HendrinaMTS)
+```
+
+\clearpage
+
+```{r fig.cap="\\label{fig:HPM10Tempplot09} 2009 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot10} 2010 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot11} 2011 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot12} 2012 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot13} 2013 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot14} 2014 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot15} 2015 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot16} 2016 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot17} 2017 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot18} 2018 Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:HPM10Tempplot} Hendrina PM10 Temporal plot"}
+plot(HPM10Tempplot)
+```
+
+```{r fig.cap="\\label{fig:HtrendPM10}  Hendrina PM10 Trend plot"}
+plot(HtrendPM10)
+```
+
+
+\clearpage
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot09} 2009 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot10} 2010 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot11} 2011 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot12} 2012 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot13} 2013 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot14} 2014 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot15} 2015 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot16} 2016 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot17} 2017 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot18} 2018 Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:HPM2.5Tempplot}  Hendrina PM2.5 Temporal plot"}
+plot(HPM2.5Tempplot)
+```
+
+```{r fig.cap="\\label{fig:HtrendPM2.5}  Hendrina PM2.5 Trend plot"}
+plot(HtrendPM2.5)
+```
+
+
+\clearpage
+
+```{r fig.cap="\\label{fig:HSO2Tempplot09} 2009 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot10} 2010 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot11} 2011 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot12} 2012 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot13} 2013 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot14} 2014 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot15} 2015 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot16} 2016 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot17} 2017 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot18} 2018 Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:HSO2Tempplot}  Hendrina SO2 Temporal plot"}
+plot(HSO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:HtrendSO2}  Hendrina SO2 Trend plot"}
+plot(HtrendSO2)
+```
+
+
+\clearpage
+
+
+```{r fig.cap="\\label{fig:HNO2Tempplot09} 2009 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot10} 2010 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot11} 2011 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot12} 2012 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot13} 2013 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot14} 2014 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot15} 2015 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot16} 2016 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot17} 2017 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot18} 2018 Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:HNO2Tempplot}  Hendrina NO2 Temporal plot"}
+plot(HNO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:HtrendNO2}  Hendrina NO2 Trend plot"}
+plot(HtrendNO2)
+```
+
+
+\clearpage
+
+
+
+```{r}
+kbl(x = Hendrina_annual_daily_ex %>%  
+      select(-place, -instrument, -avg_period, -unit, -std_nEx, -standard) %>% 
+      select(year, pollutant, everything()) %>% 
+      arrange(year), 
+    digits = 2, format = "pipe", booktabs = T, escape = T, caption = "\\label{tab:Hendrina_annual_daily_ex} Summary of daily exceedaces.") %>%  
+        kableExtra::collapse_rows(c(1, 2))
+```
+
+# Middelburg
+
+```{r fig.cap="\\label{fig:MiddelburgPTS} Time series of the data captured for each variable at Middelburg"}
+plot(MiddelburgPTS)
+```
+
+```{r fig.cap="\\label{fig:MiddelburgMTS} Time series of the data captured for each variable at Middelburg"}
+plot(MiddelburgMTS)
+```
+
+\clearpage
+
+```{r fig.cap="\\label{fig:MPM10Tempplot09} 2009 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot10} 2010 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot11} 2011 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot12} 2012 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot13} 2013 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot14} 2014 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot15} 2015 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot16} 2016 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot17} 2017 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot18} 2018 Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:MPM10Tempplot}  Middelburg PM10 Temporal plot"}
+plot(MPM10Tempplot)
+```
+
+```{r fig.cap="\\label{fig:MtrendPM10}  Middelburg PM10 Trend plot"}
+plot(MtrendPM10)
+```
+
+
+\clearpage
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot09} 2009 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot10} 2010 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot11} 2011 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot12} 2012 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot13} 2013 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot14} 2014 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot15} 2015 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot16} 2016 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot17} 2017 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot18} 2018 Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:MPM2.5Tempplot}  Middelburg PM2.5 Temporal plot"}
+plot(MPM2.5Tempplot)
+```
+
+```{r fig.cap="\\label{fig:MtrendPM2.5}  Middelburg PM2.5 Trend plot"}
+plot(MtrendPM2.5)
+```
+
+
+\clearpage
+
+```{r fig.cap="\\label{fig:MSO2Tempplot09} 2009 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot10} 2010 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot11} 2011 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot12} 2012 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot13} 2013 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot14} 2014 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot15} 2015 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot16} 2016 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot17} 2017 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot18} 2018 Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:MSO2Tempplot}  Middelburg SO2 Temporal plot"}
+plot(MSO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:MtrendSO2}  Middelburg SO2 Trend plot"}
+plot(MtrendSO2)
+```
+
+
+\clearpage
+
+
+```{r fig.cap="\\label{fig:MNO2Tempplot09} 2009 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot10} 2010 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot11} 2011 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot12} 2012 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot13} 2013 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot14} 2014 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot15} 2015 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot16} 2016 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot17} 2017 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot18} 2018 Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:MNO2Tempplot}  Middelburg NO2 Temporal plot"}
+plot(MNO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:MtrendNO2}  Middelburg NO2 Trend plot"}
+plot(MtrendNO2)
+```
+
+
+\clearpage
+
+
+
+```{r}
+kbl(x = Middelburg_annual_daily_ex %>%  
+      select(-place, -instrument, -avg_period, -unit, -std_nEx, -standard) %>% 
+      select(year, pollutant, everything()) %>% 
+      arrange(year), 
+    digits = 2, format = "pipe", booktabs = T, escape = T, caption = "\\label{tab:Middelburg_annual_daily_ex} Summary of daily exceedaces.") %>%  
+        kableExtra::collapse_rows(c(1, 2))
+```
+
+
+# SECUNDA
+
+```{r fig.cap="\\label{fig:SecundaPTS} Time series of the data captured for each variable at secunda"}
+plot(SecundaPTS)
+```
+
+```{r fig.cap="\\label{fig:SecundaMTS} Time series of the data captured for each variable at secunda"}
+plot(SecundaMTS)
+```
+
+\clearpage
+
+```{r fig.cap="\\label{fig:SPM10Tempplot09} 2009 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot10} 2010 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot11} 2011 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot12} 2012 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot13} 2013 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot14} 2014 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot15} 2015 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot16} 2016 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot17} 2017 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot18} 2018 secunda PM10 Temporal plot"}
+plot(SPM10Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:SPM10Tempplot}  secunda PM10 Temporal plot"}
+plot(SPM10Tempplot)
+```
+
+```{r fig.cap="\\label{fig:StrendPM10}  Secunda PM10 Trend plot"}
+plot(StrendPM10)
+```
+
+
+\clearpage
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot09} 2009 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot10} 2010 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot11} 2011 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot12} 2012 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot13} 2013 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot14} 2014 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot15} 2015 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot16} 2016 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot17} 2017 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot18} 2018 secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:SPM2.5Tempplot}  secunda PM2.5 Temporal plot"}
+plot(SPM2.5Tempplot)
+```
+
+```{r fig.cap="\\label{fig:StrendPM2.5}  Secunda PM2.5 Trend plot"}
+plot(StrendPM2.5)
+```
+
+
+\clearpage
+
+```{r fig.cap="\\label{fig:SSO2Tempplot09} 2009 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot10} 2010 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot11} 2011 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot12} 2012 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot13} 2013 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot14} 2014 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot15} 2015 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot16} 2016 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot17} 2017 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot18} 2018 secunda SO2 Temporal plot"}
+plot(SSO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:SSO2Tempplot}  secunda SO2 Temporal plot"}
+plot(SSO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:StrendSO2}  Secunda SO2 Trend plot"}
+plot(StrendSO2)
+```
+
+
+\clearpage
+
+
+```{r fig.cap="\\label{fig:SNO2Tempplot09} 2009 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot09)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot10} 2010 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot10)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot11} 2011 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot11)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot12} 2012 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot12)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot13} 2013 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot13)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot14} 2014 secunda NO2 Temporal plot"}
+plot(SSO2Tempplot14)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot15} 2015 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot15)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot16} 2016 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot16)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot17} 2017 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot17)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot18} 2018 secunda NO2 Temporal plot"}
+plot(SNO2Tempplot18)
+```
+
+```{r fig.cap="\\label{fig:SNO2Tempplot}  secunda NO2 Temporal plot"}
+plot(SNO2Tempplot)
+```
+
+```{r fig.cap="\\label{fig:StrendNO2}  Secunda NO2 Trend plot"}
+plot(StrendNO2)
+```
+
+
+\clearpage
+
+
+
+```{r}
+kbl(x = Secunda_annual_daily_ex %>%  
+      select(-place, -instrument, -avg_period, -unit, -std_nEx, -standard) %>% 
+      select(year, pollutant, everything()) %>% 
+      arrange(year), 
+    digits = 2, format = "pipe", booktabs = T, escape = T, caption = "\\label{tab:Secunda_annual_daily_ex} Summary of daily exceedaces.") %>%  
+        kableExtra::collapse_rows(c(1, 2))
+```
