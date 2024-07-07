@@ -54,13 +54,13 @@ Gerts$date <- dateTime
 
 
 daily <- timeAverage(Gerts, avg.time = "day")
-write.csv(daily,"MortData/GertsDaily.csv")
+write.csv(daily,"AirData/GertsDaily.csv")
 
 
 
 # Time series -------------------------------------------------------------
 
-Gerts = read.csv("MortData/GertsDaily.csv", header = T, sep = ";")
+Gerts = read.csv("AirData/GertsDaily.csv", header = T, sep = ";")
 
 # the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
 dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')

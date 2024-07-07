@@ -425,13 +425,13 @@ Ermelo$date <- date
 
 Epolar <- Ermelo_clean %>%
   datify() %>%
-  mutate(latitude = -26,493348,
-         longitude = 29,968054)
+  mutate(latitude = -26.493348,
+         longitude = 29.968054)
 
 # PM10 --------------------------------------------------------------------
 
-EPM10allpolar <- polarMap(
-  Epolar %>% filter(year == "2009"),
+EPM10allpolar <- polarPlot(
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   pollutant = "pm10",
@@ -442,7 +442,7 @@ EPM10allpolar <- polarMap(
 )
 
 EPM10stdev <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "stdev",
@@ -454,7 +454,7 @@ EPM10stdev <- polarPlot(
 )
 
 EPM10weighted <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "weighted.mean",
@@ -467,7 +467,7 @@ EPM10weighted <- polarPlot(
 
 
 EPM10frequency <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "frequency",
@@ -480,7 +480,7 @@ EPM10frequency <- polarPlot(
 
 
 EPM10per50 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -495,7 +495,7 @@ EPM10per50 <- polarPlot(
 
 
 EPM10per60 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -509,7 +509,7 @@ EPM10per60 <- polarPlot(
 
 
 EPM10per70 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -523,7 +523,7 @@ EPM10per70 <- polarPlot(
 
 
 EPM10per80 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -537,7 +537,7 @@ EPM10per80 <- polarPlot(
 
 
 EPM10per90 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -550,7 +550,7 @@ EPM10per90 <- polarPlot(
 )
 
 EPM10per98 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -564,7 +564,7 @@ EPM10per98 <- polarPlot(
 
 
 EPM10per99 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -594,8 +594,8 @@ do.call("grid.arrange", EPM10_CPFplot)
 
 # PM2.5 -------------------------------------------------------------------
 
-EPM2.5allpolar <- polarMap(
-  Epolar %>% filter(year == "2009"),
+EPM2.5allpolar <- polarPlot(
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   pollutant = "pm2.5",
@@ -606,7 +606,7 @@ EPM2.5allpolar <- polarMap(
 )
 
 EPM2.5stdev <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "stdev",
@@ -619,7 +619,7 @@ EPM2.5stdev <- polarPlot(
 
 
 EPM2.5weighted <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "weighted.mean",
@@ -631,7 +631,7 @@ EPM2.5weighted <- polarPlot(
 )
 
 EPM2.5frequency <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "frequency",
@@ -643,7 +643,7 @@ EPM2.5frequency <- polarPlot(
 )
 
 EPM2.5per50 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -658,7 +658,7 @@ EPM2.5per50 <- polarPlot(
 
 
 EPM2.5per60 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -672,7 +672,7 @@ EPM2.5per60 <- polarPlot(
 
 
 EPM2.5per70 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -686,7 +686,7 @@ EPM2.5per70 <- polarPlot(
 
 
 EPM2.5per80 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -700,7 +700,7 @@ EPM2.5per80 <- polarPlot(
 
 
 EPM2.5per90 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -713,7 +713,7 @@ EPM2.5per90 <- polarPlot(
 )
 
 EPM2.5per98 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -726,7 +726,7 @@ EPM2.5per98 <- polarPlot(
 )
 
 EPM2.5per99 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -757,8 +757,8 @@ do.call("grid.arrange", EPM2.5_CPFplot)
 # SO2 --------------------------------------------------------------------
 
 
-ESO2allpolar <- polarMap(
-  Epolar %>% filter(year == "2009"),
+ESO2allpolar <- polarPlot(
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   pollutant = "so2",
@@ -769,7 +769,7 @@ ESO2allpolar <- polarMap(
 )
 
 ESO2stdev <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "stdev",
@@ -781,7 +781,7 @@ ESO2stdev <- polarPlot(
 )
 
 ESO2weighted <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "weighted.mean",
@@ -794,7 +794,7 @@ ESO2weighted <- polarPlot(
 
 
 ESO2frequency <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "frequency",
@@ -807,7 +807,7 @@ ESO2frequency <- polarPlot(
 
 
 ESO2per50 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -822,7 +822,7 @@ ESO2per50 <- polarPlot(
 
 
 ESO2per60 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -836,7 +836,7 @@ ESO2per60 <- polarPlot(
 
 
 ESO2per70 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -850,7 +850,7 @@ ESO2per70 <- polarPlot(
 
 
 ESO2per80 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -864,7 +864,7 @@ ESO2per80 <- polarPlot(
 
 
 ESO2per90 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -877,7 +877,7 @@ ESO2per90 <- polarPlot(
 )
 
 ESO2per98 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -891,7 +891,7 @@ ESO2per98 <- polarPlot(
 
 
 ESO2per99 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -921,8 +921,8 @@ do.call("grid.arrange", ESO2_CPFplot)
 
 # NO2 --------------------------------------------------------------------
 
-ENO2allpolar <- polarMap(
-  Epolar %>% filter(year == "2009"),
+ENO2allpolar <- polarPlot(
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   pollutant = "no2",
@@ -933,7 +933,7 @@ ENO2allpolar <- polarMap(
 )
 
 ENO2stdev <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "stdev",
@@ -945,7 +945,7 @@ ENO2stdev <- polarPlot(
 )
 
 ENO2weighted <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "weighted.mean",
@@ -958,7 +958,7 @@ ENO2weighted <- polarPlot(
 
 
 ENO2frequency <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "frequency",
@@ -971,7 +971,7 @@ ENO2frequency <- polarPlot(
 
 
 ENO2per50 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -986,7 +986,7 @@ ENO2per50 <- polarPlot(
 
 
 ENO2per60 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -1000,7 +1000,7 @@ ENO2per60 <- polarPlot(
 
 
 ENO2per70 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -1014,7 +1014,7 @@ ENO2per70 <- polarPlot(
 
 
 ENO2per80 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -1027,8 +1027,9 @@ ENO2per80 <- polarPlot(
 )
 
 
+
 ENO2per90 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -1041,7 +1042,7 @@ ENO2per90 <- polarPlot(
 )
 
 ENO2per98 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",
@@ -1055,7 +1056,7 @@ ENO2per98 <- polarPlot(
 
 
 ENO2per99 <- polarPlot(
-  Epolar %>% filter(year == "2009"),
+  Epolar,
   latitude = "latitude",
   longitude = "longitude",
   statistic = "cpf",

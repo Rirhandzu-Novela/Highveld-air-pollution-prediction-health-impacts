@@ -44,7 +44,7 @@ write.csv(imputes,"AirData/NkangalaIM.csv")
 
 
 
-Nka = read.csv("MortData/Nkangala.csv", header = T, sep = ";")
+Nka = read.csv("AirData/Nkangala.csv", header = T, sep = ";")
 
 # the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
 dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
@@ -55,12 +55,12 @@ Nka$date <- dateTime
 
 
 daily <- timeAverage(Nka, avg.time = "day")
-write.csv(daily,"MortData/NkaDaily.csv")
+write.csv(daily,"AirData/NkaDaily.csv")
 
 
 # Time series -------------------------------------------------------------
 
-Nka = read.csv("MortData/NkangalaDaily.csv", header = T, sep = ";")
+Nka = read.csv("AirData/NkangalaDaily.csv", header = T, sep = ";")
 
 # the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
 dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
@@ -136,4 +136,4 @@ dat$weekday2 = format(dat$Date, format = "%a")
 dat$weekday3 = format(dat$Date, format = "%A")
 
 dat
-write.csv(dat,"Data/dow.csv")
+write.csv(dat,"AirData/dow.csv")

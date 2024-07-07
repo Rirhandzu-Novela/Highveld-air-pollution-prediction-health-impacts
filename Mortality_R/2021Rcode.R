@@ -2,7 +2,7 @@ library(tidyverse)
 
 
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("Data/GertPollCardMort.csv", header = T, sep = ";")
+data = read.csv("MortData/GertPollCardMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 

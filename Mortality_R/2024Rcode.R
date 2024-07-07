@@ -7,7 +7,7 @@ library(Epi)
 library(dlnm)
 
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("Data/GertPollPulMort.csv", header = T, sep = ";")
+data = read.csv("MortData/GertPollPulMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 

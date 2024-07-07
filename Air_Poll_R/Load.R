@@ -15,7 +15,7 @@ library(imputeTS)
 
 # Read eMalahleni csv ----------------------------------------------------------
 
-eMalahleni = read.csv("Data/eMalahleni.csv", header = T, sep = ";")
+eMalahleni = read.csv("AirData/eMalahleni.csv", header = T, sep = ";")
 
 eMalahleni <- eMalahleni %>%
   rename(so2 = SO2,
@@ -86,11 +86,11 @@ eMalahleniIM$relHum <- eMalahleniIMRH
 
 summary(eMalahleniIM)
 
-write_csv(eMalahleniIM, file = "Data/eMalahleniIM.csv")
+write_csv(eMalahleniIM, file = "AirData/eMalahleniIM.csv")
 
 # Read Ermelo csv ----------------------------------------------------------
 
-Ermelo = read.csv("Data/Ermelo.csv", header = T, sep = ";")
+Ermelo = read.csv("AirData/Ermelo.csv", header = T, sep = ";")
 
 Ermelo <- Ermelo %>%
   rename(so2 = SO2,
@@ -162,11 +162,11 @@ ErmeloIM$relHum <- ErmeloIMRH
 
 summary(ErmeloIM)
 
-write_csv(ErmeloIM, file = "Data/ErmeloIM.csv")
+write_csv(ErmeloIM, file = "AirData/ErmeloIM.csv")
 
 # Read Hendrina csv ----------------------------------------------------------
 
-Hendrina = read.csv("Data/Hendrina.csv", header = T, sep = ";")
+Hendrina = read.csv("AirData/Hendrina.csv", header = T, sep = ";")
 
 Hendrina <- Hendrina %>%
   rename(so2 = SO2,
@@ -235,11 +235,11 @@ HendrinaIM$relHum <- HendrinaIMRH
 summary(HendrinaIM)
 
 
-write_csv(HendrinaIM, file = "Data/HendrinaIM.csv")
+write_csv(HendrinaIM, file = "AirData/HendrinaIM.csv")
 
 # Read Middelburg csv ----------------------------------------------------------
 
-Middelburg = read.csv("Data/Middelburg.csv", header = T, sep = ";")
+Middelburg = read.csv("AirData/Middelburg.csv", header = T, sep = ";")
 
 Middelburg <- Middelburg %>%
   rename(so2 = SO2,
@@ -312,11 +312,11 @@ MiddelburgIM$relHum <- MiddelburgIMRH
 
 summary(MiddelburgIM)
 
-write_csv(MiddelburgIM, file = "Data/MiddelburgIM.csv")
+write_csv(MiddelburgIM, file = "AirData/MiddelburgIM.csv")
 
 # Read Secunda csv ----------------------------------------------------------
 
-Secunda = read.csv("Data/Secunda.csv", header = T, sep = ";")
+Secunda = read.csv("AirData/Secunda.csv", header = T, sep = ";")
 
 Secunda <- Secunda %>%
   rename(so2 = SO2,
@@ -384,4 +384,4 @@ usermodel <- arima(Secunda_clean$relHum, order = c(0, 0, 0))$model
 SecundaIMRH <- na_kalman(Secunda_clean$relHum, model = usermodel)
 SecundaIM$relHum <- SecundaIMRH
 
-write_csv(SecundaIM, file = "Data/SecundaIM.csv")
+write_csv(SecundaIM, file = "AirData/SecundaIM.csv")
