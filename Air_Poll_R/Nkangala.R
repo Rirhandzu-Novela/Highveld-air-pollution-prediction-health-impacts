@@ -60,7 +60,26 @@ write.csv(daily,"AirData/NkaDaily.csv")
 
 # Time series -------------------------------------------------------------
 
-Nka = read.csv("AirData/NkangalaDaily.csv", header = T, sep = ";")
+Nka = read.csv("AirData/NkaDaily.csv", header = T, sep = ";")
+
+
+Nka$date <- as.Date(Nka$date, format = "%Y/%m/%d")
+
+NkaYearSum <- Nka %>%
+  pivot_longer(cols = pm2.5:pressure, names_to = "variable") %>%
+  novaAQM::datify() %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(year, variable)
+  ) 
+write.csv(NkaYearSum,"RDA/NkaYearSum.csv")
+
+NkaSum <-  Nka %>%
+  pivot_longer(cols = pm2.5:pressure, names_to = "variable") %>%
+  novaAQM::datify() %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  ) 
+write.csv(NkaSum,"RDA/NkaSum.csv")
 
 # the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
 dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')

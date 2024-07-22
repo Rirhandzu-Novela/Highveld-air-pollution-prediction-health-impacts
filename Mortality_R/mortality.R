@@ -37,6 +37,60 @@ GertAll_counts <- GertAll_counts %>%
 write.csv(GertAll_counts, "MortData/GertMort30.csv", row.names = TRUE)
 
 
+Gerts30 = read.csv("MortData/GertMort30.csv", header = T, sep = ";")
+
+Gerts30$date <- as.Date(Gerts30$date, format = "%Y/%m/%d")
+
+sumYear30 <- Gerts30 %>% 
+  novaAQM::datify() %>%
+  group_by(year) %>%
+  summarise(death_count = sum(death_count, na.rm = T),
+            Male = sum(Male, na.rm = T),
+            Female = sum(Female, na.rm = T)) %>%
+  pivot_longer(cols = c(death_count, Male, Female), 
+               names_to = "variable", 
+               values_to = "value")
+
+
+dfYear30 <-  Gerts30  %>%
+  pivot_longer(cols = death_count:Female, names_to = "variable") %>%
+  novaAQM::datify() %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(year, variable)
+  ) %>% 
+  left_join(sumYear30, by = c("year", "variable")) %>% 
+  select(-n, -NAs) %>% 
+  rename("Total" = "value") %>% 
+  relocate("Total", .after = "variable") %>%
+  arrange(year, variable) 
+
+write.csv(dfYear30,"RDA/GertYearSum30.csv")
+
+sum30 <- Gerts30 %>% 
+  summarise(death_count = sum(death_count, na.rm = T),
+            Male = sum(Male, na.rm = T),
+            Female = sum(Female, na.rm = T)) %>%
+  pivot_longer(cols = c(death_count, Male, Female), 
+               names_to = "variable", 
+               values_to = "value")
+
+
+df30 <-  Gerts30  %>%
+  pivot_longer(cols = death_count:Female, names_to = "variable") %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  ) %>% 
+  left_join(sum30, by = c("variable")) %>% 
+  select(-n, -NAs) %>% 
+  rename("Total" = "value") %>% 
+  relocate("Total", .after = "variable") %>%
+  arrange(variable)
+
+write.csv(df30,"RDA/GertSum30.csv")
+
+
+
+
 ### Cardiovacular
 GertCardmort <- Mortality %>% 
   filter(death_district == 'Gert Sibande') %>% 
@@ -174,6 +228,58 @@ NkaAll_counts <- NkaAll_counts %>%
   left_join(NkaSex_counts, by = "date")
 
 write.csv(NkaAll_counts, "MortData/NkaMort30.csv", row.names = TRUE)
+
+
+Nka30 = read.csv("MortData/NkaMort30.csv", header = T, sep = ";")
+
+Nka30$date <- as.Date(Nka30$date, format = "%Y/%m/%d")
+
+sumYear30 <- Nka30 %>% 
+  novaAQM::datify() %>%
+  group_by(year) %>%
+  summarise(death_count = sum(death_count, na.rm = T),
+            Male = sum(Male, na.rm = T),
+            Female = sum(Female, na.rm = T)) %>%
+  pivot_longer(cols = c(death_count, Male, Female), 
+               names_to = "variable", 
+               values_to = "value")
+
+
+dfYear30 <-  Nka30  %>%
+  pivot_longer(cols = death_count:Female, names_to = "variable") %>%
+  novaAQM::datify() %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(year, variable)
+  ) %>% 
+  left_join(sumYear30, by = c("year", "variable")) %>% 
+  select(-n, -NAs) %>% 
+  rename("Total" = "value") %>% 
+  relocate("Total", .after = "variable") %>%
+  arrange(year, variable) 
+
+write.csv(dfYear30,"RDA/NkaYearSum30.csv")
+
+sum30 <- Nka30 %>% 
+  summarise(death_count = sum(death_count, na.rm = T),
+            Male = sum(Male, na.rm = T),
+            Female = sum(Female, na.rm = T)) %>%
+  pivot_longer(cols = c(death_count, Male, Female), 
+               names_to = "variable", 
+               values_to = "value")
+
+
+df30 <-  Nka30  %>%
+  pivot_longer(cols = death_count:Female, names_to = "variable") %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  ) %>% 
+  left_join(sum30, by = c("variable")) %>% 
+  select(-n, -NAs) %>% 
+  rename("Total" = "value") %>% 
+  relocate("Total", .after = "variable") %>%
+  arrange(variable)
+
+write.csv(df30,"RDA/NkaSum30.csv")
 
 
 ### Cardiovacular

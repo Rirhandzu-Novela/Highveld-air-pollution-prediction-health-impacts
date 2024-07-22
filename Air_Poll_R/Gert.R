@@ -62,11 +62,24 @@ write.csv(daily,"AirData/GertsDaily.csv")
 
 Gerts = read.csv("AirData/GertsDaily.csv", header = T, sep = ";")
 
-# the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+Gerts$date <- as.Date(Gerts$date, format = "%Y/%m/%d")
 
-# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
-Gerts$date <- dateTime
+GertsYearSum <-  Gerts %>%
+  pivot_longer(cols = pm2.5:pressure, names_to = "variable") %>%
+  novaAQM::datify() %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(year, variable)
+  ) 
+write.csv(GertsYearSum,"RDA/GertsYearSum.csv")
+
+GertsSum <-  Gerts %>%
+  pivot_longer(cols = pm2.5:pressure, names_to = "variable") %>%
+  novaAQM::datify() %>%
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  ) 
+write.csv(GertsSum,"RDA/GertsSum.csv")
+
 
 timeVariation(Gerts, pollutant = "O3", main = "Gert Sibande O3 Temporal variation", ylab = "O3 (ppb)")
 timeVariation(Gerts, pollutant = "CO", main = "Gert Sibande CO Temporal variation", ylab = "CO (ppm)")
