@@ -7,11 +7,13 @@ library(splitr)
 library(devtools)
 library(plotly)
 library(openairmaps)
+
+
 library(here)
 
 
 
-# Trajectory ------------------------------------------------------------------
+# eMalahleni ------------------------------------------------------------------
 
 
 trajectoryJan <-
@@ -244,20 +246,21 @@ trajectoryDec <-
   )
 
 
-trajectory <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
+trajectory18 <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
                      trajectoryJul, trajectoryAug, trajectorySep, trajectoryOct, trajectoryNov, trajectoryDec)
 
-trajectory <- trajectory %>%
+Wtrajectory <- rbind(trajectory09, trajectory10, trajectory11, trajectory12, trajectory13, trajectory14,
+                      trajectory15, trajectory16, trajectory17, trajectory18)
+
+Wtrajectory <- Wtrajectory %>%
   rename(hour.inc = hour_along,
          start_height = height_i,
          date2 = traj_dt,
          date = traj_dt_i,
          site = receptor)
 
-saveRDS(trajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/wgdasTrajData.rds")
+saveRDS(Wtrajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/wgdasTrajData.rds")
 
-
-# Open air  ---------------------------------------------------------------
 
 trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/wgdasTrajData.rds")
 
@@ -358,7 +361,7 @@ trajectoryFeb <-
     days = c("2018-02-01", "2018-02-02", "2018-02-03", "2018-02-04", "2018-02-05", "2018-02-06", "2018-02-07",
              "2018-02-08", "2018-02-09", "2018-02-10", "2018-02-11", "2018-02-12", "2018-02-13", "2018-02-14",
              "2018-02-15", "2018-02-16", "2018-02-17", "2018-02-18", "2018-02-19", "2018-02-20", "2018-02-21",
-             "2018-02-22", "2018-02-23", "2018-02-24", "2018-02-25", "2018-02-26", "2018-02-27", "2018-02-28"),
+             "2018-02-22", "2018-02-23", "2018-02-24", "2018-02-25", "2018-02-26", "2018-02-27", "2018-02-28", "2018-02-29"),
     daily_hours = 0,
     direction = "backward",
     met_type = "gdas1",
@@ -560,21 +563,33 @@ trajectoryDec <-
   )
 
 
-trajectory <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
-                    trajectoryJul, trajectoryAug, trajectorySep, trajectoryOct, trajectoryNov, trajectoryDec)
+trajectory18 <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
+                      trajectoryJul, trajectoryAug, trajectorySep, trajectoryOct, trajectoryNov, trajectoryDec)
 
-trajectory <- trajectory %>%
+Etrajectory <- rbind(trajectory09, trajectory10, trajectory11, trajectory12, trajectory13, trajectory14,
+                     trajectory15, trajectory16, trajectory17, trajectory18)
+
+Etrajectory <- Etrajectory %>%
   rename(hour.inc = hour_along,
          start_height = height_i,
          date2 = traj_dt,
          date = traj_dt_i,
          site = receptor)
 
-saveRDS(trajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/LgdasTrajData.rds")
+saveRDS(Etrajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/EgdasTrajData.rds")
 
 
+trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/EgdasTrajData.rds")
 
-trajP <- left_join(trajectory, ErmeloIM, by = "date")
+
+ErmeloIM <- read.csv("AirData/ErmeloIM.csv", header = T, sep = ";")
+#the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2018-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+ErmeloIM$date <- dateTime
+
+
+trajP <- left_join(trajec, ErmeloIM, by = "date")
 
 filter(trajP, lat > -34 & lat < -22 & lon > 25 & lon < 33) %>%
   trajLevel(
@@ -864,20 +879,30 @@ trajectoryDec <-
     exec_dir = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS"
   )
 
+trajectory17 <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
+                      trajectoryJul, trajectoryAug, trajectorySep, trajectoryOct, trajectoryNov, trajectoryDec)
 
-trajectory <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
-                    trajectoryJul, trajectoryAug, trajectorySep, trajectoryOct, trajectoryNov, trajectoryDec)
+Htrajectory <- rbind(trajectory09, trajectory10, trajectory11, trajectory12, trajectory13, trajectory14,
+                     trajectory15, trajectory16, trajectory17, trajectory18)
 
-trajectory <- trajectory %>%
+Htrajectory <- Htrajectory %>%
   rename(hour.inc = hour_along,
          start_height = height_i,
          date2 = traj_dt,
          date = traj_dt_i,
          site = receptor)
 
-saveRDS(trajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/LgdasTrajData.rds")
+saveRDS(Htrajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/HgdasTrajData.rds")
 
 
+trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/HgdasTrajData.rds")
+
+
+HendrinaIM <- read.csv("AirData/HendrinaIM.csv", header = T, sep = ";")
+#the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+HendrinaIM$date <- dateTime
 
 trajP <- left_join(trajectory, HendinaIM, by = "date")
 
@@ -1169,19 +1194,30 @@ trajectoryDec <-
   )
 
 
-trajectory <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
+trajectory13 <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
                     trajectoryJul, trajectoryAug, trajectorySep, trajectoryOct, trajectoryNov, trajectoryDec)
 
-trajectory <- trajectory %>%
+Mtrajectory <- rbind(trajectory09, trajectory10, trajectory11, trajectory12, trajectory13, trajectory14,
+                     trajectory15, trajectory16, trajectory17, trajectory18)
+
+Mtrajectory <- Mtrajectory %>%
   rename(hour.inc = hour_along,
          start_height = height_i,
          date2 = traj_dt,
          date = traj_dt_i,
          site = receptor)
 
-saveRDS(trajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/LgdasTrajData.rds")
+saveRDS(Mtrajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/MgdasTrajData.rds")
 
 
+trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/MgdasTrajData.rds")
+
+
+MiddelburgIM <- read.csv("AirData/MiddelburgIM.csv", header = T, sep = ";")
+#the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+MiddelburgIM$date <- dateTime
 
 trajP <- left_join(trajectory, MiddelburgIM, by = "date")
 
@@ -1473,28 +1509,46 @@ trajectoryDec <-
   )
 
 
-trajectory <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
+trajectory18 <- rbind(trajectoryJan, trajectoryFeb, trajectoryMar, trajectoryApr, trajectoryMay, trajectoryJun,
                     trajectoryJul, trajectoryAug, trajectorySep, trajectoryOct, trajectoryNov, trajectoryDec)
 
-trajectory <- trajectory %>%
+Strajectory <- rbind(trajectory09, trajectory10, trajectory11, trajectory12, trajectory13, trajectory14,
+                     trajectory15, trajectory16, trajectory17, trajectory18)
+
+Strajectory <- Strajectory %>%
   rename(hour.inc = hour_along,
          start_height = height_i,
          date2 = traj_dt,
          date = traj_dt_i,
          site = receptor)
 
-saveRDS(trajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/LgdasTrajData.rds")
+saveRDS(Strajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/SgdasTrajData.rds")
+
+
+trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/SgdasTrajData.rds")
+
+
+SecundaIM <- read.csv("AirData/SecundaIM.csv", header = T, sep = ";")
+#the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
+# replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
+SecundaIM$date <- dateTime
 
 
 
-trajP <- left_join(trajectory,SecundaIM, by = "date")
+
+# merge the air quality data with the trajectory data
+
+trajP <- left_join(trajec,SecundaIM, by = "date")
+
+
+
 
 filter(trajP, lat > -34 & lat < -22 & lon > 25 & lon < 33) %>%
   trajLevel(
     pollutant = "pm10",
-    statistic = "pscf",
-    percentile = 50,
-    smooth = FALSE,
+    statistic = "cwt",
+    smooth = TRUE,
     col = "increment",
     border = "white",
     grid.col = "transparent"
@@ -1502,7 +1556,7 @@ filter(trajP, lat > -34 & lat < -22 & lon > 25 & lon < 33) %>%
 
 
 trajLevel(trajP,
-          pollutant = "pm10",
+          pollutant = "no2",
           statistic =  "sqtba",
           map.fill = FALSE,
           cols = "default",
@@ -1513,7 +1567,9 @@ trajLevel(trajP,
           grid.col = "transparent"
 )
 
-clust <- trajCluster(trajectory, method = "Angle",
+# clustering
+
+clust <- trajCluster(trajec, method = "Angle",
                      n.cluster = 6,
                      col = "Set2",
                      map.cols = openColours("Paired", 10),
@@ -1521,9 +1577,11 @@ clust <- trajCluster(trajectory, method = "Angle",
 
 trajPlot(clust$data$traj, group = "cluster", grid.col = "transparent")
 
+
 trajLevel(clust$data$traj, type = "cluster",
           col = "increment",
           border = NA, grid.col = "transparent")
+
 
 cluster_trajP <- inner_join(SecundaIM,
                             filter(clust$data$traj, hour.inc == 0),
