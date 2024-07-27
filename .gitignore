@@ -5,4 +5,8 @@
 *.csv
 *.Rda
 *.Rds
+*.tex
+*.log
+*.docx
+Plots_files
 TrajData
