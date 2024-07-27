@@ -9,8 +9,6 @@ library(plotly)
 library(openairmaps)
 
 
-library(here)
-
 
 
 # eMalahleni ------------------------------------------------------------------
@@ -261,6 +259,7 @@ Wtrajectory <- Wtrajectory %>%
 
 saveRDS(Wtrajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/wgdasTrajData.rds")
 
+# Trajectpry
 
 trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/wgdasTrajData.rds")
 
@@ -274,9 +273,9 @@ eMalahleniIM$date <- dateTime
 
 trajP <- left_join(trajec, eMalahleniIM, by = "date")
 
-filter(trajP, lat > -34 & lat < -22 & lon > 25 & lon < 33) %>%
+filter(trajP, lat > -35 & lat < -24 & lon > 25 & lon < 33) %>%
   trajLevel(
-    pollutant = "pm10",
+    pollutant = "so2",
     statistic = "pscf",
     percentile = 50,
     smooth = FALSE,
@@ -287,18 +286,18 @@ filter(trajP, lat > -34 & lat < -22 & lon > 25 & lon < 33) %>%
 
 
 trajLevel(trajP,
-          pollutant = "pm10",
+          pollutant = "no2",
           statistic =  "sqtba",
           map.fill = FALSE,
           cols = "default",
           lat.inc = 0.5,
           lon.inc = 0.5,
           xlim = c(25, 33),
-          ylim = c(-34, -22),
+          ylim = c(-34, -24),
           grid.col = "transparent"
 )
 
-clust <- trajCluster(trajectory, method = "Angle",
+clust <- trajCluster(trajec, method = "Angle",
                      n.cluster = 6,
                      col = "Set2",
                      map.cols = openColours("Paired", 10),
@@ -330,6 +329,30 @@ gg <- ggplot(cluster_trajP, aes(x = date, y = pm10, color = cluster)) +
 # Convert ggplot to Plotly
 p <- ggplotly(gg)
 
+
+
+eMalahleniWD  <- eMalahleniIM %>%
+  mutate(windD = case_when(
+    wd >= 0 & wd <= 22.5 ~ "N",
+    wd > 22.5 & wd <= 67.5 ~ "NE",
+    wd > 67.5 & wd <= 112.5 ~ "E",
+    wd > 112.5 & wd <= 157.5 ~ "SE",
+    wd > 157.5 & wd <= 202.5 ~ "S",
+    wd > 202.5 & wd <= 247.5 ~ "SW",
+    wd > 247.5 & wd <= 292.5 ~ "W",
+    wd > 292.5 & wd <= 337.5 ~ "NW",
+    wd > 337.5 ~ "N"
+  ))
+
+group_by(eMalahleniWD, windD) %>%
+  summarise(PM10 = mean(pm10, na.rm = TRUE),
+            PM2.5 = mean(pm2.5, na.rm = TRUE),
+            SO2 = mean(so2, na.rm = TRUE),
+            NO2 = mean(no2, na.rm = TRUE))
+
+group_by(eMalahleniWD, windD) %>%
+  summarise(n = n()) %>%
+  mutate(percent = 100 * n / nrow(eMalahleniWD))
 
 # Ermelo ----------------------------------------------------------------
 
@@ -584,7 +607,7 @@ trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollutio
 
 ErmeloIM <- read.csv("AirData/ErmeloIM.csv", header = T, sep = ";")
 #the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
-dateTime <- seq(as.POSIXct("2018-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
 # replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
 ErmeloIM$date <- dateTime
 
@@ -615,7 +638,7 @@ trajLevel(trajP,
           grid.col = "transparent"
 )
 
-clust <- trajCluster(trajectory, method = "Angle",
+clust <- trajCluster(trajec, method = "Angle",
                      n.cluster = 6,
                      col = "Set2",
                      map.cols = openColours("Paired", 10),
@@ -646,6 +669,31 @@ gg <- ggplot(cluster_trajP, aes(x = date, y = pm10, color = cluster)) +
 
 # Convert ggplot to Plotly
 p <- ggplotly(gg)
+
+
+ErmeloWD  <- ErmeloIM %>%
+  mutate(windD = case_when(
+    wd >= 0 & wd <= 22.5 ~ "N",
+    wd > 22.5 & wd <= 67.5 ~ "NE",
+    wd > 67.5 & wd <= 112.5 ~ "E",
+    wd > 112.5 & wd <= 157.5 ~ "SE",
+    wd > 157.5 & wd <= 202.5 ~ "S",
+    wd > 202.5 & wd <= 247.5 ~ "SW",
+    wd > 247.5 & wd <= 292.5 ~ "W",
+    wd > 292.5 & wd <= 337.5 ~ "NW",
+    wd > 337.5 ~ "N"
+  ))
+
+group_by(ErmeloWD, windD) %>%
+  summarise(PM10 = mean(pm10, na.rm = TRUE),
+            PM2.5 = mean(pm2.5, na.rm = TRUE),
+            SO2 = mean(so2, na.rm = TRUE),
+            NO2 = mean(no2, na.rm = TRUE))
+
+group_by(ErmeloWD, windD) %>%
+  summarise(n = n()) %>%
+  mutate(percent = 100 * n / nrow(ErmeloWD))
+
 
 
 # Hendrina ----------------------------------------------------------------
@@ -894,17 +942,18 @@ Htrajectory <- Htrajectory %>%
 
 saveRDS(Htrajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/HgdasTrajData.rds")
 
+# Trajectory Analysis
 
 trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/HgdasTrajData.rds")
 
 
 HendrinaIM <- read.csv("AirData/HendrinaIM.csv", header = T, sep = ";")
 #the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
 # replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
 HendrinaIM$date <- dateTime
 
-trajP <- left_join(trajectory, HendinaIM, by = "date")
+trajP <- left_join(trajec, HendrinaIM, by = "date")
 
 filter(trajP, lat > -34 & lat < -22 & lon > 25 & lon < 33) %>%
   trajLevel(
@@ -930,7 +979,7 @@ trajLevel(trajP,
           grid.col = "transparent"
 )
 
-clust <- trajCluster(trajectory, method = "Angle",
+clust <- trajCluster(trajec, method = "Angle",
                      n.cluster = 6,
                      col = "Set2",
                      map.cols = openColours("Paired", 10),
@@ -961,6 +1010,29 @@ gg <- ggplot(cluster_trajP, aes(x = date, y = pm10, color = cluster)) +
 
 # Convert ggplot to Plotly
 p <- ggplotly(gg)
+
+HendrinaWD  <- HendrinaIM %>%
+  mutate(windD = case_when(
+    wd >= 0 & wd <= 22.5 ~ "N",
+    wd > 22.5 & wd <= 67.5 ~ "NE",
+    wd > 67.5 & wd <= 112.5 ~ "E",
+    wd > 112.5 & wd <= 157.5 ~ "SE",
+    wd > 157.5 & wd <= 202.5 ~ "S",
+    wd > 202.5 & wd <= 247.5 ~ "SW",
+    wd > 247.5 & wd <= 292.5 ~ "W",
+    wd > 292.5 & wd <= 337.5 ~ "NW",
+    wd > 337.5 ~ "N"
+  ))
+
+group_by(HendrinaWD, windD) %>%
+  summarise(PM10 = mean(pm10, na.rm = TRUE),
+            PM2.5 = mean(pm2.5, na.rm = TRUE),
+            SO2 = mean(so2, na.rm = TRUE),
+            NO2 = mean(no2, na.rm = TRUE))
+
+group_by(HendrinaWD, windD) %>%
+  summarise(n = n()) %>%
+  mutate(percent = 100 * n / nrow(HendrinaWD))
 
 # Middelburg ----------------------------------------------------------------
 
@@ -1209,17 +1281,18 @@ Mtrajectory <- Mtrajectory %>%
 
 saveRDS(Mtrajectory, file = "C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/MgdasTrajData.rds")
 
+# Trajectory Analysis
 
 trajec <- readRDS("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/RDS/MgdasTrajData.rds")
 
 
 MiddelburgIM <- read.csv("AirData/MiddelburgIM.csv", header = T, sep = ";")
 #the dates must be a "POSIXct" "POSIXt" object. Those in your csv file are not.
-dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), by = "1 hours", tz = 'UTC')
+dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 23:00"), by = "1 hours", tz = 'UTC')
 # replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
 MiddelburgIM$date <- dateTime
 
-trajP <- left_join(trajectory, MiddelburgIM, by = "date")
+trajP <- left_join(trajec, MiddelburgIM, by = "date")
 
 filter(trajP, lat > -34 & lat < -22 & lon > 25 & lon < 33) %>%
   trajLevel(
@@ -1245,7 +1318,7 @@ trajLevel(trajP,
           grid.col = "transparent"
 )
 
-clust <- trajCluster(trajectory, method = "Angle",
+clust <- trajCluster(trajec, method = "Angle",
                      n.cluster = 6,
                      col = "Set2",
                      map.cols = openColours("Paired", 10),
@@ -1276,6 +1349,29 @@ gg <- ggplot(cluster_trajP, aes(x = date, y = pm10, color = cluster)) +
 
 # Convert ggplot to Plotly
 p <- ggplotly(gg)
+
+MiddelburgWD  <- MiddelburgIM %>%
+  mutate(windD = case_when(
+    wd >= 0 & wd <= 22.5 ~ "N",
+    wd > 22.5 & wd <= 67.5 ~ "NE",
+    wd > 67.5 & wd <= 112.5 ~ "E",
+    wd > 112.5 & wd <= 157.5 ~ "SE",
+    wd > 157.5 & wd <= 202.5 ~ "S",
+    wd > 202.5 & wd <= 247.5 ~ "SW",
+    wd > 247.5 & wd <= 292.5 ~ "W",
+    wd > 292.5 & wd <= 337.5 ~ "NW",
+    wd > 337.5 ~ "N"
+  ))
+
+group_by(MiddelburgWD, windD) %>%
+  summarise(PM10 = mean(pm10, na.rm = TRUE),
+            PM2.5 = mean(pm2.5, na.rm = TRUE),
+            SO2 = mean(so2, na.rm = TRUE),
+            NO2 = mean(no2, na.rm = TRUE))
+
+group_by(MiddelburgWD, windD) %>%
+  summarise(n = n()) %>%
+  mutate(percent = 100 * n / nrow(MiddelburgWD))
 
 # Secunda ----------------------------------------------------------------
 
@@ -1602,3 +1698,27 @@ gg <- ggplot(cluster_trajP, aes(x = date, y = pm10, color = cluster)) +
 
 # Convert ggplot to Plotly
 p <- ggplotly(gg)
+
+
+SecundaWD  <- SecundaIM %>%
+  mutate(windD = case_when(
+    wd >= 0 & wd <= 22.5 ~ "N",
+    wd > 22.5 & wd <= 67.5 ~ "NE",
+    wd > 67.5 & wd <= 112.5 ~ "E",
+    wd > 112.5 & wd <= 157.5 ~ "SE",
+    wd > 157.5 & wd <= 202.5 ~ "S",
+    wd > 202.5 & wd <= 247.5 ~ "SW",
+    wd > 247.5 & wd <= 292.5 ~ "W",
+    wd > 292.5 & wd <= 337.5 ~ "NW",
+    wd > 337.5 ~ "N"
+  ))
+
+group_by(SecundaWD, windD) %>%
+  summarise(PM10 = mean(pm10, na.rm = TRUE),
+            PM2.5 = mean(pm2.5, na.rm = TRUE),
+            SO2 = mean(so2, na.rm = TRUE),
+            NO2 = mean(no2, na.rm = TRUE))
+
+group_by(SecundaWD, windD) %>%
+  summarise(n = n()) %>%
+  mutate(percent = 100 * n / nrow(SecundaWD))
