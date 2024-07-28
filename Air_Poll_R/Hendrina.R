@@ -217,6 +217,13 @@ Hendrina_date <- Hendrina_clean %>%
   )) %>%
   mutate(station = "Hendrina")
 
+Hendrina_annual_summary <- Hendrina_date %>% datify %>% 
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  )
+
+write.csv(Hendrina_annual_summary,"Graph/Hendrina_annual_summary.csv")
+
 Hendrina_monthly_hour_ex <- novaAQM::compareAQS(df = Hendrina_date %>%
                                                 ungroup() %>%
                                                 datify() %>%

@@ -219,6 +219,13 @@ Middelburg_date <- Middelburg_clean %>%
   )) %>%
   mutate(station = "Middelburg")
 
+Middelburg_annual_summary <- Middelburg_date %>% datify %>% 
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  )
+
+write.csv(Middelburg_annual_summary,"Graph/Middelburg_annual_summary.csv")
+
 Middelburg_monthly_hour_ex <- novaAQM::compareAQS(df = Middelburg_date %>%
                                                 ungroup() %>%
                                                 datify() %>%

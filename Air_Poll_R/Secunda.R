@@ -217,6 +217,13 @@ Secunda_date <- Secunda_clean %>%
   )) %>%
   mutate(station = "Secunda")
 
+Secunda_annual_summary <- Secunda_date %>% datify %>% 
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  )
+
+write.csv(Secunda_annual_summary,"Graph/Secunda_annual_summary.csv")
+
 Secunda_monthly_hour_ex <- novaAQM::compareAQS(df = Secunda_date %>%
                                                 ungroup() %>%
                                                 datify() %>%

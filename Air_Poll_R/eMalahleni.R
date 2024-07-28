@@ -21,6 +21,7 @@ dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), 
 # replace the dates in your csv file with the created "POSIXct" "POSIXt" date object
 eMalahleni$date <- dateTime
 
+
 # TIMESERIES --------------------------------------------------------------
 
 plot_ly(data = eMalahleni, x = ~date, y = ~pm2.5, type = 'scatter', mode = 'lines+markers',
@@ -219,6 +220,13 @@ eMalahleni_date <- eMalahleni_clean %>%
     TRUE ~ NA_character_
   )) %>%
   mutate(station = "eMalahleni")
+
+eMalahleni_annual_summary <- eMalahleni_date %>% datify %>% 
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  )
+
+write.csv(eMalahleni_annual_summary,"Graph/eMalahleni_annual_summary.csv")
 
 eMalahleni_monthly_hour_ex <- novaAQM::compareAQS(df = eMalahleni_date %>%
                                               ungroup() %>%

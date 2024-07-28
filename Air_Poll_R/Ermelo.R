@@ -218,6 +218,13 @@ Ermelo_date <- Ermelo_clean %>%
   )) %>%
   mutate(station = "Ermelo")
 
+Ermelo_annual_summary <- Ermelo_date %>% datify %>% 
+  dplyr::summarize(
+    novaAQM::tenpointsummary(value) , .by = c(variable)
+  )
+
+write.csv(Ermelo_annual_summary,"Graph/Ermelo_annual_summary.csv")
+
 Ermelo_monthly_hour_ex <- novaAQM::compareAQS(df = Ermelo_date %>%
                                                     ungroup() %>%
                                                     datify() %>%
