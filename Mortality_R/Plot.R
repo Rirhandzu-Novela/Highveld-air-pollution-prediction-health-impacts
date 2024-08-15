@@ -9,8 +9,9 @@ gertcardR = read.csv("MortData/gertcardRR.csv", header = T, sep = ";")
 ggplot(gertcardR, aes(x = Category, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Relative Risk (RR) with Error Bars for Different Pollutants",
+    title = "Cardiovascular Mortality RR 95% CI",
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
@@ -24,8 +25,9 @@ gertpulR = read.csv("MortData/gertpulRR.csv", header = T, sep = ";")
 ggplot(gertpulR, aes(x = Category, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Relative Risk (RR) with Error Bars for Different Pollutants",
+    title = "Pulmonary Mortality RR 95% CI",
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
@@ -38,9 +40,10 @@ gertcardL = read.csv("MortData/gertcardlag.csv", header = T, sep = ";")
 ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  facet_wrap( ~ Category) +
+  facet_wrap(~Category, nrow = 2, scales = "free") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "RR and 95% CI",
+    title = "Cardiovascular Mortality RR 95% CI",
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
@@ -53,9 +56,10 @@ gertpulL = read.csv("MortData/gertpullag.csv", header = T, sep = ";")
 ggplot(gertpulL, aes(x = Lag, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  facet_wrap( ~ Category) +
+  facet_wrap(~Category, nrow = 2, scales = "free") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "RR and 95% CI",
+    title = "Pulmonary Mortality RR 95% CI",
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
@@ -71,8 +75,9 @@ nkacardR = read.csv("MortData/nkacardRR.csv", header = T, sep = ";")
 ggplot(nkacardR, aes(x = Category, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Relative Risk (RR) with Error Bars for Different Pollutants",
+    title = "Cardiovascular Mortality RR 95% CI",
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
@@ -86,8 +91,9 @@ nkapulR = read.csv("MortData/nkapulRR.csv", header = T, sep = ";")
 ggplot(nkapulR, aes(x = Category, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Relative Risk (RR) with Error Bars for Different Pollutants",
+    title = "Pulmonary Mortality RR 95% CI",
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
@@ -100,9 +106,10 @@ nkacardL = read.csv("MortData/nkacardlag.csv", header = T, sep = ";")
 ggplot(nkacardL, aes(x = Lag, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  facet_wrap( ~ Category) +
+  facet_wrap(~Category,  nrow = 2, scales = "free") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "RR and 95% CI",
+    title = "Cardiovascular Mortality RR 95% CI",
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
@@ -115,9 +122,10 @@ nkapulL = read.csv("MortData/nkapullag.csv", header = T, sep = ";")
 ggplot(nkapulL, aes(x = Lag, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  facet_wrap( ~ Category) +
+  facet_wrap(~Category,  nrow = 2, scales = "free") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "RR and 95% CI",
+    title = "Pulmonary Mortality RR 95% CI",
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
