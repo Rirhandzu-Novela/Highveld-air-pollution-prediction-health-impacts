@@ -15,7 +15,13 @@ ggplot(gertcardR, aes(x = Category, y = RR, color = Pollutant)) +
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),   
+    legend.text = element_text(face = "bold"),  
+    strip.text = element_text(face = "bold")    
+  )
 
 
 gertpulR = read.csv("MortData/gertpulRR.csv", header = T, sep = ";")
@@ -31,7 +37,13 @@ ggplot(gertpulR, aes(x = Category, y = RR, color = Pollutant)) +
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),   
+    legend.text = element_text(face = "bold"),  
+    strip.text = element_text(face = "bold")    
+  )
 
 gertcardL = read.csv("MortData/gertcardlag.csv", header = T, sep = ";")
 
@@ -47,7 +59,13 @@ ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),   
+    legend.text = element_text(face = "bold"),  
+    strip.text = element_text(face = "bold")    
+  )
 
 gertpulL = read.csv("MortData/gertpullag.csv", header = T, sep = ";")
 
@@ -63,7 +81,13 @@ ggplot(gertpulL, aes(x = Lag, y = RR, color = Pollutant)) +
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),   
+    legend.text = element_text(face = "bold"),  
+    strip.text = element_text(face = "bold")    
+  )
 
 
 # Nkagngala ---------------------------------------------------------------
@@ -81,7 +105,13 @@ ggplot(nkacardR, aes(x = Category, y = RR, color = Pollutant)) +
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),   
+    legend.text = element_text(face = "bold"),  
+    strip.text = element_text(face = "bold")    
+  )
 
 
 nkapulR = read.csv("MortData/nkapulRR.csv", header = T, sep = ";")
@@ -97,7 +127,13 @@ ggplot(nkapulR, aes(x = Category, y = RR, color = Pollutant)) +
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),   
+    legend.text = element_text(face = "bold"),  
+    strip.text = element_text(face = "bold")    
+  )
 
 nkacardL = read.csv("MortData/nkacardlag.csv", header = T, sep = ";")
 
@@ -113,7 +149,13 @@ ggplot(nkacardL, aes(x = Lag, y = RR, color = Pollutant)) +
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),   
+    legend.text = element_text(face = "bold"),  
+    strip.text = element_text(face = "bold")    
+  )
 
 nkapulL = read.csv("MortData/nkapullag.csv", header = T, sep = ";")
 
@@ -129,5 +171,11 @@ ggplot(nkapulL, aes(x = Lag, y = RR, color = Pollutant)) +
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),   
+    legend.text = element_text(face = "bold"),  
+    strip.text = element_text(face = "bold")    
+  )
 
