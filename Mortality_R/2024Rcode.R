@@ -7,7 +7,7 @@ library(Epi)
 library(dlnm)
 
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("MortData/GertPollPulMort.csv", header = T, sep = ";")
+data = read.csv("MortData/GertPollCardMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 
@@ -20,14 +20,14 @@ options(na.action = "na.exclude")
 
 sumYear <- data %>% 
   novaAQM::datify() %>%
-  select(date, year, death_count, Male, Female, TenToSixtyFour, SixtyFivePlus) %>%
+  select(date, year, death_count, Male, Female, FifToSixtyFour, SixtyFivePlus) %>%
   group_by(year) %>%
   summarise(death_count = sum(death_count, na.rm = T),
             Male = sum(Male, na.rm = T),
             Female = sum(Female, na.rm = T),
-            TenToSixtyFour = sum(TenToSixtyFour, na.rm = T),
+            FifToSixtyFour = sum(FifToSixtyFour, na.rm = T),
             SixtyFivePlus = sum(SixtyFivePlus, na.rm = T)) %>%
-  pivot_longer(cols = c(death_count, Male, Female, TenToSixtyFour, SixtyFivePlus), 
+  pivot_longer(cols = c(death_count, Male, Female, FifToSixtyFour, SixtyFivePlus), 
                names_to = "variable", 
                values_to = "value")
 
@@ -47,13 +47,13 @@ dfYear <-  data  %>%
 write.csv(dfYear,"RDA/GertPollPulMortYearSum.csv")
 
 sum <- data %>% 
-  select(date, death_count, Male, Female, TenToSixtyFour, SixtyFivePlus) %>%
+  select(date, death_count, Male, Female, FifToSixtyFour, SixtyFivePlus) %>%
   summarise(death_count = sum(death_count, na.rm = T),
             Male = sum(Male, na.rm = T),
             Female = sum(Female, na.rm = T),
-            TenToSixtyFour = sum(TenToSixtyFour, na.rm = T),
+            FifToSixtyFour = sum(FifToSixtyFour, na.rm = T),
             SixtyFivePlus = sum(SixtyFivePlus, na.rm = T)) %>%
-  pivot_longer(cols = c(death_count, Male, Female, TenToSixtyFour, SixtyFivePlus), 
+  pivot_longer(cols = c(death_count, Male, Female, FifToSixtyFour, SixtyFivePlus), 
                names_to = "variable", 
                values_to = "value")
 
@@ -80,11 +80,12 @@ write.csv(df,"RDA/GertPollPulMortSum.csv")
 #############
 
 # SET THE PLOTTING PARAMETERS FOR THE PLOT (SEE ?par)
-oldpar <- par(no.readonly = TRUE)
-par(mex = 0.8, mfrow = c(2,1))
+oldpr <- par(no.readonly = TRUE)
+
+par(maex = 0.8, mfrow = c(2,1))
 
 # SUB-PLOT FOR DAILY DEATHS, WITH VERTICAL LINES DEFINING YEARS
-plot(data$date, data$TenToSixtyFour, pch = ".", main = "Daily deaths over time",
+plot(data$date, data$FifToSixtyFour, pch = ".", main = "Daily deaths over time",
      ylab = "Daily number of deaths", xlab = "Date")
 abline(v = data$date[grep("-01-01", data$date)], col = grey(0.6), lty = 2)
 
@@ -96,7 +97,7 @@ par(oldpar)
 layout(1)
 
 
-#ggplot(data, aes(x = date, y = TenToSixtyFour)) +
+#ggplot(data, aes(x = date, y = FifToSixtyFour)) +
 #  geom_point(size = 0.5) +
 #  geom_vline(xintercept = as.numeric(data$date[grep("-01-01", data$date)]), color = "grey60", linetype = "dashed") +
 #  labs(title = "Daily Deaths Over Time", y = "Daily Number of Deaths", x = "Date") +
@@ -153,7 +154,7 @@ data$year <- as.factor(substr(data$date, 1, 4))
 
 # FIT A POISSON MODEL WITH A STRATUM FOR EACH MONTH NESTED IN YEAR
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model1 <- glm(TenToSixtyFour ~ month/year, data, family = quasipoisson)
+model1 <- glm(FifToSixtyFour ~ month/year, data, family = quasipoisson)
 summary(model1)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -163,7 +164,7 @@ pred1 <- predict(model1, type = "response")
 # FIGURE 2A
 #############
 
-plot(data$date,data$TenToSixtyFour, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
+plot(data$date,data$FifToSixtyFour, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
      main = "Time-stratified model (month strata)", ylab = "Daily number of deaths",
      xlab = "Date")
 lines(data$date, pred1, lwd = 2)
@@ -186,7 +187,7 @@ fourier <- harmonic(data$time, nfreq = 4, period = 365.25)
 
 #FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model2 <- glm(TenToSixtyFour ~ fourier + time, data, family = quasipoisson)
+model2 <- glm(FifToSixtyFour ~ fourier + time, data, family = quasipoisson)
 summary(model2)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -196,7 +197,7 @@ pred2 <- predict(model2, type = "response")
 # FIGURE 2B
 #############
 
-plot(data$date, data$TenToSixtyFour, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
+plot(data$date, data$FifToSixtyFour, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
      main = "Sine-cosine functions (Fourier terms)", ylab = "Daily number of deaths",
      xlab = "Date")
 lines(data$date, pred2, lwd = 2)
@@ -219,7 +220,7 @@ spl <- bs(data$time, degree = 3, df = 70)
 
 # FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model3 <- glm(TenToSixtyFour ~ spl, data, family = quasipoisson)
+model3 <- glm(FifToSixtyFour ~ spl, data, family = quasipoisson)
 summary(model3)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -229,7 +230,7 @@ pred3 <- predict(model3, type = "response")
 # FIGURE 2C
 #############
 
-plot(data$date, data$TenToSixtyFour, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
+plot(data$date, data$FifToSixtyFour, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
      main = "Flexible cubic spline model", ylab = "Daily number of deaths",
      xlab = "Date")
 lines(data$date, pred3, lwd=2)
@@ -260,19 +261,19 @@ abline(h = 1, lty = 2, lwd = 2)
 
 
 # UNADJUSTED MODEL
-model4 <- glm(TenToSixtyFour ~ pm2.5, data, family = quasipoisson)
+model4 <- glm(FifToSixtyFour ~ pm2.5, data, family = quasipoisson)
 summary(model4)
 (eff4 <- ci.lin(model4, subset = "pm2.5", Exp = T))
 
-model41 <- glm(TenToSixtyFour ~ so2, data, family = quasipoisson)
+model41 <- glm(FifToSixtyFour ~ so2, data, family = quasipoisson)
 summary(model41)
 (eff41 <- ci.lin(model41, subset = "so2", Exp = T))
 
-model42 <- glm(TenToSixtyFour ~ no2, data, family = quasipoisson)
+model42 <- glm(FifToSixtyFour ~ no2, data, family = quasipoisson)
 summary(model42)
 (eff42 <- ci.lin(model42, subset = "no2", Exp = T))
 
-model43 <- glm(TenToSixtyFour ~ pm2.5  + so2 + no2, data, family = quasipoisson)
+model43 <- glm(FifToSixtyFour ~ pm2.5  + so2 + no2, data, family = quasipoisson)
 summary(model43)
 (eff43 <- ci.lin(model43, subset = "pm2.5", Exp = T))
 (eff431 <- ci.lin(model43, subset = "so2", Exp = T))
@@ -390,7 +391,7 @@ for(i in 0:7) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(TenToSixtyFour ~ PMlag + tempdecilelag + fourier, data,
+  mod <- glm(FifToSixtyFour ~ PMlag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM[i+1,] <- ci.lin(mod, subset = "PMlag", Exp = T)[5:7]
 }
@@ -409,7 +410,7 @@ for(i in 0:7) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(TenToSixtyFour ~ so2lag + tempdecilelag + fourier, data,
+  mod <- glm(FifToSixtyFour ~ so2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagSO[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
 }
@@ -428,7 +429,7 @@ for(i in 0:7) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(TenToSixtyFour ~ no2lag + tempdecilelag + fourier, data,
+  mod <- glm(FifToSixtyFour ~ no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagNO[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
 }
@@ -457,6 +458,76 @@ plot(0:7, 0:7, type = "n", ylim = c(0.99,1.03), main = "Lag terms modelled one a
 abline(h = 1)
 arrows(0:7, tablagNO[,2], 0:7, tablagNO[,3], length = 0.05, angle = 90, code = 3)
 points(0:7, tablagNO[,1], pch = 19)
+
+
+#####################
+# SINGLE-LAG MODELS MULTIPOLLUTANT
+#####################
+
+# PREPARE THE TABLE WITH ESTIMATES
+tablagPM <- matrix(NA, 7 + 1, 3, dimnames = list(paste("Lag", 0:7),
+                                                 c("RR","ci.low","ci.hi")))
+
+# RUN THE LOOP
+for(i in 0:7) {
+  # LAG PM AND TEMPERATURE VARIABLES
+  PMlag <- Lag(data$pm2.5,i)
+  so2lag <- Lag(data$so2,i)
+  no2lag <- Lag(data$no2,i)
+  tempdecilelag <- cut(Lag(data$temp,i), breaks = cutoffs,
+                       include.lowest = TRUE)
+  # DEFINE THE TRANSFORMATION FOR TEMPERATURE
+  # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
+  mod <- glm(FifToSixtyFour ~ PMlag + so2lag + no2lag+ tempdecilelag + fourier, data,
+             family = quasipoisson)
+  tablagPM[i+1,] <- ci.lin(mod, subset = "PMlag", Exp = T)[5:7]
+}
+tablagPM
+
+
+# PREPARE THE TABLE WITH ESTIMATES
+tablagSO <- matrix(NA, 7 + 1, 3, dimnames = list(paste("Lag", 0:7),
+                                                 c("RR","ci.low","ci.hi")))
+
+# RUN THE LOOP
+for(i in 0:7) {
+  # LAG PM AND TEMPERATURE VARIABLES
+  so2lag <- Lag(data$so2,i)
+  PMlag <- Lag(data$pm2.5,i)
+  no2lag <- Lag(data$no2,i)
+  tempdecilelag <- cut(Lag(data$temp,i), breaks = cutoffs,
+                       include.lowest = TRUE)
+  # DEFINE THE TRANSFORMATION FOR TEMPERATURE
+  # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
+  mod <- glm(FifToSixtyFour ~ so2lag + PMlag + no2lag + tempdecilelag + fourier, data,
+             family = quasipoisson)
+  tablagSO[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
+}
+tablagSO
+
+
+# PREPARE THE TABLE WITH ESTIMATES
+tablagNO <- matrix(NA, 7 + 1, 3, dimnames = list(paste("Lag", 0:7),
+                                                 c("RR","ci.low","ci.hi")))
+
+# RUN THE LOOP
+for(i in 0:7) {
+  # LAG PM AND TEMPERATURE VARIABLES
+  no2lag <- Lag(data$no2,i)
+  so2lag <- Lag(data$so2,i)
+  PMlag <- Lag(data$pm2.5,i)
+  tempdecilelag <- cut(Lag(data$temp,i), breaks = cutoffs,
+                       include.lowest = TRUE)
+  # DEFINE THE TRANSFORMATION FOR TEMPERATURE
+  # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
+  mod <- glm(FifToSixtyFour ~ no2lag + PMlag + no2lag +tempdecilelag + fourier, data,
+             family = quasipoisson)
+  tablagNO[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
+}
+tablagNO
+
+
+
 
 #####################
 # UNCONSTRAINED DLM
@@ -490,15 +561,15 @@ cbtempunc <- crossbasis(data$temp, lag = c(0,7),
 summary(cbtempunc)
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model7 <- glm(TenToSixtyFour ~ cbPMunc + cbtempunc + fourier, data, family = quasipoisson)
+model7 <- glm(FifToSixtyFour ~ cbPMunc + cbtempunc + fourier, data, family = quasipoisson)
 pred7 <- crosspred(cbPMunc, model7, at = 10)
 summary(model7)
 
-model71 <- glm(TenToSixtyFour ~ cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+model71 <- glm(FifToSixtyFour ~ cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred71 <- crosspred(cbSOunc, model71, at = 10)
 summary(model71)
 
-model72 <- glm(TenToSixtyFour ~ cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+model72 <- glm(FifToSixtyFour ~ cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred72 <- crosspred(cbNOunc, model72, at = 10)
 summary(model72)
 
@@ -557,16 +628,22 @@ cbnoconstr <- crossbasis(data$no2, lag = c(0,7), argvar = list(fun = "lin"),
                          arglag = list(fun = "strata", breaks = c(1,3)))
 summary(cbnoconstr)
 
+cbtempunc <- crossbasis(data$temp, lag = c(0,7),
+                        argvar = list(fun = "strata", breaks = cutoffs[2:10]),
+                        arglag = list(fun = "integer"))
+summary(cbtempunc)
+
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR PM2.5 LEVEL 10ug/m3
-model8 <- glm(TenToSixtyFour ~ cbpmconstr + cbtempunc + fourier, data, family = quasipoisson)
+model8 <- glm(FifToSixtyFour ~ cbpmconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred8 <- crosspred(cbpmconstr, model8, at = 10)
 summary(model8)
 
-model81 <- glm(TenToSixtyFour ~ cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+
+model81 <- glm(FifToSixtyFour ~ cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred81 <- crosspred(cbsoconstr, model81, at = 10)
 summary(model81)
 
-model82 <- glm(TenToSixtyFour ~ cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model82 <- glm(FifToSixtyFour ~ cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred82 <- crosspred(cbnoconstr, model82, at = 10)
 summary(model82)
 
@@ -606,6 +683,39 @@ plot(pred800, var = 10, type = "p", ci = "bars", col = 1, pch = 19, ylim = c(0.9
      main = "All lag terms modelled together", xlab = "Lag (days)",
      ylab = "RR and 95% CI per 10 ppb NO2 increase")
 
+
+
+modelMPP <- glm(FifToSixtyFour ~ cbpmconstr + cbsoconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+predMPP <- crosspred(cbpmconstr, modelMPP, at = 10)
+summary(modelMPP)
+
+modelMPS <- glm(FifToSixtyFour ~ cbsoconstr + cbpmconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+predMPS <- crosspred(cbsoconstr, modelMPS, at = 10)
+summary(modelMPS)
+
+modelMPN <- glm(FifToSixtyFour ~ cbnoconstr +  cbsoconstr + cbpmconstr + cbtempunc + fourier, data, family = quasipoisson)
+predMPN <- crosspred(cbnoconstr, modelMPN, at = 10)
+summary(modelMPN)
+
+# ESTIMATED EFFECTS AT EACH LAG
+tablagMPP <- with(predMPP,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablagMPP) <- c("RR","ci.low","ci.hi")
+tablagMPP
+
+tablagMPS <- with(predMPS,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablagMPS) <- c("RR","ci.low","ci.hi")
+tablagMPS
+
+tablagMPN <- with(predMPN,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablagMPN) <- c("RR","ci.low","ci.hi")
+tablagMPN
+
+# OVERALL CUMULATIVE (NET) EFFECT
+predMPP$allRRfit ; predMPP$allRRlow ; predMPP$allRRhigh
+
+predMPS$allRRfit ; predMPS$allRRlow ; predMPS$allRRhigh
+
+predMPN$allRRfit ; predMPN$allRRlow ; predMPN$allRRhigh
 ################################################################################
 # MODEL CHECKING
 ##################

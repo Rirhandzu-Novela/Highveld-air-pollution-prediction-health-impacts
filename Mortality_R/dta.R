@@ -26,7 +26,7 @@ Mortality <- Mortality %>%
 ### Cardiovacular
 GertCard <- Mortality %>% 
   filter(death_district == 'Gert Sibande') %>% 
-  filter(Underlying_Main_Grp == 'J00_J99')  
+  filter(Underlying_Main_Grp == 'I00_I99')  
 
 # Group by death_date and age_category and count deaths
 Gertcatcard_counts <- GertCardmort %>%
@@ -50,26 +50,28 @@ write.csv(GertcardMort, "MortData/GertcardMort.csv", row.names = TRUE)
 
 sumYear <- GertcardMort %>% 
   novaAQM::datify() %>%
-  select(date, year, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39) %>%
+  select(date, year, I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99) %>%
   group_by(year) %>%
-  summarise(I60_I69 = sum(I60_I69, na.rm = T),
+  summarise(I00_I02 = sum(I00_I02, na.rm = T),
+            I05_I09 = sum(I05_I09, na.rm = T),
+            I10_I15 = sum(I10_I15, na.rm = T),
+            I20_I25 = sum(I20_I25, na.rm = T),
+            I26_I28 = sum(I26_I28, na.rm = T),
+            I30_I52 = sum(I30_I52, na.rm = T),
             I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            J90_J94 = sum(J90_J94, na.rm = T),
-            J00_J06 = sum(J00_J06, na.rm = T),
-            J85_J86 = sum(J85_J86, na.rm = T),
-            J60_J70 = sum(J60_J70, na.rm = T),
-            J30_J39 = sum(J30_J39, na.rm = T)) %>%
-  pivot_longer(cols = c(I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39), 
+            I70_I79 = sum(I70_I79, na.rm = T),
+            I80_I89 = sum(I80_I89, na.rm = T),
+            I95_I99 = sum(I95_I99, na.rm = T)) %>%
+  pivot_longer(cols = c(I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99), 
                names_to = "variable", 
                values_to = "value")
+  
+  
 
 
 dfYear <-  GertcardMort  %>%
-  select(date, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39) %>%
-  pivot_longer(cols = I60_I69:J30_J39, names_to = "variable") %>%
+  select(date, I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99) %>%
+  pivot_longer(cols = I00_I02:I95_I99, names_to = "variable") %>%
   novaAQM::datify() %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(year, variable)
@@ -83,24 +85,25 @@ dfYear <-  GertcardMort  %>%
 write.csv(dfYear,"RDA/GertCardMortYearSum.csv")
 
 sum <- GertcardMort %>% 
-  select(date, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39) %>%
-  summarise(I60_I69 = sum(I60_I69, na.rm = T),
+  select(date, I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99) %>%
+  summarise(I00_I02 = sum(I00_I02, na.rm = T),
+            I05_I09 = sum(I05_I09, na.rm = T),
+            I10_I15 = sum(I10_I15, na.rm = T),
+            I20_I25 = sum(I20_I25, na.rm = T),
+            I26_I28 = sum(I26_I28, na.rm = T),
+            I30_I52 = sum(I30_I52, na.rm = T),
             I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            J90_J94 = sum(J90_J94, na.rm = T),
-            J00_J06 = sum(J00_J06, na.rm = T),
-            J85_J86 = sum(J85_J86, na.rm = T),
-            J60_J70 = sum(J60_J70, na.rm = T),
-            J30_J39 = sum(J30_J39, na.rm = T)) %>%
-  pivot_longer(cols = c(I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39), 
+            I70_I79 = sum(I70_I79, na.rm = T),
+            I80_I89 = sum(I80_I89, na.rm = T),
+            I95_I99 = sum(I95_I99, na.rm = T)) %>%
+  pivot_longer(cols = c(I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99), 
                names_to = "variable", 
                values_to = "value")
+  
 
 
 df <-  GertcardMort  %>%
-  pivot_longer(cols = I60_I69:J30_J39, names_to = "variable") %>%
+  pivot_longer(cols = I00_I02:I95_I99, names_to = "variable") %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(variable)
   ) %>% 
@@ -117,7 +120,7 @@ write.csv(df,"RDA/GertCardMortSum.csv")
 ### Pulmonary
 GertPull <- Mortality %>% 
   filter(death_district == 'Gert Sibande') %>% 
-  filter(Underlying_Main_Grp == 'I00_I99')  
+  filter(Underlying_Main_Grp == 'J00_J99')  
 
 # Group by death_date and age_category and count deaths
 GertcatPull_counts <- GertPullmort %>%
@@ -136,26 +139,27 @@ write.csv(GertPullMort, "MortData/GertPullMort.csv", row.names = TRUE)
 
 sumYear <- GertPullMort %>% 
   novaAQM::datify() %>%
-  select(date, year, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02) %>%
+  select(date, year, J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99) %>%
   group_by(year) %>%
-  summarise(I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I05_I09 = sum(I05_I09, na.rm = T),
-            I95_I99 = sum(I95_I99, na.rm = T),
-            I00_I02 = sum(I00_I02, na.rm = T)) %>%
-  pivot_longer(cols = c(I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02), 
+  summarise(J00_J06 = sum(J00_J06, na.rm = T),
+            J09_J18 = sum(J09_J18, na.rm = T),
+            J20_J22 = sum(J20_J22, na.rm = T),
+            J30_J39 = sum(J30_J39, na.rm = T),
+            J40_J47 = sum(J40_J47, na.rm = T),
+            J60_J70 = sum(J60_J70, na.rm = T),
+            J80_J84 = sum(J80_J84, na.rm = T),
+            J85_J86 = sum(J85_J86, na.rm = T),
+            J90_J94 = sum(J90_J94, na.rm = T),
+            J95_J99 = sum(J95_J99, na.rm = T)) %>%
+  pivot_longer(cols = c(J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99), 
                names_to = "variable", 
                values_to = "value")
+  
 
 
 dfYear <-  GertPullMort  %>%
-  select(date, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02) %>%
-  pivot_longer(cols = I60_I69:I00_I02, names_to = "variable") %>%
+  select(date, J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99) %>%
+  pivot_longer(cols = J00_J06:J95_J99, names_to = "variable") %>%
   novaAQM::datify() %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(year, variable)
@@ -169,24 +173,25 @@ dfYear <-  GertPullMort  %>%
 write.csv(dfYear,"RDA/GertPulMortYearSum.csv")
 
 sum <- GertPullMort %>% 
-  select(date, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02) %>%
-  summarise(I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I05_I09 = sum(I05_I09, na.rm = T),
-            I95_I99 = sum(I95_I99, na.rm = T),
-            I00_I02 = sum(I00_I02, na.rm = T)) %>%
-  pivot_longer(cols = c(I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02), 
+  select(date, J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99) %>%
+  summarise(J00_J06 = sum(J00_J06, na.rm = T),
+            J09_J18 = sum(J09_J18, na.rm = T),
+            J20_J22 = sum(J20_J22, na.rm = T),
+            J30_J39 = sum(J30_J39, na.rm = T),
+            J40_J47 = sum(J40_J47, na.rm = T),
+            J60_J70 = sum(J60_J70, na.rm = T),
+            J80_J84 = sum(J80_J84, na.rm = T),
+            J85_J86 = sum(J85_J86, na.rm = T),
+            J90_J94 = sum(J90_J94, na.rm = T),
+            J95_J99 = sum(J95_J99, na.rm = T)) %>%
+  pivot_longer(cols = c(J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99), 
                names_to = "variable", 
                values_to = "value")
+  
 
 
 df <-  GertPullMort  %>%
-  pivot_longer(cols = I60_I69:I00_I02, names_to = "variable") %>%
+  pivot_longer(cols = J00_J06:J95_J99, names_to = "variable") %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(variable)
   ) %>% 
@@ -205,7 +210,7 @@ write.csv(df,"RDA/GertPulMortSum.csv")
 ### Cardiovacular
 NkaCard <- Mortality %>% 
   filter(death_district == 'Nkangala') %>% 
-  filter(Underlying_Main_Grp == 'J00_J99')  
+  filter(Underlying_Main_Grp == 'I00_I99')  
 
 # Group by death_date and age_category and count deaths
 Nkacatcard_counts <- NkaCard %>%
@@ -229,26 +234,27 @@ write.csv(NkacardMort, "MortData/NkacardMort.csv", row.names = TRUE)
 
 sumYear <- NkacardMort %>% 
   novaAQM::datify() %>%
-  select(date, year, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39) %>%
+  select(date, year, I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99) %>%
   group_by(year) %>%
-  summarise(I60_I69 = sum(I60_I69, na.rm = T),
+  summarise(I00_I02 = sum(I00_I02, na.rm = T),
+            I05_I09 = sum(I05_I09, na.rm = T),
+            I10_I15 = sum(I10_I15, na.rm = T),
+            I20_I25 = sum(I20_I25, na.rm = T),
+            I26_I28 = sum(I26_I28, na.rm = T),
+            I30_I52 = sum(I30_I52, na.rm = T),
             I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            J90_J94 = sum(J90_J94, na.rm = T),
-            J00_J06 = sum(J00_J06, na.rm = T),
-            J85_J86 = sum(J85_J86, na.rm = T),
-            J60_J70 = sum(J60_J70, na.rm = T),
-            J30_J39 = sum(J30_J39, na.rm = T)) %>%
-  pivot_longer(cols = c(I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39), 
+            I70_I79 = sum(I70_I79, na.rm = T),
+            I80_I89 = sum(I80_I89, na.rm = T),
+            I95_I99 = sum(I95_I99, na.rm = T)) %>%
+  pivot_longer(cols = c(I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99), 
                names_to = "variable", 
                values_to = "value")
+  
 
 
 dfYear <-  NkacardMort  %>%
-  select(date, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39) %>%
-  pivot_longer(cols = I60_I69:J30_J39, names_to = "variable") %>%
+  select(date, I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99) %>%
+  pivot_longer(cols = I00_I02:I95_I99, names_to = "variable") %>%
   novaAQM::datify() %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(year, variable)
@@ -262,24 +268,25 @@ dfYear <-  NkacardMort  %>%
 write.csv(dfYear,"RDA/NkaCardMortYearSum.csv")
 
 sum <- NkacardMort %>% 
-  select(date, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39) %>%
-  summarise(I60_I69 = sum(I60_I69, na.rm = T),
+  select(date, year, I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99) %>%
+  summarise(I00_I02 = sum(I00_I02, na.rm = T),
+            I05_I09 = sum(I05_I09, na.rm = T),
+            I10_I15 = sum(I10_I15, na.rm = T),
+            I20_I25 = sum(I20_I25, na.rm = T),
+            I26_I28 = sum(I26_I28, na.rm = T),
+            I30_I52 = sum(I30_I52, na.rm = T),
             I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            J90_J94 = sum(J90_J94, na.rm = T),
-            J00_J06 = sum(J00_J06, na.rm = T),
-            J85_J86 = sum(J85_J86, na.rm = T),
-            J60_J70 = sum(J60_J70, na.rm = T),
-            J30_J39 = sum(J30_J39, na.rm = T)) %>%
-  pivot_longer(cols = c(I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, J90_J94, J00_J06, J85_J86, J60_J70, J30_J39), 
+            I70_I79 = sum(I70_I79, na.rm = T),
+            I80_I89 = sum(I80_I89, na.rm = T),
+            I95_I99 = sum(I95_I99, na.rm = T)) %>%
+  pivot_longer(cols = c(I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99), 
                names_to = "variable", 
                values_to = "value")
+  
 
 
 df <-  NkacardMort  %>%
-  pivot_longer(cols = I60_I69:J30_J39, names_to = "variable") %>%
+  pivot_longer(cols = I00_I02:I95_I99, names_to = "variable") %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(variable)
   ) %>% 
@@ -296,7 +303,7 @@ write.csv(df,"RDA/NkaCardMortSum.csv")
 ### Pulmonary
 NkaPull <- Mortality %>% 
   filter(death_district == 'Nkangala') %>% 
-  filter(Underlying_Main_Grp == 'I00_I99')  
+  filter(Underlying_Main_Grp == 'J00_J99')  
 
 # Group by death_date and age_category and count deaths
 NkacatPull_counts <- NkaPull %>%
@@ -315,26 +322,27 @@ write.csv(NkaPullMort, "MortData/NkaPullMort.csv", row.names = TRUE)
 
 sumYear <- NkaPullMort %>% 
   novaAQM::datify() %>%
-  select(date, year, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02) %>%
+  select(date, year, J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99) %>%
   group_by(year) %>%
-  summarise(I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I05_I09 = sum(I05_I09, na.rm = T),
-            I95_I99 = sum(I95_I99, na.rm = T),
-            I00_I02 = sum(I00_I02, na.rm = T)) %>%
-  pivot_longer(cols = c(I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02), 
+  summarise(J00_J06 = sum(J00_J06, na.rm = T),
+            J09_J18 = sum(J09_J18, na.rm = T),
+            J20_J22 = sum(J20_J22, na.rm = T),
+            J30_J39 = sum(J30_J39, na.rm = T),
+            J40_J47 = sum(J40_J47, na.rm = T),
+            J60_J70 = sum(J60_J70, na.rm = T),
+            J80_J84 = sum(J80_J84, na.rm = T),
+            J85_J86 = sum(J85_J86, na.rm = T),
+            J90_J94 = sum(J90_J94, na.rm = T),
+            J95_J99 = sum(J95_J99, na.rm = T)) %>%
+  pivot_longer(cols = c(J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99), 
                names_to = "variable", 
                values_to = "value")
+  
 
 
 dfYear <-  NkaPullMort  %>%
-  select(date, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02) %>%
-  pivot_longer(cols = I60_I69:I00_I02, names_to = "variable") %>%
+  select(date,J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99) %>%
+  pivot_longer(cols = J00_J06:J95_J99, names_to = "variable") %>%
   novaAQM::datify() %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(year, variable)
@@ -348,24 +356,25 @@ dfYear <-  NkaPullMort  %>%
 write.csv(dfYear,"RDA/NkaPulMortYearSum.csv")
 
 sum <- NkaPullMort %>% 
-  select(date, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02) %>%
-  summarise(I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I60_I69 = sum(I60_I69, na.rm = T),
-            I05_I09 = sum(I05_I09, na.rm = T),
-            I95_I99 = sum(I95_I99, na.rm = T),
-            I00_I02 = sum(I00_I02, na.rm = T)) %>%
-  pivot_longer(cols = c(I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I60_I69, I05_I09, I95_I99, I00_I02), 
+  select(date, year, J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99) %>%
+  summarise(J00_J06 = sum(J00_J06, na.rm = T),
+            J09_J18 = sum(J09_J18, na.rm = T),
+            J20_J22 = sum(J20_J22, na.rm = T),
+            J30_J39 = sum(J30_J39, na.rm = T),
+            J40_J47 = sum(J40_J47, na.rm = T),
+            J60_J70 = sum(J60_J70, na.rm = T),
+            J80_J84 = sum(J80_J84, na.rm = T),
+            J85_J86 = sum(J85_J86, na.rm = T),
+            J90_J94 = sum(J90_J94, na.rm = T),
+            J95_J99 = sum(J95_J99, na.rm = T)) %>%
+  pivot_longer(cols = c(J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99), 
                names_to = "variable", 
                values_to = "value")
+  
 
 
 df <-  NkaPullMort  %>%
-  pivot_longer(cols = I60_I69:I00_I02, names_to = "variable") %>%
+  pivot_longer(cols = J00_J06:J95_J99, names_to = "variable") %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(variable)
   ) %>% 
@@ -402,7 +411,7 @@ fourier <- harmonic(data$time, nfreq = 4, period = 365.25)
 
 #FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model2 <- glm(I60_I69 ~ fourier + time, data, family = quasipoisson)
+model2 <- glm(J95_J99 ~ fourier + time, data, family = quasipoisson)
 summary(model2)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -412,7 +421,7 @@ pred2 <- predict(model2, type = "response")
 # FIGURE 2B
 #############
 
-plot(data$date, data$I60_I69, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
+plot(data$date, data$J95_J99, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
      main = "Sine-cosine functions (Fourier terms)", ylab = "Daily number of deaths",
      xlab = "Date")
 lines(data$date, pred2, lwd = 2)
@@ -435,7 +444,7 @@ spl <- bs(data$time, degree = 3, df = 70)
 
 # FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model3 <- glm(I60_I69 ~ spl, data, family = quasipoisson)
+model3 <- glm(J95_J99 ~ spl, data, family = quasipoisson)
 summary(model3)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -445,7 +454,7 @@ pred3 <- predict(model3, type = "response")
 # FIGURE 2C
 #############
 
-plot(data$date, data$I60_I69, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
+plot(data$date, data$J95_J99, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
      main = "Flexible cubic spline model", ylab = "Daily number of deaths",
      xlab = "Date")
 lines(data$date, pred3, lwd=2)
@@ -476,28 +485,26 @@ abline(h = 1, lty = 2, lwd = 2)
 
 
 # UNADJUSTED MODEL
-model4 <- glm(I60_I69 ~ pm2.5, data, family = quasipoisson)
+model4 <- glm(J95_J99 ~ pm2.5, data, family = quasipoisson)
 summary(model4)
 (eff4 <- ci.lin(model4, subset = "pm2.5", Exp = T))
 
-model41 <- glm(I60_I69 ~ so2, data, family = quasipoisson)
+model41 <- glm(J95_J99 ~ so2, data, family = quasipoisson)
 summary(model41)
 (eff41 <- ci.lin(model41, subset = "so2", Exp = T))
 
-model42 <- glm(I60_I69 ~ no2, data, family = quasipoisson)
+model42 <- glm(J95_J99 ~ no2, data, family = quasipoisson)
 summary(model42)
 (eff42 <- ci.lin(model42, subset = "no2", Exp = T))
 
-model43 <- glm(I60_I69 ~ pm2.5  + so2 + no2, data, family = quasipoisson)
+model43 <- glm(J95_J99 ~ pm2.5  + so2 + no2, data, family = quasipoisson)
 summary(model43)
-
 (eff43 <- ci.lin(model43, subset = "pm2.5", Exp = T))
 (eff431 <- ci.lin(model43, subset = "so2", Exp = T))
 (eff432 <- ci.lin(model43, subset = "no2", Exp = T))
 
 # CONTROLLING FOR SEASONALITY (WITH SPLINE AS IN MODEL 3)
 model5 <- update(model4, .~. + spl)
-
 summary(model5)
 (eff5 <- ci.lin(model5, subset = "pm2.5", Exp = T))
 
@@ -612,7 +619,7 @@ for(i in 0:7) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(I60_I69 ~ PMlag + tempdecilelag + fourier, data,
+  mod <- glm(J95_J99 ~ PMlag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM[i+1,] <- ci.lin(mod, subset = "PMlag", Exp = T)[5:7]
 }
@@ -631,7 +638,7 @@ for(i in 0:7) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(I60_I69 ~ so2lag + tempdecilelag + fourier, data,
+  mod <- glm(J95_J99 ~ so2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagSO[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
 }
@@ -650,7 +657,7 @@ for(i in 0:7) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(I60_I69 ~ no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J95_J99 ~ no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagNO[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
 }
@@ -679,6 +686,75 @@ plot(0:7, 0:7, type = "n", ylim = c(0.99,1.03), main = "Lag terms modelled one a
 abline(h = 1)
 arrows(0:7, tablagNO[,2], 0:7, tablagNO[,3], length = 0.05, angle = 90, code = 3)
 points(0:7, tablagNO[,1], pch = 19)
+
+#####################
+# SINGLE-LAG MODELS MULTIPOLLUTANT
+#####################
+
+# PREPARE THE TABLE WITH ESTIMATES
+tablagPM <- matrix(NA, 7 + 1, 3, dimnames = list(paste("Lag", 0:7),
+                                                 c("RR","ci.low","ci.hi")))
+
+# RUN THE LOOP
+for(i in 0:7) {
+  # LAG PM AND TEMPERATURE VARIABLES
+  PMlag <- Lag(data$pm2.5,i)
+  so2lag <- Lag(data$so2,i)
+  no2lag <- Lag(data$no2,i)
+  tempdecilelag <- cut(Lag(data$temp,i), breaks = cutoffs,
+                       include.lowest = TRUE)
+  # DEFINE THE TRANSFORMATION FOR TEMPERATURE
+  # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
+  mod <- glm(J95_J99 ~ PMlag + so2lag + no2lag+ tempdecilelag + fourier, data,
+             family = quasipoisson)
+  tablagPM[i+1,] <- ci.lin(mod, subset = "PMlag", Exp = T)[5:7]
+}
+tablagPM
+
+
+# PREPARE THE TABLE WITH ESTIMATES
+tablagSO <- matrix(NA, 7 + 1, 3, dimnames = list(paste("Lag", 0:7),
+                                                 c("RR","ci.low","ci.hi")))
+
+# RUN THE LOOP
+for(i in 0:7) {
+  # LAG PM AND TEMPERATURE VARIABLES
+  so2lag <- Lag(data$so2,i)
+  PMlag <- Lag(data$pm2.5,i)
+  no2lag <- Lag(data$no2,i)
+  tempdecilelag <- cut(Lag(data$temp,i), breaks = cutoffs,
+                       include.lowest = TRUE)
+  # DEFINE THE TRANSFORMATION FOR TEMPERATURE
+  # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
+  mod <- glm(J95_J99 ~ so2lag + PMlag + no2lag + tempdecilelag + fourier, data,
+             family = quasipoisson)
+  tablagSO[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
+}
+tablagSO
+
+
+# PREPARE THE TABLE WITH ESTIMATES
+tablagNO <- matrix(NA, 7 + 1, 3, dimnames = list(paste("Lag", 0:7),
+                                                 c("RR","ci.low","ci.hi")))
+
+# RUN THE LOOP
+for(i in 0:7) {
+  # LAG PM AND TEMPERATURE VARIABLES
+  no2lag <- Lag(data$no2,i)
+  so2lag <- Lag(data$so2,i)
+  PMlag <- Lag(data$pm2.5,i)
+  tempdecilelag <- cut(Lag(data$temp,i), breaks = cutoffs,
+                       include.lowest = TRUE)
+  # DEFINE THE TRANSFORMATION FOR TEMPERATURE
+  # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
+  mod <- glm(J95_J99 ~ no2lag + PMlag + no2lag +tempdecilelag + fourier, data,
+             family = quasipoisson)
+  tablagNO[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
+}
+
+tablagNO
+
+
 
 #####################
 # UNCONSTRAINED DLM
@@ -712,15 +788,15 @@ cbtempunc <- crossbasis(data$temp, lag = c(0,7),
 summary(cbtempunc)
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model7 <- glm(I60_I69 ~ cbPMunc + cbtempunc + fourier, data, family = quasipoisson)
+model7 <- glm(J95_J99 ~ cbPMunc + cbtempunc + fourier, data, family = quasipoisson)
 pred7 <- crosspred(cbPMunc, model7, at = 10)
 summary(model7)
 
-model71 <- glm(I60_I69 ~ cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+model71 <- glm(J95_J99 ~ cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred71 <- crosspred(cbSOunc, model71, at = 10)
 summary(model71)
 
-model72 <- glm(I60_I69 ~ cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+model72 <- glm(J95_J99 ~ cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
 
 pred72 <- crosspred(cbNOunc, model72, at = 10)
 summary(model72)
@@ -781,17 +857,23 @@ cbnoconstr <- crossbasis(data$no2, lag = c(0,7), argvar = list(fun = "lin"),
                          arglag = list(fun = "strata", breaks = c(1,3)))
 summary(cbnoconstr)
 
+
+cbtempunc <- crossbasis(data$temp, lag = c(0,7),
+                        argvar = list(fun = "strata", breaks = cutoffs[2:10]),
+                        arglag = list(fun = "integer"))
+summary(cbtempunc)
+
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR PM2.5 LEVEL 10ug/m3
-model8 <- glm(I60_I69 ~ cbpmconstr + cbtempunc + fourier, data, family = quasipoisson)
+model8 <- glm(J95_J99 ~ cbpmconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred8 <- crosspred(cbpmconstr, model8, at = 10)
 summary(model8)
 
-model81 <- glm(I60_I69 ~ cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model81 <- glm(J95_J99 ~ cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
 
 pred81 <- crosspred(cbsoconstr, model81, at = 10)
 summary(model81)
 
-model82 <- glm(I60_I69 ~ cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model82 <- glm(J95_J99 ~ cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred82 <- crosspred(cbnoconstr, model82, at = 10)
 summary(model82)
 
@@ -832,6 +914,39 @@ plot(pred800, var = 10, type = "p", ci = "bars", col = 1, pch = 19, ylim = c(0.9
      main = "All lag terms modelled together", xlab = "Lag (days)",
      ylab = "RR and 95% CI per 10 ppb NO2 increase")
 
+
+modelMPP <- glm(J95_J99 ~ cbpmconstr + cbsoconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+predMPP <- crosspred(cbpmconstr, modelMPP, at = 10)
+summary(modelMPP)
+
+modelMPS <- glm(J95_J99 ~ cbsoconstr + cbpmconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+predMPS <- crosspred(cbsoconstr, modelMPS, at = 10)
+summary(modelMPS)
+
+modelMPN <- glm(J95_J99 ~ cbnoconstr +  cbsoconstr + cbpmconstr + cbtempunc + fourier, data, family = quasipoisson)
+predMPN <- crosspred(cbnoconstr, modelMPN, at = 10)
+summary(modelMPN)
+
+# ESTIMATED EFFECTS AT EACH LAG
+tablagMPP <- with(predMPP,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablagMPP) <- c("RR","ci.low","ci.hi")
+tablagMPP
+
+tablagMPS <- with(predMPS,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablagMPS) <- c("RR","ci.low","ci.hi")
+tablagMPS
+
+tablagMPN <- with(predMPN,t(rbind(matRRfit, matRRlow, matRRhigh)))
+colnames(tablagMPN) <- c("RR","ci.low","ci.hi")
+tablagMPN
+
+# OVERALL CUMULATIVE (NET) EFFECT
+predMPP$allRRfit ; predMPP$allRRlow ; predMPP$allRRhigh
+
+predMPS$allRRfit ; predMPS$allRRlow ; predMPS$allRRhigh
+
+predMPN$allRRfit ; predMPN$allRRlow ; predMPN$allRRhigh
+
 ################################################################################
 # MODEL CHECKING
 ##################
@@ -865,191 +980,5 @@ pacf(residuals(model10, type = "deviance"), na.action = na.omit,
      main = "From model adjusted for residual autocorrelation")
 
 
-# PLOTS -------------------------------------------------------------------
-
-gertcardR = read.csv("MortData/gertcardcartRR.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(gertcardR, aes(x = Category, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Pulmonary Mortality RR [95% CI]",
-    x = "Category",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)   
-  )
-
-
-gertpulR = read.csv("MortData/gertpulcartRR.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(gertpulR, aes(x = Category, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Cardiovascular Mortality RR [95% CI]",
-    x = "Category",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)    
-  )
-
-gertcardL = read.csv("MortData/gertcardcartlag.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  facet_wrap(~Category, nrow = 2, scales = "free") +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Pulmonary Mortality RR [95% CI]",
-    x = "Lag",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
-  )
-
-gertpulL = read.csv("MortData/gertpulcartlag.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(gertpulL, aes(x = Lag, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  facet_wrap(~Category, nrow = 2, scales = "free") +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Cardiovascular Mortality RR [95% CI]",
-    x = "Lag",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
-  )
-
-
-# Nkagngala ---------------------------------------------------------------
-
-nkacardR = read.csv("MortData/NkacardcartRR.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(nkacardR, aes(x = Category, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Pulmonary Mortality RR [95% CI]",
-    x = "Category",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)    
-  )
-
-
-nkapulR = read.csv("MortData/nkapulcartRR.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(nkapulR, aes(x = Category, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Cardiovascular Mortality RR [95% CI]",
-    x = "Category",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)    
-  )
-
-nkacardL = read.csv("MortData/nkacardcartlag.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(nkacardL, aes(x = Lag, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  facet_wrap(~Category,  nrow = 2, scales = "free") +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Pulmonary Mortality RR [95% CI]",
-    x = "Lag",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
-  )
-
-nkapulL = read.csv("MortData/nkapulcartlag.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(nkapulL, aes(x = Lag, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  facet_wrap(~Category,  nrow = 2, scales = "free") +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Cardiovascular Mortality RR [95% CI]",
-    x = "Lag",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
-  )
 
 

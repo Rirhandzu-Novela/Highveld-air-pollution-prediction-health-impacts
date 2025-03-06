@@ -37,6 +37,19 @@ GertAll_counts <- GertAll_counts %>%
 write.csv(GertAll_counts, "MortData/GertMort30.csv", row.names = TRUE)
 
 
+air_pollution_data = read.csv("AirData/GertsDaily.csv", header = T, sep = ";")
+
+air_pollution_data <- air_pollution_data %>%
+  mutate(date = as.Date(date, format = "%Y/%m/%d"))
+
+
+GertPollMort30 <- air_pollution_data %>%
+  left_join(GertAll_counts, by = "date")
+
+write.csv(GertPollMort30, "MortData/GertPollMort30.csv", row.names = TRUE)
+
+
+
 Gerts30 = read.csv("MortData/GertMort30.csv", header = T, sep = ";")
 
 Gerts30$date <- as.Date(Gerts30$date, format = "%Y/%m/%d")
@@ -94,7 +107,7 @@ write.csv(df30,"RDA/GertSum30.csv")
 ### Cardiovacular
 GertCardmort <- Mortality %>% 
   filter(death_district == 'Gert Sibande') %>% 
-  filter(Underlying_Main_Grp == 'J00_J99')  
+  filter(Underlying_Main_Grp == 'I00_I99')  
   
 GertAllcard_counts <-  GertCardmort %>%
   group_by(DeathDate) %>%
@@ -115,8 +128,8 @@ GertSexcard_counts <- GertCardmort %>%
 
 GertCardmort <- GertCardmort %>%
   mutate(age_category = case_when(
-    AGEYEAR < 10 ~ "BelowTen",
-    AGEYEAR >= 10 & AGEYEAR <= 64 ~ "TenToSixtyFour",
+    AGEYEAR < 15 ~ "BelowFif",
+    AGEYEAR >= 15 & AGEYEAR <= 64 ~ "FifToSixtyFour",
     AGEYEAR >= 65 ~ "SixtyFivePlus"
   ))
 
@@ -154,7 +167,7 @@ write.csv(GertPollMort, "MortData/GertPollCardMort.csv", row.names = TRUE)
 
 GertPulmort <- Mortality %>% 
   filter(death_district == 'Gert Sibande') %>% 
-  filter(Underlying_Main_Grp == 'I00_I99')  
+  filter(Underlying_Main_Grp == 'J00_J99')  
 
 GertAllPul_counts <-  GertPulmort %>%
   group_by(DeathDate) %>%
@@ -175,8 +188,8 @@ GertSexPul_counts <- GertPulmort %>%
 
 GertPulmort <- GertPulmort %>%
   mutate(age_category = case_when(
-    AGEYEAR < 10 ~ "BelowTen",
-    AGEYEAR >= 10 & AGEYEAR <= 64 ~ "TenToSixtyFour",
+    AGEYEAR < 15 ~ "BelowFif",
+    AGEYEAR >= 15 & AGEYEAR <= 64 ~ "FifToSixtyFour",
     AGEYEAR >= 65 ~ "SixtyFivePlus"
   ))
 
@@ -228,6 +241,17 @@ NkaAll_counts <- NkaAll_counts %>%
   left_join(NkaSex_counts, by = "date")
 
 write.csv(NkaAll_counts, "MortData/NkaMort30.csv", row.names = TRUE)
+
+air_pollution_data = read.csv("AirData/NkaDaily.csv", header = T, sep = ";")
+
+air_pollution_data <- air_pollution_data %>%
+  mutate(date = as.Date(date, format = "%Y/%m/%d"))
+
+
+NkaPollMort30 <- air_pollution_data %>%
+  left_join(NkaAll_counts, by = "date")
+
+write.csv(NkaPollMort30, "MortData/NkaPollMort30.csv", row.names = TRUE)
 
 
 Nka30 = read.csv("MortData/NkaMort30.csv", header = T, sep = ";")
@@ -286,7 +310,7 @@ write.csv(df30,"RDA/NkaSum30.csv")
 
 NkaCardmort <- Mortality %>% 
   filter(death_district == 'Nkangala') %>% 
-  filter(Underlying_Main_Grp == 'J00_J99')  
+  filter(Underlying_Main_Grp == 'I00_I99')  
 
 NkaAllcard_counts <-  NkaCardmort %>%
   group_by(DeathDate) %>%
@@ -307,8 +331,8 @@ NkaSexcard_counts <- NkaCardmort %>%
 
 NkaCardmort <- NkaCardmort %>%
   mutate(age_category = case_when(
-    AGEYEAR < 10 ~ "BelowTen",
-    AGEYEAR >= 10 & AGEYEAR <= 64 ~ "TenToSixtyFour",
+    AGEYEAR < 15 ~ "BelowFif",
+    AGEYEAR >= 15 & AGEYEAR <= 64 ~ "FifToSixtyFour",
     AGEYEAR >= 65 ~ "SixtyFivePlus"
   ))
 
@@ -346,7 +370,7 @@ write.csv(NkaPollMort, "MortData/NkaPollCardMort.csv", row.names = TRUE)
 
 NkaPulmort <- Mortality %>% 
   filter(death_district == 'Nkangala') %>% 
-  filter(Underlying_Main_Grp == 'I00_I99')  
+  filter(Underlying_Main_Grp == 'J00_J99')  
 
 NkaAllPul_counts <-  NkaPulmort %>%
   group_by(DeathDate) %>%
@@ -367,8 +391,8 @@ NkaSexPul_counts <- NkaPulmort %>%
 
 NkaPulmort <- NkaPulmort %>%
   mutate(age_category = case_when(
-    AGEYEAR < 10 ~ "BelowTen",
-    AGEYEAR >= 10 & AGEYEAR <= 64 ~ "TenToSixtyFour",
+    AGEYEAR < 15 ~ "BelowFif",
+    AGEYEAR >= 15 & AGEYEAR <= 64 ~ "FifToSixtyFour",
     AGEYEAR >= 65 ~ "SixtyFivePlus"
   ))
 

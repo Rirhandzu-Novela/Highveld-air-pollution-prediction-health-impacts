@@ -11,7 +11,7 @@ ggplot(gertcardR, aes(x = Category, y = RR, color = Pollutant)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Pulmonary Mortality RR [95% CI]",
+    title = "Cardiovascular Mortality RR [95% CI]",
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
@@ -34,7 +34,7 @@ ggplot(gertpulR, aes(x = Category, y = RR, color = Pollutant)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Cardiovascular Mortality RR [95% CI]",
+    title = "Pulmonary Mortality RR [95% CI]",
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
@@ -57,7 +57,7 @@ ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
   facet_wrap(~Category, nrow = 2, scales = "free") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Pulmonary Mortality RR [95% CI]",
+    title = "Cardiovascular Mortality RR [95% CI]",
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
@@ -80,7 +80,7 @@ ggplot(gertpulL, aes(x = Lag, y = RR, color = Pollutant)) +
   facet_wrap(~Category, nrow = 2, scales = "free") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Cardiovascular Mortality RR [95% CI]",
+    title = "Pulmonary Mortality RR [95% CI]",
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
@@ -105,7 +105,7 @@ ggplot(nkacardR, aes(x = Category, y = RR, color = Pollutant)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Pulmonary Mortality RR [95% CI]",
+    title = "Cardiovascular Mortality RR [95% CI]",
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
@@ -128,7 +128,7 @@ ggplot(nkapulR, aes(x = Category, y = RR, color = Pollutant)) +
   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Cardiovascular Mortality RR [95% CI]",
+    title = "Pulmonary Mortality RR [95% CI]",
     x = "Category",
     y = "Relative Risk (RR)"
   ) +
@@ -151,7 +151,7 @@ ggplot(nkacardL, aes(x = Lag, y = RR, color = Pollutant)) +
   facet_wrap(~Category,  nrow = 2, scales = "free") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Pulmonary Mortality RR [95% CI]",
+    title = "Cardiovascular Mortality RR [95% CI]",
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
@@ -174,7 +174,7 @@ ggplot(nkapulL, aes(x = Lag, y = RR, color = Pollutant)) +
   facet_wrap(~Category,  nrow = 2, scales = "free") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   labs(
-    title = "Cardiovascular Mortality RR [95% CI]",
+    title = "Pulmonary Mortality RR [95% CI]",
     x = "Lag",
     y = "Relative Risk (RR)"
   ) +
