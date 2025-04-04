@@ -29,9 +29,9 @@ GertCard <- Mortality %>%
   filter(Underlying_Main_Grp == 'I00_I99')  
 
 # Group by death_date and age_category and count deaths
-Gertcatcard_counts <- GertCardmort %>%
+Gertcatcard_counts <- GertCard %>%
   group_by(DeathDate,  Underlying_Broad_Grp) %>%
-  summarize(death_count = n(), .groups = 'drop') %>%
+  dplyr::summarize(death_count = n(), .groups = 'drop') %>%
   pivot_wider(names_from =  Underlying_Broad_Grp, values_from = death_count, values_fill = list(death_count = 0)) %>% 
   mutate(DeathDate = as.Date(DeathDate, format = "%d-%m-%Y")) %>%
   rename(date = DeathDate)
@@ -65,8 +65,6 @@ sumYear <- GertcardMort %>%
   pivot_longer(cols = c(I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99), 
                names_to = "variable", 
                values_to = "value")
-  
-  
 
 
 dfYear <-  GertcardMort  %>%
@@ -103,7 +101,7 @@ sum <- GertcardMort %>%
 
 
 df <-  GertcardMort  %>%
-  pivot_longer(cols = I00_I02:I95_I99, names_to = "variable") %>%
+  pivot_longer(cols = I10_I15:I00_I02, names_to = "variable") %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(variable)
   ) %>% 
@@ -118,14 +116,15 @@ write.csv(df,"RDA/GertCardMortSum.csv")
 
 
 ### Pulmonary
+
 GertPull <- Mortality %>% 
   filter(death_district == 'Gert Sibande') %>% 
   filter(Underlying_Main_Grp == 'J00_J99')  
 
 # Group by death_date and age_category and count deaths
-GertcatPull_counts <- GertPullmort %>%
+GertcatPull_counts <- GertPull %>%
   group_by(DeathDate,  Underlying_Broad_Grp) %>%
-  summarize(death_count = n(), .groups = 'drop') %>%
+  dplyr::summarize(death_count = n(), .groups = 'drop') %>%
   pivot_wider(names_from =  Underlying_Broad_Grp, values_from = death_count, values_fill = list(death_count = 0)) %>% 
   mutate(DeathDate = as.Date(DeathDate, format = "%d-%m-%Y")) %>%
   rename(date = DeathDate)
@@ -191,7 +190,7 @@ sum <- GertPullMort %>%
 
 
 df <-  GertPullMort  %>%
-  pivot_longer(cols = J00_J06:J95_J99, names_to = "variable") %>%
+  pivot_longer(cols = J09_J18:J30_J39, names_to = "variable") %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(variable)
   ) %>% 
@@ -215,7 +214,7 @@ NkaCard <- Mortality %>%
 # Group by death_date and age_category and count deaths
 Nkacatcard_counts <- NkaCard %>%
   group_by(DeathDate,  Underlying_Broad_Grp) %>%
-  summarize(death_count = n(), .groups = 'drop') %>%
+  dplyr::summarize(death_count = n(), .groups = 'drop') %>%
   pivot_wider(names_from =  Underlying_Broad_Grp, values_from = death_count, values_fill = list(death_count = 0)) %>% 
   mutate(DeathDate = as.Date(DeathDate, format = "%d-%m-%Y")) %>%
   rename(date = DeathDate)
@@ -268,7 +267,7 @@ dfYear <-  NkacardMort  %>%
 write.csv(dfYear,"RDA/NkaCardMortYearSum.csv")
 
 sum <- NkacardMort %>% 
-  select(date, year, I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99) %>%
+  select(date, I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99) %>%
   summarise(I00_I02 = sum(I00_I02, na.rm = T),
             I05_I09 = sum(I05_I09, na.rm = T),
             I10_I15 = sum(I10_I15, na.rm = T),
@@ -282,11 +281,10 @@ sum <- NkacardMort %>%
   pivot_longer(cols = c(I00_I02, I05_I09, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69, I70_I79, I80_I89, I95_I99), 
                names_to = "variable", 
                values_to = "value")
-  
 
 
 df <-  NkacardMort  %>%
-  pivot_longer(cols = I00_I02:I95_I99, names_to = "variable") %>%
+  pivot_longer(cols = I10_I15:I95_I99, names_to = "variable") %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(variable)
   ) %>% 
@@ -308,7 +306,7 @@ NkaPull <- Mortality %>%
 # Group by death_date and age_category and count deaths
 NkacatPull_counts <- NkaPull %>%
   group_by(DeathDate,  Underlying_Broad_Grp) %>%
-  summarize(death_count = n(), .groups = 'drop') %>%
+  dplyr::summarize(death_count = n(), .groups = 'drop') %>%
   pivot_wider(names_from =  Underlying_Broad_Grp, values_from = death_count, values_fill = list(death_count = 0)) %>% 
   mutate(DeathDate = as.Date(DeathDate, format = "%d-%m-%Y")) %>%
   rename(date = DeathDate)
@@ -337,7 +335,6 @@ sumYear <- NkaPullMort %>%
   pivot_longer(cols = c(J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99), 
                names_to = "variable", 
                values_to = "value")
-  
 
 
 dfYear <-  NkaPullMort  %>%
@@ -356,7 +353,7 @@ dfYear <-  NkaPullMort  %>%
 write.csv(dfYear,"RDA/NkaPulMortYearSum.csv")
 
 sum <- NkaPullMort %>% 
-  select(date, year, J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99) %>%
+  select(date, J00_J06, J09_J18, J20_J22, J30_J39, J40_J47, J60_J70, J80_J84, J85_J86, J90_J94, J95_J99) %>%
   summarise(J00_J06 = sum(J00_J06, na.rm = T),
             J09_J18 = sum(J09_J18, na.rm = T),
             J20_J22 = sum(J20_J22, na.rm = T),
@@ -372,9 +369,8 @@ sum <- NkaPullMort %>%
                values_to = "value")
   
 
-
 df <-  NkaPullMort  %>%
-  pivot_longer(cols = J00_J06:J95_J99, names_to = "variable") %>%
+  pivot_longer(cols = J09_J18:J30_J39, names_to = "variable") %>%
   dplyr::summarize(
     novaAQM::tenpointsummary(value) , .by = c(variable)
   ) %>% 

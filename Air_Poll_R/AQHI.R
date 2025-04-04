@@ -13,7 +13,7 @@ dateTime <- seq(as.POSIXct("2009-01-01 01:00"), as.POSIXct("2018-12-31 22:00"), 
 Nka$date <- dateTime
 
 
-df <- Nka %>%
+dfo3 <- Nka %>%
   select(date, o3) %>% 
   mutate(
     ozone_8hr_avg = rollapply(o3, width = 8, FUN = mean, align = "right", fill = NA)
@@ -30,7 +30,7 @@ NkaDaily$date <- as.Date(NkaDaily$date, format = "%Y/%m/%d")
 
 NkaDaily <- NkaDaily %>% 
   select(-o3) %>% 
-  left_join(df, by = "date")
+  left_join(dfo3, by = "date") 
 
 beta_values <- list(
   pm2.5 = 0.00065,
@@ -69,21 +69,18 @@ daily_df <- NkaDaily %>%
     aqhi_pm10 = calculate_aqhi(excess_risk_pm10, aqhi_pm10),
     aqhi_no2  = calculate_aqhi(excess_risk_no2, aqhi_no2),
     aqhi_so2  = calculate_aqhi(excess_risk_so2, aqhi_so2),
-    aqhi_o3   = calculate_aqhi(excess_risk_o3, aqhi_o3)
-  ) %>%
+    aqhi_o3   = calculate_aqhi(excess_risk_o3, aqhi_o3)) %>%
   mutate(
     weight_pm10 = 1,  # Weight of PM10 is defined to be 1
-    weight_no2  = excess_risk_pm10 / excess_risk_no2,
-    weight_so2  = excess_risk_pm10 / excess_risk_so2,
-    weight_o3   = excess_risk_pm10 / excess_risk_o3
-  ) %>%
+    weight_no2  =  0.853,
+    weight_so2  =  0.519,
+    weight_o3   =  0.236) %>%
   rowwise() %>%
   mutate(
     weighted_aqhi = round(
       sum(c(weight_pm10, weight_no2, weight_so2, weight_o3) * 
             c(as.numeric(aqhi_pm10), as.numeric(aqhi_no2), as.numeric(aqhi_so2), as.numeric(aqhi_o3))) / 
-        sum(c(weight_pm10, weight_no2, weight_so2, weight_o3)))
-  ) %>%
+        sum(c(weight_pm10, weight_no2, weight_so2, weight_o3)))) %>%
   ungroup()  %>%
   mutate(
     risk_level = case_when(
@@ -94,39 +91,87 @@ daily_df <- NkaDaily %>%
     )) %>% 
   select(date, weighted_aqhi, risk_level)
 
-NkaPollCardMort = read.csv("MortData/NkaPollCardMort.csv", header = T, sep = ";")
-NkaPollCardMort$date <- as.Date(NkaPollCardMort$date, format = "%Y/%m/%d")
-
-NkacartCardMort = read.csv("MortData/NkacardMort.csv", header = T, sep = ";")
-NkacartCardMort$date <- as.Date(NkacartCardMort$date, format = "%Y/%m/%d")
+NkaMort30 = read.csv("MortData/NkaPollMort30.csv", header = T, sep = ";")
+NkaMort30$date <- as.Date(NkaMort30$date, format = "%Y/%m/%d")
 
 
-NkacartCardMort <- NkacartCardMort %>% 
-  select(date, J09_J18, J20_J22, J40_J47, J80_J84, J95_J99)
-
-NkaPollCardMortAqhi <- NkaPollCardMort %>% 
-  left_join(NkacartCardMort, by = "date") %>% 
+NkaMort30Aqhi <- NkaMort30 %>% 
   left_join(daily_df, by = "date")
 
-write.csv(NkaPollCardMortAqhi, "MortData/NkaPollCardMortAqhi.csv", row.names = TRUE)
-
-# Nkangala pulmonary 
-
-NkaPollPulMort = read.csv("MortData/NkaPollPulMort.csv", header = T, sep = ";")
-NkaPollPulMort$date <- as.Date(NkaPollPulMort$date, format = "%Y/%m/%d")
-
-NkacartPulMort = read.csv("MortData/NkaPullMort.csv", header = T, sep = ";")
-NkacartPulMort$date <- as.Date(NkacartPulMort$date, format = "%Y/%m/%d")
+write.csv(NkaMort30Aqhi, "MortData/NkaMort30Aqhi.csv", row.names = TRUE) 
 
 
-NkacartPulMort <- NkacartPulMort %>% 
-  select(date, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69)
+# Group by year and risk_level, then count the number of days in each risk_level per year
+Nkarisk_level_counts <- NkaMort30Aqhi %>%
+  group_by(weighted_aqhi) %>%
+  summarise(days_count = n(),
+            pm2.5 = mean(pm2.5),
+            pm10 = mean(pm10),
+            so2 = mean(so2),
+            no2 = mean(no2),
+            o3 = mean(o3),
+            .groups = "drop")
 
-NkaPollPulMortAqhi <- NkaPollPulMort %>% 
-  left_join(NkacartPulMort, by = "date") %>% 
-  left_join(daily_df, by = "date")
 
-write.csv(NkaPollPulMortAqhi, "MortData/NkaPollPulMortAqhi.csv", row.names = TRUE)
+# Optionally, save the result to a CSV file
+write.csv(Nkarisk_level_counts, "RDA/Nkarisk_level_counts.csv", row.names = TRUE)
+
+
+# heatmap
+
+df <- NkaMort30Aqhi %>%
+  mutate(
+    year = format(date, "%Y"),                # Extract the year
+    day_of_year = as.numeric(format(date, "%j")),  # Day of the year (1-365)
+    color = case_when(                        # Categorize risk levels into colors
+      weighted_aqhi >= 1 & weighted_aqhi <= 3 ~ "green",
+      weighted_aqhi >= 4 & weighted_aqhi <= 5 ~ "yellow",
+      weighted_aqhi >= 6 & weighted_aqhi <= 7 ~ "orange",
+      weighted_aqhi >= 8 & weighted_aqhi <= 9 ~ "red",
+      weighted_aqhi == 10 ~ "purple"
+    )
+  ) %>%
+  mutate(
+    risk_category = factor(color, levels = c("green", "yellow", "orange", "red", "purple"),
+                           labels = c("Good (1-3)", "Moderate (4-5)", "Unhealthy (6-7)", "Very Unhealthy (8-9)", "Hazardous (10+)"))
+  )
+
+# Plot the heatmap with a legend
+ggplot(df, aes(x = day_of_year, y = year, fill = risk_category)) +
+  geom_tile(color = "white") +                    # Add white grid lines
+  scale_fill_manual(
+    values = c(
+      "Good (1-3)" = "green",
+      "Moderate (4-5)" = "yellow",
+      "Unhealthy (6-7)" = "orange",
+      "Very Unhealthy (8-9)" = "red",
+      "Hazardous (10+)" = "purple"
+    ),
+    name = "Risk Levels"                          # Legend title
+  ) +
+  scale_x_continuous(
+    breaks = c(1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335),  # Approximate start of each month
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) +
+  labs(
+    title = "Nkangala Daily Air Quality Health Index",
+    x = "Month",
+    y = "Year"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(face = "bold", angle = 90, hjust = 1), # Rotate x-axis labels for better readability
+    axis.text.y = element_text(face = "bold"),
+    legend.position = "bottom",                        # Move legend below the plot
+    legend.title = element_text(size = 10, face = "bold"),            # Adjust legend title size
+    legend.text = element_text(face = "bold", size = 8),
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold"))
+
+
+
+
 
 
 # Gert Sibande
@@ -196,21 +241,18 @@ daily_df <- GertDaily %>%
     aqhi_pm10 = calculate_aqhi(excess_risk_pm10, aqhi_pm10),
     aqhi_no2  = calculate_aqhi(excess_risk_no2, aqhi_no2),
     aqhi_so2  = calculate_aqhi(excess_risk_so2, aqhi_so2),
-    aqhi_o3   = calculate_aqhi(excess_risk_o3, aqhi_o3)
-  ) %>%
+    aqhi_o3   = calculate_aqhi(excess_risk_o3, aqhi_o3)) %>%
   mutate(
     weight_pm10 = 1,  # Weight of PM10 is defined to be 1
-    weight_no2  = excess_risk_pm10 / excess_risk_no2,
-    weight_so2  = excess_risk_pm10 / excess_risk_so2,
-    weight_o3   = excess_risk_pm10 / excess_risk_o3
-  ) %>%
+    weight_no2  =  0.853,
+    weight_so2  =  0.519,
+    weight_o3   =  0.236) %>%
   rowwise() %>%
   mutate(
     weighted_aqhi = round(
       sum(c(weight_pm10, weight_no2, weight_so2, weight_o3) * 
             c(as.numeric(aqhi_pm10), as.numeric(aqhi_no2), as.numeric(aqhi_so2), as.numeric(aqhi_o3))) / 
-        sum(c(weight_pm10, weight_no2, weight_so2, weight_o3)))
-  ) %>%
+        sum(c(weight_pm10, weight_no2, weight_so2, weight_o3)))) %>%
   ungroup()  %>%
   mutate(
     risk_level = case_when(
@@ -221,37 +263,81 @@ daily_df <- GertDaily %>%
     )) %>% 
   select(date, weighted_aqhi, risk_level)
 
-# Cardiovascular
-GertPollCardMort = read.csv("MortData/GertPollCardMort.csv", header = T, sep = ";")
-GertPollCardMort$date <- as.Date(GertPollCardMort$date, format = "%Y/%m/%d")
 
-GertcartCardMort = read.csv("MortData/GertcardMort.csv", header = T, sep = ";")
-GertcartCardMort$date <- as.Date(GertcartCardMort$date, format = "%Y/%m/%d")
+GertMort30 = read.csv("MortData/GertPollMort30.csv", header = T, sep = ";")
+GertMort30$date <- as.Date(GertMort30$date, format = "%Y/%m/%d")
 
 
-GertcartCardMort <- GertcartCardMort %>% 
-  select(date, J09_J18, J20_J22, J40_J47, J80_J84, J95_J99)
-
-GertPollCardMortAqhi <- GertPollCardMort %>% 
-  left_join(GertcartCardMort, by = "date") %>% 
+GertMort30Aqhi <- GertMort30 %>% 
   left_join(daily_df, by = "date")
 
-write.csv(GertPollCardMortAqhi, "MortData/GertPollCardMortAqhi.csv", row.names = TRUE)
-
-# Pulmonary 
-
-GertPollPulMort = read.csv("MortData/GertPollPulMort.csv", header = T, sep = ";")
-GertPollPulMort$date <- as.Date(GertPollPulMort$date, format = "%Y/%m/%d")
-
-GertcartPulMort = read.csv("MortData/GertPullMort.csv", header = T, sep = ";")
-GertcartPulMort$date <- as.Date(GertcartPulMort$date, format = "%Y/%m/%d")
+write.csv(GertMort30Aqhi, "MortData/GertMort30Aqhi.csv", row.names = TRUE) 
 
 
-GertcartPulMort <- GertcartPulMort %>% 
-  select(date, I10_I15, I20_I25, I26_I28, I30_I52, I60_I69)
+# Group by year and risk_level, then count the number of days in each risk_level per year
+Gertrisk_level_counts <- GertMort30Aqhi %>%
+  group_by(weighted_aqhi) %>%
+  summarise(days_count = n(),
+            pm2.5 = mean(pm2.5),
+            pm10 = mean(pm10),
+            so2 = mean(so2),
+            no2 = mean(no2),
+            o3 = mean(o3),
+            .groups = "drop")
 
-GertPollPulMortAqhi <- GertPollPulMort %>% 
-  left_join(GertcartPulMort, by = "date") %>% 
-  left_join(daily_df, by = "date")
 
-write.csv(GertPollPulMortAqhi, "MortData/GertPollPulMortAqhi.csv", row.names = TRUE)
+# Optionally, save the result to a CSV file
+write.csv(Gertrisk_level_counts, "RDA/Gertrisk_level_counts.csv", row.names = TRUE)
+
+
+# heatmap
+
+df <- GertMort30Aqhi%>%
+  mutate(
+    year = format(date, "%Y"),                # Extract the year
+    day_of_year = as.numeric(format(date, "%j")),  # Day of the year (1-365)
+    color = case_when(                        # Categorize risk levels into colors
+      weighted_aqhi >= 1 & weighted_aqhi <= 3 ~ "green",
+      weighted_aqhi >= 4 & weighted_aqhi <= 5 ~ "yellow",
+      weighted_aqhi >= 6 & weighted_aqhi <= 7 ~ "orange",
+      weighted_aqhi >= 8 & weighted_aqhi <= 9 ~ "red",
+      weighted_aqhi == 10 ~ "purple"
+    )
+  ) %>%
+  mutate(
+    risk_category = factor(color, levels = c("green", "yellow", "orange", "red", "purple"),
+                           labels = c("Good (1-3)", "Moderate (4-5)", "Unhealthy (6-7)", "Very Unhealthy (8-9)", "Hazardous (10+)"))
+  )
+
+# Plot the heatmap with a legend
+ggplot(df, aes(x = day_of_year, y = year, fill = risk_category)) +
+  geom_tile(color = "white") +                    # Add white grid lines
+  scale_fill_manual(
+    values = c(
+      "Good (1-3)" = "green",
+      "Moderate (4-5)" = "yellow",
+      "Unhealthy (6-7)" = "orange",
+      "Very Unhealthy (8-9)" = "red",
+      "Hazardous (10+)" = "purple"
+    ),
+    name = "Risk Levels"                          # Legend title
+  ) +
+  scale_x_continuous(
+    breaks = c(1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335),  # Approximate start of each month
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) +
+  labs(
+    title = "Gert Sibande Daily Air Quality Health Index",
+    x = "Month",
+    y = "Year"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(face = "bold", angle = 90, hjust = 1), # Rotate x-axis labels for better readability
+    axis.text.y = element_text(face = "bold"),
+    legend.position = "bottom",                        # Move legend below the plot
+    legend.title = element_text(size = 10, face = "bold"),            # Adjust legend title size
+    legend.text = element_text(face = "bold", size = 8),
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold"))

@@ -1146,10 +1146,9 @@ daily_df <- MdailyR %>%
   ) %>%
   mutate(
     weight_pm10 = 1,  # Weight of PM10 is defined to be 1
-    weight_no2  = excess_risk_pm10 / excess_risk_no2,
-    weight_so2  = excess_risk_pm10 / excess_risk_so2,
-    weight_o3   = excess_risk_pm10 / excess_risk_o3
-  ) %>%
+    weight_no2  =  0.853,
+    weight_so2  =  0.519,
+    weight_o3   =  0.236) %>%
   rowwise() %>%
   mutate(
     weighted_aqhi = round(
@@ -1241,3 +1240,4 @@ ggplot(df, aes(x = day_of_year, y = year, fill = risk_category)) +
     plot.title = element_text(face = "bold"),   
     axis.title = element_text(face = "bold"),
     strip.text = element_text(face = "bold"))
+

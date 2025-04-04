@@ -7,7 +7,7 @@ library(Epi)
 library(dlnm)
 
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("MortData/GertPollCardMort.csv", header = T, sep = ";")
+data = read.csv("MortData/NkaPollPulMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 
@@ -44,7 +44,7 @@ dfYear <-  data  %>%
   relocate("Total", .after = "variable") %>%
   arrange(year, variable) 
 
-write.csv(dfYear,"RDA/GertPollPulMortYearSum.csv")
+write.csv(dfYear,"RDA/NkaPollPulMortYearSum.csv")
 
 sum <- data %>% 
   select(date, death_count, Male, Female, FifToSixtyFour, SixtyFivePlus) %>%
@@ -69,7 +69,7 @@ df <-  data  %>%
   relocate("Total", .after = "variable") %>%
   arrange(variable)
 
-write.csv(df,"RDA/GertPollPulMortSum.csv")
+write.csv(df,"RDA/NkaPollPulMortSum.csv")
 
 #################################################################
 # PRELIMINARY ANALYSIS
