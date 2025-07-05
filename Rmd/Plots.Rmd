@@ -2,6 +2,7 @@
 title: "Highveld plots"
 author: "Nova Institute (NPC)"
 date: "`r format(Sys.time(), '%d %B %Y')`"
+always_allow_html: true
 output:
   word_document: default
   pdf_document:
@@ -10,9 +11,19 @@ output:
     number_sections: yes
     extra_dependencies: subfig
   html_document: default
-header-includes: \usepackage{longtable} \usepackage{float} \usepackage{subfig} \usepackage{booktabs}
-  \usepackage{multirow} \usepackage{tabu} \floatplacement{table}{H} \floatplacement{figure}{H}
-  \usepackage{caption} \usepackage{pdflscape} \usepackage{subfig} \usepackage{amsmath}
+header-includes: 
+  - \usepackage{longtable} 
+  - \usepackage{float} 
+  - \usepackage{subfig} 
+  - \usepackage{booktabs}
+  - \usepackage{multirow} 
+  - \usepackage{tabu} 
+  - \floatplacement{table}{H} 
+  - \floatplacement{figure}{H}
+  - \usepackage{caption} 
+  - \usepackage{pdflscape} 
+  - \usepackage{subfig} 
+  - \usepackage{amsmath}
 editor_options:
   chunk_output_type: console
   markdown:

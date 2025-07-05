@@ -70,7 +70,7 @@ SPM10Tempplot17 <- timeVariation(Secunda_clean %>% filter(year == "2017"), stati
 SPM10Tempplot18 <- timeVariation(Secunda_clean %>% filter(year == "2018"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
                                  col = "firebrick")
 SPM10Tempplot <- timeVariation(Secunda_clean, stati="median", poll="pm10", conf.int = c(0.75, 0.99),
-                               col = "firebrick")
+                               col = "firebrick", main = "PM10 temporal variation at Secunda")
 
 StrendPM10 <- TheilSen(Secunda_clean, pollutant = "pm10",
                        ylab = "PM10 (µg.m-3)",

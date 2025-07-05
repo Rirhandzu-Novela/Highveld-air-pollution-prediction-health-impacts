@@ -72,7 +72,7 @@ HPM10Tempplot17 <- timeVariation(Hendrina_clean %>% filter(year == "2017"), stat
 HPM10Tempplot18 <- timeVariation(Hendrina_clean %>% filter(year == "2018"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
                                  col = "firebrick")
 HPM10Tempplot <- timeVariation(Hendrina_clean, stati="median", poll="pm10", conf.int = c(0.75, 0.99),
-                               col = "firebrick")
+                               col = "firebrick", main = "PM10 temporal variation at Hendrina")
 
 HtrendPM10 <- TheilSen(Hendrina_clean, pollutant = "pm10",
                        ylab = "PM10 (µg.m-3)",

@@ -18,59 +18,6 @@ data[is.na(data)] = 0
 # (MISSING EXCLUDED IN ESTIMATION BUT RE-INSERTED IN PREDICTION/RESIDUALS)
 options(na.action = "na.exclude")
 
-sumYear <- data %>% 
-  novaAQM::datify() %>%
-  select(date, year, death_count, Male, Female, FifToSixtyFour, SixtyFivePlus) %>%
-  group_by(year) %>%
-  summarise(death_count = sum(death_count, na.rm = T),
-            Male = sum(Male, na.rm = T),
-            Female = sum(Female, na.rm = T),
-            FifToSixtyFour = sum(FifToSixtyFour, na.rm = T),
-            SixtyFivePlus = sum(SixtyFivePlus, na.rm = T)) %>%
-  pivot_longer(cols = c(death_count, Male, Female, FifToSixtyFour, SixtyFivePlus), 
-               names_to = "variable", 
-               values_to = "value")
-
-
-dfYear <-  data  %>%
-  pivot_longer(cols = pm2.5:SixtyFivePlus, names_to = "variable") %>%
-  novaAQM::datify() %>%
-  dplyr::summarize(
-    novaAQM::tenpointsummary(value) , .by = c(year, variable)
-  ) %>% 
-  left_join(sumYear, by = c("year", "variable")) %>% 
-  select(-n, -NAs) %>% 
-  rename("Total" = "value") %>% 
-  relocate("Total", .after = "variable") %>%
-  arrange(year, variable) 
-
-write.csv(dfYear,"RDA/NkaPollPulMortYearSum.csv")
-
-sum <- data %>% 
-  select(date, death_count, Male, Female, FifToSixtyFour, SixtyFivePlus) %>%
-  summarise(death_count = sum(death_count, na.rm = T),
-            Male = sum(Male, na.rm = T),
-            Female = sum(Female, na.rm = T),
-            FifToSixtyFour = sum(FifToSixtyFour, na.rm = T),
-            SixtyFivePlus = sum(SixtyFivePlus, na.rm = T)) %>%
-  pivot_longer(cols = c(death_count, Male, Female, FifToSixtyFour, SixtyFivePlus), 
-               names_to = "variable", 
-               values_to = "value")
-
-
-df <-  data  %>%
-  pivot_longer(cols = pm2.5:SixtyFivePlus, names_to = "variable") %>%
-  dplyr::summarize(
-    novaAQM::tenpointsummary(value) , .by = c(variable)
-  ) %>% 
-  left_join(sum, by = c("variable")) %>% 
-  select(-n, -NAs) %>% 
-  rename("Total" = "value") %>% 
-  relocate("Total", .after = "variable") %>%
-  arrange(variable)
-
-write.csv(df,"RDA/NkaPollPulMortSum.csv")
-
 #################################################################
 # PRELIMINARY ANALYSIS
 #######################
@@ -95,20 +42,6 @@ plot(data$date, data$pm2.5, pch= ".", main = "PM levels over time",
 abline(v = data$date[grep("-01-01", data$date)], col = grey(0.6), lty = 2)
 par(oldpar)
 layout(1)
-
-
-#ggplot(data, aes(x = date, y = FifToSixtyFour)) +
-#  geom_point(size = 0.5) +
-#  geom_vline(xintercept = as.numeric(data$date[grep("-01-01", data$date)]), color = "grey60", linetype = "dashed") +
-#  labs(title = "Daily Deaths Over Time", y = "Daily Number of Deaths", x = "Date") +
-#  theme_minimal()
-
-
-#ggplot(data, aes(x = date, y = PM2.5)) +
-#  geom_point(size = 0.5) +
-#  geom_vline(xintercept = as.numeric(data$date[grep("-01-01", data$date)]), color = "grey60", linetype = "dashed") +
-#  labs(title = "Daily Deaths Over Time", y = "Daily Number of Deaths", x = "Date") +
-#  theme_minimal()
 
 
 
@@ -360,16 +293,6 @@ summary(model93)
 (eff931 <- ci.lin(model93, subset = "so2", Exp = T))
 (eff932 <- ci.lin(model93, subset = "no2", Exp = T))
 
-
-## BUILD A SUMMARY TABLE
-
-#tabeff <- rbind(eff4,eff41,eff40,eff42,eff421,eff42,eff51,eff510,eff5100,eff6,eff60,eff600,eff61,eff610,eff6100)[,5:7]
-#dimnames(tabeff) <- list(c("Unadjusted PM2.5","Unadjusted SO2","Unadjusted NO2","Unadjusted All PollPM", "Unadjusted All PollSO","Unadjusted All PollNO",
-#                             "PM2.5 Plus season/trend", "SO2 Plus season/trend","NO2 Plus season/trend",
-#                           "PM2.5 Plus temperature ", "SO2 Plus temperature ", "NO2 Plus temperature ", 
-#                           "PM2.5 Plus season/trend/temperature ", "Plus season/trend/temperature SO2", "Plus season/trend/temperature NO2"),
-#                         c("RR","ci.low","ci.hi"))
-#round(tabeff,3)
 
 ################################################################################
 # EXPLORING THE LAGGED (DELAYED) EFFECTS

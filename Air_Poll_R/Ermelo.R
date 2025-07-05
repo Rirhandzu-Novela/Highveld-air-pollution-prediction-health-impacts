@@ -70,7 +70,7 @@ EPM10Tempplot17 <- timeVariation(Ermelo_clean %>% filter(year == "2017"), stati=
 EPM10Tempplot18 <- timeVariation(Ermelo_clean %>% filter(year == "2018"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
                                  col = "firebrick")
 EPM10Tempplot <- timeVariation(Ermelo_clean, stati="median", poll="pm10", conf.int = c(0.75, 0.99),
-                                 col = "firebrick")
+                                 col = "firebrick", main = "PM10 temporal variation at Ermelo")
 
 EtrendPM10 <- TheilSen(Ermelo_clean, pollutant = "pm10",
          ylab = "PM10 (µg.m-3)",

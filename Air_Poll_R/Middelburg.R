@@ -72,7 +72,7 @@ MPM10Tempplot17 <- timeVariation(Middelburg_clean %>% filter(year == "2017"), st
 MPM10Tempplot18 <- timeVariation(Middelburg_clean %>% filter(year == "2018"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
                                  col = "firebrick")
 MPM10Tempplot <- timeVariation(Middelburg_clean, stati="median", poll="pm10", conf.int = c(0.75, 0.99),
-                               col = "firebrick")
+                               col = "firebrick", main = "PM10 temporal variation at Middelburg in 2018")
 
 MtrendPM10 <- TheilSen(Middelburg_clean, pollutant = "pm10",
                        ylab = "PM10 (µg.m-3)",

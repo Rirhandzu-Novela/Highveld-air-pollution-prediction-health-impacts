@@ -1,54 +1,87 @@
 library(ggplot2)
 library(tidyr)
+library(tidyverse)
 
 
-gertcardR = read.csv("MortData/gertcardRR.csv", header = T, sep = ";")
+# gertcardR = read.csv("MortData/gertcardRR.csv", header = T, sep = ";")
+# 
+# 
+# # Create the plot with side-by-side error bars
+# ggplot(gertcardR, aes(x = Category, y = RR, color = Pollutant)) +
+#   geom_point(position = position_dodge(width = 0.5)) +
+#   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
+#   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+#   labs(
+#     title = "Cardiovascular Mortality RR [95% CI]",
+#     x = "Category",
+#     y = "Relative Risk (RR)"
+#   ) +
+#   theme_minimal() +
+#   theme(
+#     plot.title = element_text(face = "bold"),   
+#     axis.title = element_text(face = "bold"),   
+#     legend.text = element_text(face = "bold"),  
+#     strip.text = element_text(face = "bold") ,
+#     panel.border = element_rect(color = "black", fill = NA, size = 1)   
+#   )
+# 
+# 
+# gertpulR = read.csv("MortData/gertpulRR.csv", header = T, sep = ";")
+# 
+# 
+# # Create the plot with side-by-side error bars
+# ggplot(gertpulR, aes(x = Category, y = RR, color = Pollutant)) +
+#   geom_point(position = position_dodge(width = 0.5)) +
+#   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
+#   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+#   labs(
+#     title = "Pulmonary Mortality RR [95% CI]",
+#     x = "Category",
+#     y = "Relative Risk (RR)"
+#   ) +
+#   theme_minimal()+
+#   theme(
+#     plot.title = element_text(face = "bold"),   
+#     axis.title = element_text(face = "bold"),   
+#     legend.text = element_text(face = "bold"),  
+#     strip.text = element_text(face = "bold"),
+#     panel.border = element_rect(color = "black", fill = NA, size = 1)    
+#   )
 
+gertcardL = read.csv("MortData/GertPollCardMortNO.csv", header = T, sep = ";")
 
-# Create the plot with side-by-side error bars
-ggplot(gertcardR, aes(x = Category, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+# 1. Re-order your facets so that the first row is Male, Female, All
+gertcardL <- gertcardL %>%
+  mutate(Category = factor(Category, levels = c("Male", "Female", "All", "FifteenToSixtyFour", "SixtyFivePlus")))
+
+ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
+  geom_point(position = position_dodge(0.5)) +
+  geom_errorbar(aes(ymin = LOW, ymax = HIGH), position = position_dodge(0.5), width = 0.2) +
+  facet_wrap(~ Category, nrow = 2, scales = "free") +
+  geom_hline(yintercept = 1, linetype = "dashed") +
   labs(
     title = "Cardiovascular Mortality RR [95% CI]",
-    x = "Category",
-    y = "Relative Risk (RR)"
-  ) +
+    x     = "Lag",
+    y     = "Relative Risk (RR)") +
+  guides(color = guide_legend(nrow = 1, byrow = TRUE)) +
   theme_minimal() +
   theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold") ,
-    panel.border = element_rect(color = "black", fill = NA, size = 1)   
-  )
+    plot.title       = element_text(face = "bold"),
+    axis.title       = element_text(face = "bold"),
+    strip.text       = element_text(face = "bold"),
+    panel.border     = element_rect(color = "black", fill = NA),
+    legend.text = element_text(face = "bold"),
+    legend.position  = "bottom",
+    legend.direction = "horizontal",
+    # right justify it under the 2nd column of the bottom row
+    legend.justification = c(1, 0),
+    legend.box.just      = "right",
+    # give extra bottom margin so it isn’t clipped
+    plot.margin = margin(t = 5, r = 5, b = 30, l = 5))
 
 
-gertpulR = read.csv("MortData/gertpulRR.csv", header = T, sep = ";")
 
-
-# Create the plot with side-by-side error bars
-ggplot(gertpulR, aes(x = Category, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Pulmonary Mortality RR [95% CI]",
-    x = "Category",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)    
-  )
-
-gertcardL = read.csv("MortData/gertcardlag.csv", header = T, sep = ";")
-
+gertcardL = read.csv("MortData/GertPollCardMortCartPM2.csv", header = T, sep = ";")
 
 # Create the plot with side-by-side error bars
 ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
@@ -59,20 +92,57 @@ ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
   labs(
     title = "Cardiovascular Mortality RR [95% CI]",
     x = "Lag",
-    y = "Relative Risk (RR)"
-  ) +
+    y = "Relative Risk (RR)") +
   theme_minimal()+
   theme(
     plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
+    axis.title = element_text(face = "bold"),  
     strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
-  )
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    legend.text = element_text(face = "bold"),
+    legend.position  = "bottom",
+    legend.direction = "horizontal",
+    # right justify it under the 2nd column of the bottom row
+    legend.justification = c(1, 0),
+    legend.box.just      = "right",
+    # give extra bottom margin so it isn’t clipped
+    plot.margin = margin(t = 5, r = 5, b = 30, l = 5))
 
-gertpulL = read.csv("MortData/gertpullag.csv", header = T, sep = ";")
 
 
+
+gertpulL = read.csv("MortData/GertPollPulMortNO.csv", header = T, sep = ";")
+
+# 1. Re-order your facets so that the first row is Male, Female, All
+gertpulL <- gertpulL %>%
+  mutate(Category = factor(Category, levels = c("Male", "Female", "All", "FifteenToSixtyFour", "SixtyFivePlus")))
+
+ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
+  geom_point(position = position_dodge(0.5)) +
+  geom_errorbar(aes(ymin = LOW, ymax = HIGH), position = position_dodge(0.5), width = 0.2) +
+  facet_wrap(~ Category, nrow = 2, scales = "free") +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  labs(
+    title = "Cardiovascular Mortality RR [95% CI]",
+    x     = "Lag",
+    y     = "Relative Risk (RR)") +
+  guides(color = guide_legend(nrow = 1, byrow = TRUE)) +
+  theme_minimal() +
+  theme(
+    plot.title       = element_text(face = "bold"),
+    axis.title       = element_text(face = "bold"),
+    strip.text       = element_text(face = "bold"),
+    panel.border     = element_rect(color = "black", fill = NA),
+    legend.text = element_text(face = "bold"),
+    legend.position  = "bottom",
+    legend.direction = "horizontal",
+    # right justify it under the 2nd column of the bottom row
+    legend.justification = c(1, 0),
+    legend.box.just      = "right",
+    # give extra bottom margin so it isn’t clipped
+    plot.margin = margin(t = 5, r = 5, b = 30, l = 5))
+
+gertpulL = read.csv("MortData/GertPollPulMortCartNO.csv", header = T, sep = ";")
 # Create the plot with side-by-side error bars
 ggplot(gertpulL, aes(x = Lag, y = RR, color = Pollutant)) +
   geom_point(position = position_dodge(width = 0.5)) +
@@ -87,62 +157,101 @@ ggplot(gertpulL, aes(x = Lag, y = RR, color = Pollutant)) +
   theme_minimal()+
   theme(
     plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
+    axis.title = element_text(face = "bold"), 
     strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    legend.text = element_text(face = "bold"),
+    legend.position  = "bottom",
+    legend.direction = "horizontal",
+    # right justify it under the 2nd column of the bottom row
+    legend.justification = c(1, 0),
+    legend.box.just      = "right",
+    # give extra bottom margin so it isn’t clipped
+    plot.margin = margin(t = 5, r = 5, b = 30, l = 5)
   )
 
 
 # Nkagngala ---------------------------------------------------------------
+# 
+# nkacardR = read.csv("MortData/nkacardRR.csv", header = T, sep = ";")
+# 
+# 
+# # Create the plot with side-by-side error bars
+# ggplot(nkacardR, aes(x = Category, y = RR, color = Pollutant)) +
+#   geom_point(position = position_dodge(width = 0.5)) +
+#   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
+#   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+#   labs(
+#     title = "Cardiovascular Mortality RR [95% CI]",
+#     x = "Category",
+#     y = "Relative Risk (RR)"
+#   ) +
+#   theme_minimal()+
+#   theme(
+#     plot.title = element_text(face = "bold"),   
+#     axis.title = element_text(face = "bold"),   
+#     legend.text = element_text(face = "bold"),  
+#     strip.text = element_text(face = "bold"),
+#     panel.border = element_rect(color = "black", fill = NA, size = 1)    
+#   )
+# 
+# 
+# nkapulR = read.csv("MortData/nkapulRR.csv", header = T, sep = ";")
+# 
+# 
+# # Create the plot with side-by-side error bars
+# ggplot(nkapulR, aes(x = Category, y = RR, color = Pollutant)) +
+#   geom_point(position = position_dodge(width = 0.5)) +
+#   geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
+#   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+#   labs(
+#     title = "Pulmonary Mortality RR [95% CI]",
+#     x = "Category",
+#     y = "Relative Risk (RR)"
+#   ) +
+#   theme_minimal()+
+#   theme(
+#     plot.title = element_text(face = "bold"),   
+#     axis.title = element_text(face = "bold"),   
+#     legend.text = element_text(face = "bold"),  
+#     strip.text = element_text(face = "bold"),
+#     panel.border = element_rect(color = "black", fill = NA, size = 1)
+#   )
 
-nkacardR = read.csv("MortData/nkacardRR.csv", header = T, sep = ";")
 
+nkacardL = read.csv("MortData/NkaPollCardMortNO.csv", header = T, sep = ";")
 
-# Create the plot with side-by-side error bars
-ggplot(nkacardR, aes(x = Category, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+# 1. Re-order your facets so that the first row is Male, Female, All
+nkacardL <- nkacardL %>%
+  mutate(Category = factor(Category, levels = c("Male", "Female", "All", "FifteenToSixtyFour", "SixtyFivePlus")))
+
+ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
+  geom_point(position = position_dodge(0.5)) +
+  geom_errorbar(aes(ymin = LOW, ymax = HIGH), position = position_dodge(0.5), width = 0.2) +
+  facet_wrap(~ Category, nrow = 2, scales = "free") +
+  geom_hline(yintercept = 1, linetype = "dashed") +
   labs(
     title = "Cardiovascular Mortality RR [95% CI]",
-    x = "Category",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
+    x     = "Lag",
+    y     = "Relative Risk (RR)") +
+  guides(color = guide_legend(nrow = 1, byrow = TRUE)) +
+  theme_minimal() +
   theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)    
-  )
+    plot.title       = element_text(face = "bold"),
+    axis.title       = element_text(face = "bold"),
+    strip.text       = element_text(face = "bold"),
+    panel.border     = element_rect(color = "black", fill = NA),
+    legend.text = element_text(face = "bold"), 
+    legend.position  = "bottom",
+    legend.direction = "horizontal",
+    # right justify it under the 2nd column of the bottom row
+    legend.justification = c(1, 0),
+    legend.box.just      = "right",
+    # give extra bottom margin so it isn’t clipped
+    plot.margin = margin(t = 5, r = 5, b = 30, l = 5))
 
 
-nkapulR = read.csv("MortData/nkapulRR.csv", header = T, sep = ";")
-
-
-# Create the plot with side-by-side error bars
-ggplot(nkapulR, aes(x = Category, y = RR, color = Pollutant)) +
-  geom_point(position = position_dodge(width = 0.5)) +
-  geom_errorbar(aes(ymin = LOW, ymax = HIGH), width = 0.2, position = position_dodge(width = 0.5)) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Pulmonary Mortality RR [95% CI]",
-    x = "Category",
-    y = "Relative Risk (RR)"
-  ) +
-  theme_minimal()+
-  theme(
-    plot.title = element_text(face = "bold"),   
-    axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
-    strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
-  )
-
-nkacardL = read.csv("MortData/nkacardlag.csv", header = T, sep = ";")
-
+nkacardL = read.csv("MortData/NkaPollCardMortNO.csv", header = T, sep = ";")
 
 # Create the plot with side-by-side error bars
 ggplot(nkacardL, aes(x = Lag, y = RR, color = Pollutant)) +
@@ -159,13 +268,52 @@ ggplot(nkacardL, aes(x = Lag, y = RR, color = Pollutant)) +
   theme(
     plot.title = element_text(face = "bold"),   
     axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
     strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    legend.text = element_text(face = "bold"),
+    legend.position  = "bottom",
+    legend.direction = "horizontal",
+    # right justify it under the 2nd column of the bottom row
+    legend.justification = c(1, 0),
+    legend.box.just      = "right",
+    # give extra bottom margin so it isn’t clipped
+    plot.margin = margin(t = 5, r = 5, b = 30, l = 5)
   )
 
-nkapulL = read.csv("MortData/nkapullag.csv", header = T, sep = ";")
 
+nkapulL = read.csv("MortData/GertPollPulMortNO.csv", header = T, sep = ";")
+
+# 1. Re-order your facets so that the first row is Male, Female, All
+nkapulL <- nkapulL %>%
+  mutate(Category = factor(Category, levels = c("Male", "Female", "All", "FifteenToSixtyFour", "SixtyFivePlus")))
+
+ggplot(gertcardL, aes(x = Lag, y = RR, color = Pollutant)) +
+  geom_point(position = position_dodge(0.5)) +
+  geom_errorbar(aes(ymin = LOW, ymax = HIGH), position = position_dodge(0.5), width = 0.2) +
+  facet_wrap(~ Category, nrow = 2, scales = "free") +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  labs(
+    title = "Cardiovascular Mortality RR [95% CI]",
+    x     = "Lag",
+    y     = "Relative Risk (RR)") +
+  guides(color = guide_legend(nrow = 1, byrow = TRUE)) +
+  theme_minimal() +
+  theme(
+    plot.title       = element_text(face = "bold"),
+    axis.title       = element_text(face = "bold"),
+    strip.text       = element_text(face = "bold"),
+    panel.border     = element_rect(color = "black", fill = NA),
+    legend.text = element_text(face = "bold"),
+    legend.position  = "bottom",
+    legend.direction = "horizontal",
+    # right justify it under the 2nd column of the bottom row
+    legend.justification = c(1, 0),
+    legend.box.just      = "right",
+    # give extra bottom margin so it isn’t clipped
+    plot.margin = margin(t = 5, r = 5, b = 30, l = 5))
+
+
+nkapulL = read.csv("MortData/NkaPollPulMortNO.csv", header = T, sep = ";")
 
 # Create the plot with side-by-side error bars
 ggplot(nkapulL, aes(x = Lag, y = RR, color = Pollutant)) +
@@ -182,8 +330,15 @@ ggplot(nkapulL, aes(x = Lag, y = RR, color = Pollutant)) +
   theme(
     plot.title = element_text(face = "bold"),   
     axis.title = element_text(face = "bold"),   
-    legend.text = element_text(face = "bold"),  
     strip.text = element_text(face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 1)
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    legend.text = element_text(face = "bold"),
+    legend.position  = "bottom",
+    legend.direction = "horizontal",
+    # right justify it under the 2nd column of the bottom row
+    legend.justification = c(1, 0),
+    legend.box.just      = "right",
+    # give extra bottom margin so it isn’t clipped
+    plot.margin = margin(t = 5, r = 5, b = 30, l = 5)
   )
 
