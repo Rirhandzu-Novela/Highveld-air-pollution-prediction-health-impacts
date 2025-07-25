@@ -415,15 +415,83 @@ Hendrinahourlycorplot <- corrplot.mixed(Hendrina_hourlycor.coeff, mar = c(0,0,1,
 # Hendrina polar ----------------------------------------------------------
 
 Hpolar <- Hendrina_clean %>%
-  datify() %>%
   mutate(latitude = -26.151197,
          longitude = 29.716484)
+
+plot_polar_cluster <- function(data,
+                               pollutant,
+                               statistic   = "mean",
+                               n.clusters  = 6,
+                               cols        = "Set2",
+                               main.stat   = NULL,
+                               main.clust  = NULL) {
+  
+  # 1. Statistic plot
+  stat_obj  <- polarPlot(data,
+                         pollutant = pollutant,
+                         statistic = statistic,
+                         main      = main.stat)
+  stat_plot <- stat_obj$plot
+  
+  # 2. Cluster plot
+  cluster_obj  <- polarCluster(data,
+                               pollutant  = pollutant,
+                               n.clusters = n.clusters,
+                               cols       = cols,
+                               main       = main.clust)
+  clust_plot   <- cluster_obj$plot
+  
+  # 3. Cluster summary table
+  stats        <- cluster_obj$clust_stats
+  pct_col      <- paste0(pollutant, "_percent")
+  mean_col     <- paste0("mean_", pollutant)
+  stats_tbl    <- stats %>%
+    select(-all_of(pct_col)) %>%
+    mutate(!!mean_col := round(.data[[mean_col]], 2))
+  table_grob   <- tableGrob(stats_tbl)
+  
+  # 4. Arrange side‑by‑side
+  grid.arrange(stat_plot, clust_plot, table_grob, nrow = 1)
+}
+
+Hpolarplotpm1 <- plot_polar_cluster(Hpolar,
+                                    pollutant  = "pm10",
+                                    statistic  = "mean",
+                                    n.clusters = 6,
+                                    cols       = "Set2",
+                                    main.stat  = "PM10 mean",
+                                    main.clust = "PM10 clusters")
+
+Hpolarplotpm2 <- plot_polar_cluster(Hpolar,
+                                    pollutant  = "pm2.5",
+                                    statistic  = "mean",
+                                    n.clusters = 6,
+                                    cols       = "Set2",
+                                    main.stat  = "PM2.5 mean",
+                                    main.clust = "PM2.5 clusters")
+
+
+Hpolarplotso <- plot_polar_cluster(Hpolar,
+                                   pollutant  = "so2",
+                                   statistic  = "mean",
+                                   n.clusters = 6,
+                                   cols       = "Set2",
+                                   main.stat  = "SO2 mean",
+                                   main.clust = "SO2 clusters")
+
+Hpolarplotno <- plot_polar_cluster(Hpolar,
+                                   pollutant  = "no2",
+                                   statistic  = "mean",
+                                   n.clusters = 6,
+                                   cols       = "Set2",
+                                   main.stat  = "NO2 mean",
+                                   main.clust = "NO2 clusters")
 
 # PM10 --------------------------------------------------------------------
 
 
 
-HPM10allpolar <- polarPlot(
+HPM10allpolar <- polarMap(
   Hpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -587,7 +655,7 @@ do.call("grid.arrange", HPM10_CPFplot)
 
 # PM2.5 -------------------------------------------------------------------
 
-HPM2.5allpolar <- polarPlot(
+HPM2.5allpolar <- polarMap(
   Hpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -751,7 +819,7 @@ do.call("grid.arrange", HPM2.5_CPFplot)
 # SO2 --------------------------------------------------------------------
 
 
-HSO2allpolar <- polarPlot(
+HSO2allpolar <- polarMap(
   Hpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -916,7 +984,7 @@ do.call("grid.arrange", HSO2_CPFplot)
 
 # NO2 --------------------------------------------------------------------
 
-HNO2allpolar <- polarPlot(
+HNO2allpolar <- polarMap(
   Hpolar,
   latitude = "latitude",
   longitude = "longitude",

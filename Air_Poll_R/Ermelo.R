@@ -432,13 +432,81 @@ Ermelo$date <- date
 # Ermelo polar --------------------------------------------------------
 
 Epolar <- Ermelo_clean %>%
-  datify() %>%
   mutate(latitude = -26.493348,
          longitude = 29.968054)
 
+plot_polar_cluster <- function(data,
+                               pollutant,
+                               statistic   = "mean",
+                               n.clusters  = 6,
+                               cols        = "Set2",
+                               main.stat   = NULL,
+                               main.clust  = NULL) {
+  
+  # 1. Statistic plot
+  stat_obj  <- polarPlot(data,
+                         pollutant = pollutant,
+                         statistic = statistic,
+                         main      = main.stat)
+  stat_plot <- stat_obj$plot
+  
+  # 2. Cluster plot
+  cluster_obj  <- polarCluster(data,
+                               pollutant  = pollutant,
+                               n.clusters = n.clusters,
+                               cols       = cols,
+                               main       = main.clust)
+  clust_plot   <- cluster_obj$plot
+  
+  # 3. Cluster summary table
+  stats        <- cluster_obj$clust_stats
+  pct_col      <- paste0(pollutant, "_percent")
+  mean_col     <- paste0("mean_", pollutant)
+  stats_tbl    <- stats %>%
+    select(-all_of(pct_col)) %>%
+    mutate(!!mean_col := round(.data[[mean_col]], 2))
+  table_grob   <- tableGrob(stats_tbl)
+  
+  # 4. Arrange side‑by‑side
+  grid.arrange(stat_plot, clust_plot, table_grob, nrow = 1)
+}
+
+Epolarplotpm1 <- plot_polar_cluster(Epolar,
+                                    pollutant  = "pm10",
+                                    statistic  = "mean",
+                                    n.clusters = 6,
+                                    cols       = "Set2",
+                                    main.stat  = "PM10 mean",
+                                    main.clust = "PM10 clusters")
+
+Epolarplotpm2 <- plot_polar_cluster(Epolar,
+                                    pollutant  = "pm2.5",
+                                    statistic  = "mean",
+                                    n.clusters = 6,
+                                    cols       = "Set2",
+                                    main.stat  = "PM2.5 mean",
+                                    main.clust = "PM2.5 clusters")
+
+
+Epolarplotso <- plot_polar_cluster(Epolar,
+                                   pollutant  = "so2",
+                                   statistic  = "mean",
+                                   n.clusters = 6,
+                                   cols       = "Set2",
+                                   main.stat  = "SO2 mean",
+                                   main.clust = "SO2 clusters")
+
+Epolarplotno <- plot_polar_cluster(Epolar,
+                                   pollutant  = "no2",
+                                   statistic  = "mean",
+                                   n.clusters = 6,
+                                   cols       = "Set2",
+                                   main.stat  = "NO2 mean",
+                                   main.clust = "NO2 clusters")
+
 # PM10 --------------------------------------------------------------------
 
-EPM10allpolar <- polarPlot(
+EPM10allpolar <- polarMap(
   Epolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -602,7 +670,7 @@ do.call("grid.arrange", EPM10_CPFplot)
 
 # PM2.5 -------------------------------------------------------------------
 
-EPM2.5allpolar <- polarPlot(
+EPM2.5allpolar <- polarMap(
   Epolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -765,7 +833,7 @@ do.call("grid.arrange", EPM2.5_CPFplot)
 # SO2 --------------------------------------------------------------------
 
 
-ESO2allpolar <- polarPlot(
+ESO2allpolar <- polarMap(
   Epolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -929,7 +997,7 @@ do.call("grid.arrange", ESO2_CPFplot)
 
 # NO2 --------------------------------------------------------------------
 
-ENO2allpolar <- polarPlot(
+ENO2allpolar <- polarMap(
   Epolar,
   latitude = "latitude",
   longitude = "longitude",

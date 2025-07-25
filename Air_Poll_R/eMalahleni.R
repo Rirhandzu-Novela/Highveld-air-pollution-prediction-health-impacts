@@ -35,13 +35,13 @@ plot_ly(data = eMalahleni, x = ~date, y = ~pm2.5, type = 'scatter', mode = 'line
 
 
 eMalahleniPTS <- timePlot(selectByDate(eMalahleni),
-                                   pollutant = c("pm2.5", "pm10", "co", "no", "no2", "nox", "so2"),
-                                   y.relation = "free")
+                          pollutant = c("pm2.5", "pm10", "co", "no", "no2", "nox", "so2"),
+                          y.relation = "free")
 
 
 eMalahleniMTS  <- timePlot(selectByDate(eMalahleni),
-                                   pollutant = c("ws", "wd", "temp", "relHum", "pressure"),
-                                   y.relation = "free")
+                           pollutant = c("ws", "wd", "temp", "relHum", "pressure"),
+                           y.relation = "free")
 
 
 save(eMalahleniPTS, eMalahleniMTS , file = "Graph/eMalahleni_Timeseriesplot.Rda")
@@ -52,7 +52,7 @@ eMalahleni_clean <- eMalahleni %>%
 
 
 WPM10Tempplot09 <- timeVariation(eMalahleni_clean %>% filter(year == "2009"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
-                               col = "firebrick", main = "PM10 temporal variation at eMalahleni in 2009")
+                                 col = "firebrick", main = "PM10 temporal variation at eMalahleni in 2009")
 WPM10Tempplot10 <- timeVariation(eMalahleni_clean %>% filter(year == "2010"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
                                  col = "firebrick", main = "PM10 temporal variation at eMalahleni in 2010")
 WPM10Tempplot11 <- timeVariation(eMalahleni_clean %>% filter(year == "2011"), stati="median", poll="pm10", conf.int = c(0.75, 0.99),
@@ -74,12 +74,12 @@ WPM10Tempplot18 <- timeVariation(eMalahleni_clean %>% filter(year == "2018"), st
                                  col = "firebrick", main = "PM10 temporal variation at eMalahleni in 2018")
 
 WPM10Tempplot <- timeVariation(eMalahleni_clean, stati="median", poll="pm10", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM10 temporal variation at eMalahleni")
+                               col = "firebrick", main = "PM10 temporal variation at eMalahleni")
 
 WtrendPM10 <- TheilSen(eMalahleni_clean, pollutant = "pm10",
-         ylab = "PM10 (µg.m-3)",
-         deseason = TRUE,
-         main = "PM10 trends at eMalahleni")
+                       ylab = "PM10 (µg.m-3)",
+                       deseason = TRUE,
+                       main = "PM10 trends at eMalahleni")
 
 save(WPM10Tempplot09, WPM10Tempplot10,
      WPM10Tempplot11,WPM10Tempplot12,
@@ -91,32 +91,32 @@ save(WPM10Tempplot09, WPM10Tempplot10,
 
 
 WPM2.5Tempplot09 <- timeVariation(eMalahleni_clean %>% filter(year == "2009"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2009")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2009")
 WPM2.5Tempplot10 <- timeVariation(eMalahleni_clean %>% filter(year == "2010"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2010")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2010")
 WPM2.5Tempplot11 <- timeVariation(eMalahleni_clean %>% filter(year == "2011"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2011")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2011")
 WPM2.5Tempplot12 <- timeVariation(eMalahleni_clean %>% filter(year == "2012"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2012")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2012")
 WPM2.5Tempplot13 <- timeVariation(eMalahleni_clean %>% filter(year == "2013"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2013")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2013")
 WPM2.5Tempplot14 <- timeVariation(eMalahleni_clean %>% filter(year == "2014"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2014")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2014")
 WPM2.5Tempplot15 <- timeVariation(eMalahleni_clean %>% filter(year == "2015"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2015")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2015")
 WPM2.5Tempplot16 <- timeVariation(eMalahleni_clean %>% filter(year == "2016"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2016")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2016")
 WPM2.5Tempplot17 <- timeVariation(eMalahleni_clean %>% filter(year == "2017"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2017")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2017")
 WPM2.5Tempplot18 <- timeVariation(eMalahleni_clean %>% filter(year == "2018"), stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                 col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2018")
+                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni in 2018")
 
 WPM2.5Tempplot <- timeVariation(eMalahleni_clean, stati="median", poll="pm2.5", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "PM2.5 temporal variation at eMalahleni")
+                                col = "firebrick", main = "PM2.5 temporal variation at eMalahleni")
 WtrendPM2.5 <- TheilSen(eMalahleni_clean, pollutant = "pm2.5",
-                   ylab = "PM2.5 (µg.m-3)",
-                   deseason = TRUE,
-                   main = "PM2.5 trends at eMalahleni")
+                        ylab = "PM2.5 (µg.m-3)",
+                        deseason = TRUE,
+                        main = "PM2.5 trends at eMalahleni")
 
 save(WPM2.5Tempplot09, WPM2.5Tempplot10,
      WPM2.5Tempplot11,WPM2.5Tempplot12,
@@ -127,33 +127,33 @@ save(WPM2.5Tempplot09, WPM2.5Tempplot10,
      file = "Graph/WTempoaral_plotPM2.5.Rda")
 
 WSO2Tempplot09 <- timeVariation(eMalahleni_clean %>% filter(year == "2009"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2009")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2009")
 WSO2Tempplot10 <- timeVariation(eMalahleni_clean %>% filter(year == "2010"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2010")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2010")
 WSO2Tempplot11 <- timeVariation(eMalahleni_clean %>% filter(year == "2011"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2011")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2011")
 WSO2Tempplot12 <- timeVariation(eMalahleni_clean %>% filter(year == "2012"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2012")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2012")
 WSO2Tempplot13 <- timeVariation(eMalahleni_clean %>% filter(year == "2013"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2013")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2013")
 WSO2Tempplot14 <- timeVariation(eMalahleni_clean %>% filter(year == "2014"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2014")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2014")
 WSO2Tempplot15 <- timeVariation(eMalahleni_clean %>% filter(year == "2015"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2015")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2015")
 WSO2Tempplot16 <- timeVariation(eMalahleni_clean %>% filter(year == "2016"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2016")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2016")
 WSO2Tempplot17 <- timeVariation(eMalahleni_clean %>% filter(year == "2017"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2017")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2017")
 WSO2Tempplot18 <- timeVariation(eMalahleni_clean %>% filter(year == "2018"), stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2018")
+                                col = "firebrick", main = "SO2 temporal variation at eMalahleni in 2018")
 
 WSO2Tempplot <- timeVariation(eMalahleni_clean, stati="median", poll="so2", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "SO2 temporal variation at eMalahleni")
+                              col = "firebrick", main = "SO2 temporal variation at eMalahleni")
 
 WtrendSO2 <- TheilSen(eMalahleni_clean, pollutant = "so2",
-                        ylab = "SO2 (µg.m-3)",
-                        deseason = TRUE,
-                        main = "SO2 trends at eMalahleni")
+                      ylab = "SO2 (µg.m-3)",
+                      deseason = TRUE,
+                      main = "SO2 trends at eMalahleni")
 
 save(WSO2Tempplot09, WSO2Tempplot10,
      WSO2Tempplot11,WSO2Tempplot12,
@@ -164,34 +164,34 @@ save(WSO2Tempplot09, WSO2Tempplot10,
      file = "Graph/WTempoaral_plotSO2.Rda")
 
 WNO2Tempplot09 <- timeVariation(eMalahleni_clean %>% filter(year == "2009"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2009")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2009")
 WNO2Tempplot10 <- timeVariation(eMalahleni_clean %>% filter(year == "2010"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2010")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2010")
 WNO2Tempplot11 <- timeVariation(eMalahleni_clean %>% filter(year == "2011"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2011")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2011")
 WNO2Tempplot12 <- timeVariation(eMalahleni_clean %>% filter(year == "2012"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2012")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2012")
 WNO2Tempplot13 <- timeVariation(eMalahleni_clean %>% filter(year == "2013"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2013")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2013")
 WNO2Tempplot14 <- timeVariation(eMalahleni_clean %>% filter(year == "2014"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2014")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2014")
 WNO2Tempplot15 <- timeVariation(eMalahleni_clean %>% filter(year == "2015"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2015")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2015")
 WNO2Tempplot16 <- timeVariation(eMalahleni_clean %>% filter(year == "2016"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2016")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2016")
 WNO2Tempplot17 <- timeVariation(eMalahleni_clean %>% filter(year == "2017"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2017")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2017")
 WNO2Tempplot18 <- timeVariation(eMalahleni_clean %>% filter(year == "2018"), stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                  col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2018")
+                                col = "firebrick", main = "NO2 temporal variation at eMalahleni in 2018")
 
 WNO2Tempplot <- timeVariation(eMalahleni_clean, stati="median", poll="no2", conf.int = c(0.75, 0.99),
-                                col = "firebrick", main = "NO2 temporal variation at eMalahleni")
+                              col = "firebrick", main = "NO2 temporal variation at eMalahleni")
 
 
 WtrendNO2 <- TheilSen(eMalahleni_clean, pollutant = "no2",
-                        ylab = "NO2 (µg.m-3)",
-                        deseason = TRUE,
-                        main = "NO2 trends at eMalahleni")
+                      ylab = "NO2 (µg.m-3)",
+                      deseason = TRUE,
+                      main = "NO2 trends at eMalahleni")
 
 save(WNO2Tempplot09, WNO2Tempplot10,
      WNO2Tempplot11,WNO2Tempplot12,
@@ -231,23 +231,23 @@ eMalahleni_annual_summary <- eMalahleni_date %>% datify %>%
 write.csv(eMalahleni_annual_summary,"Graph/eMalahleni_annual_summary.csv")
 
 eMalahleni_monthly_hour_ex <- novaAQM::compareAQS(df = eMalahleni_date %>%
-                                              ungroup() %>%
-                                              datify() %>%
-                                              mutate(place = station,
-                                                     instrument = "SAAQIS"),
-                                            period = "hour",
-                                            by_period = quos(month, year)) %>%
+                                                    ungroup() %>%
+                                                    datify() %>%
+                                                    mutate(place = station,
+                                                           instrument = "SAAQIS"),
+                                                  period = "hour",
+                                                  by_period = quos(month, year)) %>%
   ungroup() %>%
   arrange(pollutant, month) %>%
   relocate(pollutant, .after = place)
 
 eMalahleni_season_hour_ex <- novaAQM::compareAQS(df = eMalahleni_date %>%
-                                             ungroup() %>%
-                                             datify() %>%
-                                             mutate(place = station,
-                                                    instrument = "SAAQIS"),
-                                           period = "hour",
-                                           by_period = quos(season, year)) %>%
+                                                   ungroup() %>%
+                                                   datify() %>%
+                                                   mutate(place = station,
+                                                          instrument = "SAAQIS"),
+                                                 period = "hour",
+                                                 by_period = quos(season, year)) %>%
   ungroup() %>%
   arrange(pollutant) %>%
   relocate(pollutant, .after = place)
@@ -255,12 +255,12 @@ season_order = tibble(season = c("autum", "winter", "spring", "summer"), season_
 eMalahleni_season_hour_ex <- eMalahleni_season_hour_ex %>% left_join(season_order) %>% arrange(pollutant, season_nr)
 
 eMalahleni_annual_hour_ex <- novaAQM::compareAQS(df = eMalahleni_date %>%
-                                             ungroup() %>%
-                                             datify() %>%
-                                             mutate(place = station,
-                                                    instrument = "SAAQIS"),
-                                           period = "hour",
-                                           by_period = quos(year)) %>%
+                                                   ungroup() %>%
+                                                   datify() %>%
+                                                   mutate(place = station,
+                                                          instrument = "SAAQIS"),
+                                                 period = "hour",
+                                                 by_period = quos(year)) %>%
   ungroup() %>%
   arrange(pollutant, year) %>%
   relocate(pollutant, .after = place)
@@ -288,24 +288,24 @@ eMalahleni_Day  <- eMalahleni_Daily %>%
 
 
 eMalahleni_month_daily_ex <- novaAQM::compareAQS(df = eMalahleni_Day %>%
-                                             ungroup() %>%
-                                             datify() %>%
-                                             mutate(place = station,
-                                                    instrument = "SAAQIS"),
-                                           period = "day",
-                                           by_period = quos(month, year)) %>%
+                                                   ungroup() %>%
+                                                   datify() %>%
+                                                   mutate(place = station,
+                                                          instrument = "SAAQIS"),
+                                                 period = "day",
+                                                 by_period = quos(month, year)) %>%
   #ungroup() %>%
   arrange(pollutant, month)
 
 
 
 eMalahleni_season_daily_ex <- novaAQM::compareAQS(df = eMalahleni_Day %>%
-                                              ungroup() %>%
-                                              datify() %>%
-                                              mutate(place = station,
-                                                     instrument = "SAAQIS"),
-                                            period = "day",
-                                            by_period = quos(year, season)) %>%
+                                                    ungroup() %>%
+                                                    datify() %>%
+                                                    mutate(place = station,
+                                                           instrument = "SAAQIS"),
+                                                  period = "day",
+                                                  by_period = quos(year, season)) %>%
   #ungroup() %>%
   arrange(pollutant, season)
 season_order = tibble(season = c("autum", "winter", "spring", "summer"), season_nr = c(1, 2, 3, 4))
@@ -315,12 +315,12 @@ eMalahleni_season_daily_ex <- eMalahleni_season_daily_ex %>% left_join(season_or
 
 
 eMalahleni_annual_daily_ex <- novaAQM::compareAQS(df = eMalahleni_Day %>%
-                                              ungroup() %>%
-                                              datify() %>%
-                                              mutate(place = station,
-                                                     instrument = "SAAQIS"),
-                                            period = "day",
-                                            by_period = quos(year)) %>%
+                                                    ungroup() %>%
+                                                    datify() %>%
+                                                    mutate(place = station,
+                                                           instrument = "SAAQIS"),
+                                                  period = "day",
+                                                  by_period = quos(year)) %>%
   #ungroup() %>%
   arrange(pollutant, year)
 
@@ -417,13 +417,80 @@ eMalahlenihourlycorplot <- corrplot.mixed(eMalahleni_hourlycor.coeff, mar = c(0,
 # eMalahleni polar --------------------------------------------------------
 
 Wpolar <- eMalahleni_clean %>%
-  datify() %>%
   mutate(latitude = -25.877861,
          longitude = 29.186472)
 
+plot_polar_cluster <- function(data,
+                               pollutant,
+                               statistic   = "mean",
+                               n.clusters  = 6,
+                               cols        = "Set2",
+                               main.stat   = NULL,
+                               main.clust  = NULL) {
+
+  # 1. Statistic plot
+  stat_obj  <- polarPlot(data,
+                         pollutant = pollutant,
+                         statistic = statistic,
+                         main      = main.stat)
+  stat_plot <- stat_obj$plot
+  
+  # 2. Cluster plot
+  cluster_obj  <- polarCluster(data,
+                               pollutant  = pollutant,
+                               n.clusters = n.clusters,
+                               cols       = cols,
+                               main       = main.clust)
+  clust_plot   <- cluster_obj$plot
+  
+  # 3. Cluster summary table
+  stats        <- cluster_obj$clust_stats
+  pct_col      <- paste0(pollutant, "_percent")
+  mean_col     <- paste0("mean_", pollutant)
+  stats_tbl    <- stats %>%
+    select(-all_of(pct_col)) %>%
+    mutate(!!mean_col := round(.data[[mean_col]], 2))
+  table_grob   <- tableGrob(stats_tbl)
+  
+  # 4. Arrange side‑by‑side
+  grid.arrange(stat_plot, clust_plot, table_grob, nrow = 1)
+}
+
+Wpolarplotpm1 <- plot_polar_cluster(Wpolar,
+                                    pollutant  = "pm10",
+                                    statistic  = "mean",
+                                    n.clusters = 6,
+                                    cols       = "Set2",
+                                    main.stat  = "PM10 mean",
+                                    main.clust = "PM10 clusters")
+
+Wpolarplotpm2 <- plot_polar_cluster(Wpolar,
+                                    pollutant  = "pm2.5",
+                                    statistic  = "mean",
+                                    n.clusters = 6,
+                                    cols       = "Set2",
+                                    main.stat  = "PM2.5 mean",
+                                    main.clust = "PM2.5 clusters")
+
+
+Wpolarplotso <- plot_polar_cluster(Wpolar,
+                                   pollutant  = "so2",
+                                   statistic  = "mean",
+                                   n.clusters = 6,
+                                   cols       = "Set2",
+                                   main.stat  = "SO2 mean",
+                                   main.clust = "SO2 clusters")
+
+Wpolarplotno <- plot_polar_cluster(Wpolar,
+                                   pollutant  = "no2",
+                                   statistic  = "mean",
+                                   n.clusters = 6,
+                                   cols       = "Set2",
+                                   main.stat  = "NO2 mean",
+                                   main.clust = "NO2 clusters")
 # PM10 --------------------------------------------------------------------
 
-WPM10allpolar <- polarPlot(
+WPM10allpolar <- polarMap(
   Wpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -587,7 +654,7 @@ do.call("grid.arrange", WPM10_CPFplot)
 
 # PM2.5 -------------------------------------------------------------------
 
-WPM2.5allpolar <- polarPlot(
+WPM2.5allpolar <- polarMap(
   Wpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -750,7 +817,7 @@ do.call("grid.arrange", WPM2.5_CPFplot)
 # SO2 --------------------------------------------------------------------
 
 
-WSO2allpolar <- polarPlot(
+WSO2allpolar <- polarMap(
   Wpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -912,9 +979,10 @@ WSO2_CPFplot = list(WSO2allpolar$plot,
 
 do.call("grid.arrange", WSO2_CPFplot)
 
+
 # NO2 --------------------------------------------------------------------
 
-WNO2allpolar <- polarPlot(
+WNO2allpolar <- polarMap(
   Wpolar,
   latitude = "latitude",
   longitude = "longitude",

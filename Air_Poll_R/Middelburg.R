@@ -32,14 +32,14 @@ plot_ly(data = Middelburg, x = ~date, y = ~pm2.5, type = 'scatter', mode = 'line
 
 
 MiddelburgPTS <- timePlot(selectByDate(Middelburg),
-                        pollutant = c("pm2.5", "pm10", "co", "no", "no2", "nox", "so2"),
-                        y.relation = "free")
+                          pollutant = c("pm2.5", "pm10", "co", "no", "no2", "nox", "so2"),
+                          y.relation = "free")
 
 
 
 MiddelburgMTS  <- timePlot(selectByDate(Middelburg),
-                         pollutant = c("ws", "wd", "temp", "relHum", "pressure"),
-                         y.relation = "free")
+                           pollutant = c("ws", "wd", "temp", "relHum", "pressure"),
+                           y.relation = "free")
 
 
 save(MiddelburgPTS, MiddelburgMTS , file = "Graph/Middelburg_Timeseriesplot.Rda")
@@ -228,23 +228,23 @@ Middelburg_annual_summary <- Middelburg_date %>% datify %>%
 write.csv(Middelburg_annual_summary,"Graph/Middelburg_annual_summary.csv")
 
 Middelburg_monthly_hour_ex <- novaAQM::compareAQS(df = Middelburg_date %>%
-                                                ungroup() %>%
-                                                datify() %>%
-                                                mutate(place = station,
-                                                       instrument = "SAAQIS"),
-                                              period = "hour",
-                                              by_period = quos(month, year)) %>%
+                                                    ungroup() %>%
+                                                    datify() %>%
+                                                    mutate(place = station,
+                                                           instrument = "SAAQIS"),
+                                                  period = "hour",
+                                                  by_period = quos(month, year)) %>%
   ungroup() %>%
   arrange(pollutant, month) %>%
   relocate(pollutant, .after = place)
 
 Middelburg_season_hour_ex <- novaAQM::compareAQS(df = Middelburg_date %>%
-                                               ungroup() %>%
-                                               datify() %>%
-                                               mutate(place = station,
-                                                      instrument = "SAAQIS"),
-                                             period = "hour",
-                                             by_period = quos(season, year)) %>%
+                                                   ungroup() %>%
+                                                   datify() %>%
+                                                   mutate(place = station,
+                                                          instrument = "SAAQIS"),
+                                                 period = "hour",
+                                                 by_period = quos(season, year)) %>%
   ungroup() %>%
   arrange(pollutant) %>%
   relocate(pollutant, .after = place)
@@ -252,12 +252,12 @@ season_order = tibble(season = c("autum", "winter", "spring", "summer"), season_
 Middelburg_season_hour_ex <- Middelburg_season_hour_ex %>% left_join(season_order) %>% arrange(pollutant, season_nr)
 
 Middelburg_annual_hour_ex <- novaAQM::compareAQS(df = Middelburg_date %>%
-                                               ungroup() %>%
-                                               datify() %>%
-                                               mutate(place = station,
-                                                      instrument = "SAAQIS"),
-                                             period = "hour",
-                                             by_period = quos(year)) %>%
+                                                   ungroup() %>%
+                                                   datify() %>%
+                                                   mutate(place = station,
+                                                          instrument = "SAAQIS"),
+                                                 period = "hour",
+                                                 by_period = quos(year)) %>%
   ungroup() %>%
   arrange(pollutant, year) %>%
   relocate(pollutant, .after = place)
@@ -285,24 +285,24 @@ Middelburg_Day  <- Middelburg_Daily %>%
 
 
 Middelburg_month_daily_ex <- novaAQM::compareAQS(df = Middelburg_Day %>%
-                                               ungroup() %>%
-                                               datify() %>%
-                                               mutate(place = station,
-                                                      instrument = "SAAQIS"),
-                                             period = "day",
-                                             by_period = quos(month, year)) %>%
+                                                   ungroup() %>%
+                                                   datify() %>%
+                                                   mutate(place = station,
+                                                          instrument = "SAAQIS"),
+                                                 period = "day",
+                                                 by_period = quos(month, year)) %>%
   #ungroup() %>%
   arrange(pollutant, month)
 
 
 
 Middelburg_season_daily_ex <- novaAQM::compareAQS(df = Middelburg_Day %>%
-                                                ungroup() %>%
-                                                datify() %>%
-                                                mutate(place = station,
-                                                       instrument = "SAAQIS"),
-                                              period = "day",
-                                              by_period = quos(year, season)) %>%
+                                                    ungroup() %>%
+                                                    datify() %>%
+                                                    mutate(place = station,
+                                                           instrument = "SAAQIS"),
+                                                  period = "day",
+                                                  by_period = quos(year, season)) %>%
   #ungroup() %>%
   arrange(pollutant, season)
 season_order = tibble(season = c("autum", "winter", "spring", "summer"), season_nr = c(1, 2, 3, 4))
@@ -312,12 +312,12 @@ Middelburg_season_daily_ex <- Middelburg_season_daily_ex %>% left_join(season_or
 
 
 Middelburg_annual_daily_ex <- novaAQM::compareAQS(df = Middelburg_Day %>%
-                                                ungroup() %>%
-                                                datify() %>%
-                                                mutate(place = station,
-                                                       instrument = "SAAQIS"),
-                                              period = "day",
-                                              by_period = quos(year)) %>%
+                                                    ungroup() %>%
+                                                    datify() %>%
+                                                    mutate(place = station,
+                                                           instrument = "SAAQIS"),
+                                                  period = "day",
+                                                  by_period = quos(year)) %>%
   #ungroup() %>%
   arrange(pollutant, year)
 
@@ -416,13 +416,81 @@ Middelburghourlycorplot <- corrplot.mixed(Middelburg_hourlycor.coeff, mar = c(0,
 # Middelburg polar --------------------------------------------------------
 
 Mpolar <- Middelburg_clean %>%
-  datify() %>%
   mutate(latitude = -25.796056,
          longitude = 29.462823)
 
+plot_polar_cluster <- function(data,
+                               pollutant,
+                               statistic   = "mean",
+                               n.clusters  = 6,
+                               cols        = "Set2",
+                               main.stat   = NULL,
+                               main.clust  = NULL) {
+  
+  # 1. Statistic plot
+  stat_obj  <- polarPlot(data,
+                         pollutant = pollutant,
+                         statistic = statistic,
+                         main      = main.stat)
+  stat_plot <- stat_obj$plot
+  
+  # 2. Cluster plot
+  cluster_obj  <- polarCluster(data,
+                               pollutant  = pollutant,
+                               n.clusters = n.clusters,
+                               cols       = cols,
+                               main       = main.clust)
+  clust_plot   <- cluster_obj$plot
+  
+  # 3. Cluster summary table
+  stats        <- cluster_obj$clust_stats
+  pct_col      <- paste0(pollutant, "_percent")
+  mean_col     <- paste0("mean_", pollutant)
+  stats_tbl    <- stats %>%
+    select(-all_of(pct_col)) %>%
+    mutate(!!mean_col := round(.data[[mean_col]], 2))
+  table_grob   <- tableGrob(stats_tbl)
+  
+  # 4. Arrange side‑by‑side
+  grid.arrange(stat_plot, clust_plot, table_grob, nrow = 1)
+}
+
+Mpolarplotpm1 <- plot_polar_cluster(Mpolar,
+                                    pollutant  = "pm10",
+                                    statistic  = "mean",
+                                    n.clusters = 6,
+                                    cols       = "Set2",
+                                    main.stat  = "PM10 mean",
+                                    main.clust = "PM10 clusters")
+
+Mpolarplotpm2 <- plot_polar_cluster(Mpolar,
+                                    pollutant  = "pm2.5",
+                                    statistic  = "mean",
+                                    n.clusters = 6,
+                                    cols       = "Set2",
+                                    main.stat  = "PM2.5 mean",
+                                    main.clust = "PM2.5 clusters")
+
+
+Mpolarplotso <- plot_polar_cluster(Mpolar,
+                                   pollutant  = "so2",
+                                   statistic  = "mean",
+                                   n.clusters = 6,
+                                   cols       = "Set2",
+                                   main.stat  = "SO2 mean",
+                                   main.clust = "SO2 clusters")
+
+Mpolarplotno <- plot_polar_cluster(Mpolar,
+                                   pollutant  = "no2",
+                                   statistic  = "mean",
+                                   n.clusters = 6,
+                                   cols       = "Set2",
+                                   main.stat  = "NO2 mean",
+                                   main.clust = "NO2 clusters")
+
 # PM10 --------------------------------------------------------------------
 
-MPM10allpolar <- polarPlot(
+MPM10allpolar <- polarMap(
   Mpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -586,7 +654,7 @@ do.call("grid.arrange", MPM10_CPFplot)
 
 # PM2.5 -------------------------------------------------------------------
 
-MPM2.5allpolar <- polarPlot(
+MPM2.5allpolar <- polarMap(
   Mpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -749,7 +817,7 @@ do.call("grid.arrange", MPM2.5_CPFplot)
 # SO2 --------------------------------------------------------------------
 
 
-MSO2allpolar <- polarPlot(
+MSO2allpolar <- polarMap(
   Mpolar,
   latitude = "latitude",
   longitude = "longitude",
@@ -914,7 +982,7 @@ do.call("grid.arrange", MSO2_CPFplot)
 
 # NO2 --------------------------------------------------------------------
 
-MNO2allpolar <- polarPlot(
+MNO2allpolar <- polarMap(
   Mpolar,
   latitude = "latitude",
   longitude = "longitude",
