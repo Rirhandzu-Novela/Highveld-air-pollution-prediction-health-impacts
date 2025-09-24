@@ -8,7 +8,7 @@ library(dlnm)
 library(ggplot2)
 
 # LOAD THE DATA INTO THE SESSION
-data = read.csv("MortData/NkaPollPulMort.csv", header = T, sep = ";")
+data = read.csv("MortData/GertPollPulMort.csv", header = T, sep = ";")
 
 data$date <- as.Date(data$date, format = "%Y/%m/%d")
 
@@ -41,7 +41,7 @@ fourier <- harmonic(data$time, nfreq = 4, period = 365.25)
 
 #FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model1 <- glm(J95_J99 ~ fourier + time, data, family = quasipoisson)
+model1 <- glm(J60_J70 ~ fourier + time, data, family = quasipoisson)
 summary(model1)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -51,7 +51,7 @@ pred1 <- predict(model1, type = "response")
 # FIGURE 1
 #############
 
-plot(data$date, data$J95_J99, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
+plot(data$date, data$J60_J70, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
      main = "Sine-cosine functions (Fourier terms)", ylab = "Daily number of deaths",
      xlab = "Date")
 lines(data$date, pred1, lwd = 2)
@@ -74,7 +74,7 @@ spl <- bs(data$time, degree = 3, df = 70)
 
 # FIT A POISSON MODEL FOURIER TERMS + LINEAR TERM FOR TREND
 # (USE OF quasipoisson FAMILY FOR SCALING THE STANDARD ERRORS)
-model2 <- glm(J95_J99 ~ spl, data, family = quasipoisson)
+model2 <- glm(J60_J70 ~ spl, data, family = quasipoisson)
 summary(model2)
 
 # COMPUTE PREDICTED NUMBER OF DEATHS FROM THIS MODEL
@@ -84,7 +84,7 @@ pred2 <- predict(model2, type = "response")
 # FIGURE 2
 #############
 
-plot(data$date, data$J95_J99, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
+plot(data$date, data$J60_J70, ylim = c(0,30), pch = 19, cex = 0.2, col = grey(0.6),
      main = "Flexible cubic spline model", ylab = "Daily number of deaths",
      xlab = "Date")
 lines(data$date, pred2, lwd=2)
@@ -116,54 +116,54 @@ abline(h = 1, lty = 2, lwd = 2)
 
 
 # UNADJUSTED MODEL
-model3 <- glm(J95_J99 ~ pm2.5, data, family = quasipoisson)
+model3 <- glm(J60_J70 ~ pm2.5, data, family = quasipoisson)
 summary(model3)
 (eff3 <- ci.lin(model3, subset = "pm2.5", Exp = T))
 
-model31 <- glm(J95_J99 ~ pm10, data, family = quasipoisson)
+model31 <- glm(J60_J70 ~ pm10, data, family = quasipoisson)
 summary(model31)
 (eff31 <- ci.lin(model31, subset = "pm10", Exp = T))
 
-model32 <- glm(J95_J99 ~ so2, data, family = quasipoisson)
+model32 <- glm(J60_J70 ~ so2, data, family = quasipoisson)
 summary(model32)
 (eff32 <- ci.lin(model32, subset = "so2", Exp = T))
 
-model33 <- glm(J95_J99 ~ no2, data, family = quasipoisson)
+model33 <- glm(J60_J70 ~ no2, data, family = quasipoisson)
 summary(model33)
 (eff33 <- ci.lin(model33, subset = "no2", Exp = T))
 
-model34 <- glm(J95_J99 ~ pm2.5  + so2 + no2, data, family = quasipoisson)
+model34 <- glm(J60_J70 ~ pm2.5  + so2 + no2, data, family = quasipoisson)
 summary(model34)
 (eff34 <- ci.lin(model34, subset = "pm2.5", Exp = T))
 (eff341 <- ci.lin(model34, subset = "so2", Exp = T))
 (eff342 <- ci.lin(model34, subset = "no2", Exp = T))
 
-model35 <- glm(J95_J99 ~ pm2.5  + so2 , data, family = quasipoisson)
+model35 <- glm(J60_J70 ~ pm2.5  + so2 , data, family = quasipoisson)
 summary(model35)
 (eff35 <- ci.lin(model35, subset = "pm2.5", Exp = T))
 (eff351 <- ci.lin(model35, subset = "so2", Exp = T))
 
-model36 <- glm(J95_J99 ~ pm2.5  + no2 , data, family = quasipoisson)
+model36 <- glm(J60_J70 ~ pm2.5  + no2 , data, family = quasipoisson)
 summary(model36)
 (eff36 <- ci.lin(model36, subset = "pm2.5", Exp = T))
 (eff361 <- ci.lin(model36, subset = "no2", Exp = T))
 
-model37 <- glm(J95_J99 ~ so2  + no2 , data, family = quasipoisson)
+model37 <- glm(J60_J70 ~ so2  + no2 , data, family = quasipoisson)
 summary(model37)
 (eff37 <- ci.lin(model37, subset = "so2", Exp = T))
 (eff371 <- ci.lin(model37, subset = "no2", Exp = T))
 
-model38 <- glm(J95_J99 ~ pm10  + so2 , data, family = quasipoisson)
+model38 <- glm(J60_J70 ~ pm10  + so2 , data, family = quasipoisson)
 summary(model38)
 (eff38 <- ci.lin(model38, subset = "pm10", Exp = T))
 (eff381 <- ci.lin(model38, subset = "so2", Exp = T))
 
-model39 <- glm(J95_J99 ~ pm10  + no2 , data, family = quasipoisson)
+model39 <- glm(J60_J70 ~ pm10  + no2 , data, family = quasipoisson)
 summary(model39)
 (eff39 <- ci.lin(model39, subset = "pm10", Exp = T))
 (eff391 <- ci.lin(model39, subset = "no2", Exp = T))
 
-model30 <- glm(J95_J99 ~ pm10  + so2 + no2, data, family = quasipoisson)
+model30 <- glm(J60_J70 ~ pm10  + so2 + no2, data, family = quasipoisson)
 summary(model34)
 (eff30 <- ci.lin(model30, subset = "pm10", Exp = T))
 (eff301 <- ci.lin(model30, subset = "so2", Exp = T))
@@ -442,7 +442,7 @@ tabeff <- tabeff |>
     ci.low.perc  = (ci.low - 1) * 100,
     ci.hi.perc = (ci.hi - 1) * 100)
 
-write.csv(tabeff,"Data/GertPollPulMortJ95_J99.csv")
+write.csv(tabeff,"Data/GertPollPulMortJ60_J70.csv")
 ################################################################################
 # EXPLORING THE LAGGED (DELAYED) EFFECTS
 ############################################
@@ -465,7 +465,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ PM2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ PM2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM2[i+1,] <- ci.lin(mod, subset = "PM2lag", Exp = T)[5:7]
 }
@@ -490,7 +490,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ PM1lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ PM1lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM1[i+1,] <- ci.lin(mod, subset = "PM1lag", Exp = T)[5:7]
 }
@@ -515,7 +515,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ so2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ so2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagSO[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
 }
@@ -540,7 +540,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagNO[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
 }
@@ -566,7 +566,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ PM2lag + so2lag + no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ PM2lag + so2lag + no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM2SN[i+1,] <- ci.lin(mod, subset = "PM2lag", Exp = T)[5:7]
 }
@@ -592,7 +592,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ so2lag + PM2lag + no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ so2lag + PM2lag + no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagSPM2N[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
 }
@@ -618,7 +618,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ no2lag + PM2lag + so2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ no2lag + PM2lag + so2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagNPM2S[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
 }
@@ -643,7 +643,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ PM2lag + so2lag +  tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ PM2lag + so2lag +  tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM2S[i+1,] <- ci.lin(mod, subset = "PM2lag", Exp = T)[5:7]
 }
@@ -669,7 +669,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ so2lag + PM2lag +  tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ so2lag + PM2lag +  tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagSPM2[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
 }
@@ -694,7 +694,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ PM2lag  + no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ PM2lag  + no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM2N[i+1,] <- ci.lin(mod, subset = "PM2lag", Exp = T)[5:7]
 }
@@ -719,7 +719,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ no2lag + PM2lag  + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ no2lag + PM2lag  + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagNPM2[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
 }
@@ -743,7 +743,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ so2lag +  no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ so2lag +  no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagSN[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
 }
@@ -768,7 +768,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ no2lag + so2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ no2lag + so2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagNS[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
 }
@@ -793,7 +793,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ PM1lag + so2lag +  tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ PM1lag + so2lag +  tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM1S[i+1,] <- ci.lin(mod, subset = "PM1lag", Exp = T)[5:7]
 }
@@ -818,7 +818,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ so2lag + PM1lag +  tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ so2lag + PM1lag +  tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagSPM1[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
 }
@@ -843,7 +843,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ PM1lag  + no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ PM1lag  + no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM1N[i+1,] <- ci.lin(mod, subset = "PM1lag", Exp = T)[5:7]
 }
@@ -869,7 +869,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ no2lag + PM1lag  + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ no2lag + PM1lag  + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagNPM1[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
 }
@@ -894,7 +894,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ PM1lag + so2lag + no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ PM1lag + so2lag + no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagPM1SN[i+1,] <- ci.lin(mod, subset = "PM1lag", Exp = T)[5:7]
 }
@@ -920,7 +920,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ so2lag + PM1lag + no2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ so2lag + PM1lag + no2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagSPM1N[i+1,] <- ci.lin(mod, subset = "so2lag", Exp = T)[5:7]
 }
@@ -946,7 +946,7 @@ for(i in 0:14) {
                        include.lowest = TRUE)
   # DEFINE THE TRANSFORMATION FOR TEMPERATURE
   # LAG SAME AS ABOVE, BUT WITH STRATA TERMS INSTEAD THAN LINEAR
-  mod <- glm(J95_J99 ~ no2lag + PM1lag + so2lag + tempdecilelag + fourier, data,
+  mod <- glm(J60_J70 ~ no2lag + PM1lag + so2lag + tempdecilelag + fourier, data,
              family = quasipoisson)
   tablagNPM1S[i+1,] <- ci.lin(mod, subset = "no2lag", Exp = T)[5:7]
 }
@@ -996,7 +996,7 @@ cbtempunc <- crossbasis(data$temp, lag = c(0,14),
 summary(cbtempunc)
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model7 <- glm(J95_J99 ~ cbPM2unc + cbtempunc + fourier, data, family = quasipoisson)
+model7 <- glm(J60_J70 ~ cbPM2unc + cbtempunc + fourier, data, family = quasipoisson)
 pred7 <- crosspred(cbPM2unc, model7, at = 10, cumul  = TRUE)
 summary(model7)
 
@@ -1027,7 +1027,7 @@ plot(pred7, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19,
 
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model71 <- glm(J95_J99 ~ cbPM1unc + cbtempunc + fourier, data, family = quasipoisson)
+model71 <- glm(J60_J70 ~ cbPM1unc + cbtempunc + fourier, data, family = quasipoisson)
 pred71 <- crosspred(cbPM1unc, model71, at = 10, cumul  = TRUE)
 summary(model71)
 
@@ -1058,7 +1058,7 @@ plot(pred71, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
 
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model72 <- glm(J95_J99 ~ cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+model72 <- glm(J60_J70 ~ cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred72 <- crosspred(cbSOunc, model72, at = 10, cumul  = TRUE)
 summary(model72)
 
@@ -1089,7 +1089,7 @@ plot(pred72, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
 
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model73 <- glm(J95_J99 ~ cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+model73 <- glm(J60_J70 ~ cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred73 <- crosspred(cbNOunc, model73, at = 10, cumul  = TRUE)
 summary(model73)
 
@@ -1120,7 +1120,7 @@ plot(pred73, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
 
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model74 <- glm(J95_J99 ~ cbPM2unc + cbSOunc + cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+model74 <- glm(J60_J70 ~ cbPM2unc + cbSOunc + cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred74 <- crosspred(cbPM2unc, model74, at = 10, cumul  = TRUE)
 summary(model74)
 
@@ -1150,7 +1150,7 @@ plot(pred74, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model741 <- glm(J95_J99 ~ cbSOunc + cbPM2unc + cbNOunc +  cbtempunc + fourier, data, family = quasipoisson)
+model741 <- glm(J60_J70 ~ cbSOunc + cbPM2unc + cbNOunc +  cbtempunc + fourier, data, family = quasipoisson)
 pred741 <- crosspred(cbSOunc, model741, at = 10, cumul  = TRUE)
 summary(model741)
 
@@ -1180,7 +1180,7 @@ plot(pred741, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model742 <- glm(J95_J99 ~ cbNOunc + cbPM2unc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+model742 <- glm(J60_J70 ~ cbNOunc + cbPM2unc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred742 <- crosspred(cbNOunc, model742, at = 10, cumul  = TRUE)
 summary(model742)
 
@@ -1210,7 +1210,7 @@ plot(pred742, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model75 <- glm(J95_J99 ~ cbPM2unc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+model75 <- glm(J60_J70 ~ cbPM2unc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred75 <- crosspred(cbPM2unc, model75, at = 10, cumul  = TRUE)
 summary(model75)
 
@@ -1240,7 +1240,7 @@ plot(pred75, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model751 <- glm(J95_J99 ~ cbSOunc + cbPM2unc + cbtempunc + fourier, data, family = quasipoisson)
+model751 <- glm(J60_J70 ~ cbSOunc + cbPM2unc + cbtempunc + fourier, data, family = quasipoisson)
 pred751 <- crosspred(cbSOunc, model751, at = 10, cumul  = TRUE)
 summary(model751)
 
@@ -1270,7 +1270,7 @@ plot(pred751, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model76 <- glm(J95_J99 ~ cbPM2unc +  cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+model76 <- glm(J60_J70 ~ cbPM2unc +  cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred76 <- crosspred(cbPM2unc, model76, at = 10, cumul  = TRUE)
 summary(model76)
 
@@ -1300,7 +1300,7 @@ plot(pred76, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model761 <- glm(J95_J99 ~ cbNOunc + cbPM2unc + cbtempunc + fourier, data, family = quasipoisson)
+model761 <- glm(J60_J70 ~ cbNOunc + cbPM2unc + cbtempunc + fourier, data, family = quasipoisson)
 pred761 <- crosspred(cbNOunc, model761, at = 10, cumul  = TRUE)
 summary(model761)
 
@@ -1330,7 +1330,7 @@ plot(pred761, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model77 <- glm(J95_J99 ~  cbSOunc + cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+model77 <- glm(J60_J70 ~  cbSOunc + cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred77 <- crosspred(cbSOunc, model77, at = 10, cumul  = TRUE)
 summary(model77)
 
@@ -1360,7 +1360,7 @@ plot(pred77, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model771 <- glm(J95_J99 ~  cbNOunc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+model771 <- glm(J60_J70 ~  cbNOunc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred771 <- crosspred(cbNOunc, model771, at = 10, cumul  = TRUE)
 summary(model771)
 
@@ -1390,7 +1390,7 @@ plot(pred771, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model78 <- glm(J95_J99 ~ cbPM1unc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+model78 <- glm(J60_J70 ~ cbPM1unc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred78 <- crosspred(cbPM1unc, model78, at = 10, cumul  = TRUE)
 summary(model78)
 
@@ -1420,7 +1420,7 @@ plot(pred78, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model781 <- glm(J95_J99 ~ cbSOunc + cbPM1unc + cbtempunc + fourier, data, family = quasipoisson)
+model781 <- glm(J60_J70 ~ cbSOunc + cbPM1unc + cbtempunc + fourier, data, family = quasipoisson)
 pred781 <- crosspred(cbSOunc, model781, at = 10, cumul  = TRUE)
 summary(model781)
 
@@ -1450,7 +1450,7 @@ plot(pred781, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model79 <- glm(J95_J99 ~ cbPM1unc +  cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+model79 <- glm(J60_J70 ~ cbPM1unc +  cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred79 <- crosspred(cbPM1unc, model79, at = 10, cumul  = TRUE)
 summary(model79)
 
@@ -1480,7 +1480,7 @@ plot(pred79, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model791 <- glm(J95_J99 ~ cbNOunc + cbPM1unc + cbtempunc + fourier, data, family = quasipoisson)
+model791 <- glm(J60_J70 ~ cbNOunc + cbPM1unc + cbtempunc + fourier, data, family = quasipoisson)
 pred791 <- crosspred(cbNOunc, model791, at = 10, cumul  = TRUE)
 summary(model791)
 
@@ -1511,7 +1511,7 @@ plot(pred791, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
 
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model70 <- glm(J95_J99 ~ cbPM1unc + cbSOunc + cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
+model70 <- glm(J60_J70 ~ cbPM1unc + cbSOunc + cbNOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred70 <- crosspred(cbPM1unc, model70, at = 10, cumul  = TRUE)
 summary(model70)
 
@@ -1541,7 +1541,7 @@ plot(pred70, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model701 <- glm(J95_J99 ~ cbSOunc + cbPM1unc + cbNOunc +  cbtempunc + fourier, data, family = quasipoisson)
+model701 <- glm(J60_J70 ~ cbSOunc + cbPM1unc + cbNOunc +  cbtempunc + fourier, data, family = quasipoisson)
 pred701 <- crosspred(cbSOunc, model701, at = 10, cumul  = TRUE)
 summary(model701)
 
@@ -1571,7 +1571,7 @@ plot(pred701, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95%CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model702 <- glm(J95_J99 ~ cbNOunc + cbPM1unc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
+model702 <- glm(J60_J70 ~ cbNOunc + cbPM1unc + cbSOunc + cbtempunc + fourier, data, family = quasipoisson)
 pred702 <- crosspred(cbNOunc, model702, at = 10, cumul  = TRUE)
 summary(model702)
 
@@ -1639,7 +1639,7 @@ cbtempunc <- crossbasis(data$temp, lag = c(0,14),
 summary(cbtempunc)
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR PM2.5 LEVEL 10ug/m3
-model8 <- glm(J95_J99 ~ cbpm2constr + cbtempunc + fourier, data, family = quasipoisson)
+model8 <- glm(J60_J70 ~ cbpm2constr + cbtempunc + fourier, data, family = quasipoisson)
 pred8 <- crosspred(cbpm2constr, model8, at = 10, cumul  = TRUE)
 summary(model8)
 
@@ -1672,7 +1672,7 @@ plot(pred8, var = 10,  cumul = TRUE, type = "p", ci = "bars", col = 1, pch = 19,
 
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR PM10 LEVEL 10ug/m3
-model81 <- glm(J95_J99 ~ cbpm1constr + cbtempunc + fourier, data, family = quasipoisson)
+model81 <- glm(J60_J70 ~ cbpm1constr + cbtempunc + fourier, data, family = quasipoisson)
 pred81 <- crosspred(cbpm1constr, model81, at = 10, cumul  = TRUE)
 summary(model81)
 
@@ -1704,7 +1704,7 @@ plot(pred81, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model82 <- glm(J95_J99 ~ cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model82 <- glm(J60_J70 ~ cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred82 <- crosspred(cbsoconstr, model82, at = 10, cumul  = TRUE)
 summary(model82)
 
@@ -1736,7 +1736,7 @@ plot(pred82, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model83 <- glm(J95_J99 ~ cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model83 <- glm(J60_J70 ~ cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred83 <- crosspred(cbnoconstr, model83, at = 10, cumul  = TRUE)
 summary(model83)
 
@@ -1769,7 +1769,7 @@ plot(pred83, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model84 <- glm(J95_J99 ~ cbpm2constr + cbsoconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model84 <- glm(J60_J70 ~ cbpm2constr + cbsoconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred84 <- crosspred(cbpm2constr, model84, at = 10, cumul  = TRUE)
 summary(model84)
 
@@ -1801,7 +1801,7 @@ plot(pred84, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model841 <- glm(J95_J99 ~ cbsoconstr + cbpm2constr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model841 <- glm(J60_J70 ~ cbsoconstr + cbpm2constr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred841 <- crosspred(cbsoconstr, model841, at = 10, cumul  = TRUE)
 summary(model841)
 
@@ -1833,7 +1833,7 @@ plot(pred841, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model842 <- glm(J95_J99 ~ cbnoconstr +  cbpm2constr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model842 <- glm(J60_J70 ~ cbnoconstr +  cbpm2constr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred842 <- crosspred(cbnoconstr, model842, at = 10, cumul  = TRUE)
 summary(model842)
 
@@ -1865,7 +1865,7 @@ plot(pred842, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model85 <- glm(J95_J99 ~ cbpm2constr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model85 <- glm(J60_J70 ~ cbpm2constr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred85 <- crosspred(cbpm2constr, model85, at = 10, cumul  = TRUE)
 summary(model85)
 
@@ -1897,7 +1897,7 @@ plot(pred85, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model851 <- glm(J95_J99 ~ cbsoconstr + cbpm2constr +  cbtempunc + fourier, data, family = quasipoisson)
+model851 <- glm(J60_J70 ~ cbsoconstr + cbpm2constr +  cbtempunc + fourier, data, family = quasipoisson)
 pred851 <- crosspred(cbsoconstr, model851, at = 10, cumul  = TRUE)
 summary(model851)
 
@@ -1929,7 +1929,7 @@ plot(pred851, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model86 <- glm(J95_J99 ~ cbpm2constr + cbnoconstr +  cbtempunc + fourier, data, family = quasipoisson)
+model86 <- glm(J60_J70 ~ cbpm2constr + cbnoconstr +  cbtempunc + fourier, data, family = quasipoisson)
 pred86 <- crosspred(cbpm2constr, model86, at = 10, cumul  = TRUE)
 summary(model86)
 
@@ -1961,7 +1961,7 @@ plot(pred86, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model861 <- glm(J95_J99 ~ cbnoconstr + cbpm2constr +  cbtempunc + fourier, data, family = quasipoisson)
+model861 <- glm(J60_J70 ~ cbnoconstr + cbpm2constr +  cbtempunc + fourier, data, family = quasipoisson)
 pred861 <- crosspred(cbnoconstr, model861, at = 10, cumul  = TRUE)
 summary(model861)
 
@@ -1993,7 +1993,7 @@ plot(pred861, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model87 <- glm(J95_J99 ~ cbsoconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model87 <- glm(J60_J70 ~ cbsoconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred87 <- crosspred(cbsoconstr, model87, at = 10, cumul  = TRUE)
 summary(model87)
 
@@ -2025,7 +2025,7 @@ plot(pred87, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model871 <- glm(J95_J99 ~ cbnoconstr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model871 <- glm(J60_J70 ~ cbnoconstr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred871 <- crosspred(cbnoconstr, model871, at = 10, cumul  = TRUE)
 summary(model871)
 
@@ -2057,7 +2057,7 @@ plot(pred871, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model88 <- glm(J95_J99 ~ cbpm1constr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model88 <- glm(J60_J70 ~ cbpm1constr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred88 <- crosspred(cbpm1constr, model88, at = 10, cumul  = TRUE)
 summary(model88)
 
@@ -2089,7 +2089,7 @@ plot(pred88, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model881 <- glm(J95_J99 ~ cbsoconstr + cbpm1constr +  cbtempunc + fourier, data, family = quasipoisson)
+model881 <- glm(J60_J70 ~ cbsoconstr + cbpm1constr +  cbtempunc + fourier, data, family = quasipoisson)
 pred881 <- crosspred(cbsoconstr, model881, at = 10, cumul  = TRUE)
 summary(model881)
 
@@ -2121,7 +2121,7 @@ plot(pred881, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model89 <- glm(J95_J99 ~ cbpm1constr + cbnoconstr +  cbtempunc + fourier, data, family = quasipoisson)
+model89 <- glm(J60_J70 ~ cbpm1constr + cbnoconstr +  cbtempunc + fourier, data, family = quasipoisson)
 pred89 <- crosspred(cbpm1constr, model89, at = 10, cumul  = TRUE)
 summary(model89)
 
@@ -2153,7 +2153,7 @@ plot(pred89, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model891 <- glm(J95_J99 ~ cbnoconstr + cbpm1constr +  cbtempunc + fourier, data, family = quasipoisson)
+model891 <- glm(J60_J70 ~ cbnoconstr + cbpm1constr +  cbtempunc + fourier, data, family = quasipoisson)
 pred891 <- crosspred(cbnoconstr, model891, at = 10, cumul  = TRUE)
 summary(model891)
 
@@ -2185,7 +2185,7 @@ plot(pred891, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model80 <- glm(J95_J99 ~ cbpm1constr + cbsoconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model80 <- glm(J60_J70 ~ cbpm1constr + cbsoconstr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred80 <- crosspred(cbpm1constr, model80, at = 10, cumul  = TRUE)
 summary(model80)
 
@@ -2217,7 +2217,7 @@ plot(pred80, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 19
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model801 <- glm(J95_J99 ~ cbsoconstr + cbpm1constr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model801 <- glm(J60_J70 ~ cbsoconstr + cbpm1constr + cbnoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred801 <- crosspred(cbsoconstr, model801, at = 10, cumul  = TRUE)
 summary(model801)
 
@@ -2249,7 +2249,7 @@ plot(pred801, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
      ylab = "RR and 95% CI")
 
 # RUN THE MODEL AND OBTAIN PREDICTIONS FOR POLL LEVEL 10ug/m3
-model802 <- glm(J95_J99 ~ cbnoconstr +  cbpm1constr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
+model802 <- glm(J60_J70 ~ cbnoconstr +  cbpm1constr + cbsoconstr + cbtempunc + fourier, data, family = quasipoisson)
 pred802 <- crosspred(cbnoconstr, model802, at = 10, cumul  = TRUE)
 summary(model802)
 
@@ -2283,17 +2283,17 @@ plot(pred802, var = 10, cumul  = TRUE, type = "p", ci = "bars", col = 1, pch = 1
 
 # SAVE THE RESULTS
 
-NkaPollPulMortPM2J95_J99 <- rbind(tablag3, tablag35, tablag36, tablag34)
-write.csv(NkaPollPulMortPM2J95_J99,"Data/NkaPollPulMortPM2J95_J99.csv")
+GertPollPulMortPM2J60_J70 <- rbind(tablag3, tablag35, tablag36, tablag34)
+write.csv(GertPollPulMortPM2J60_J70,"Data/GertPollPulMortPM2J60_J70.csv")
 
-NkaPollPulMortPM1J95_J99 <- rbind(tablag31, tablag38, tablag39, tablag30)
-write.csv(NkaPollPulMortPM1J95_J99,"Data/NkaPollPulMortPM1J95_J99.csv")
+GertPollPulMortPM1J60_J70 <- rbind(tablag31, tablag38, tablag39, tablag30)
+write.csv(GertPollPulMortPM1J60_J70,"Data/GertPollPulMortPM1J60_J70.csv")
 
-NkaPollPulMortSOJ95_J99 <- rbind(tablag32, tablag351, tablag381, tablag37, tablag341, tablag301)
-write.csv(NkaPollPulMortSOJ95_J99,"Data/NkaPollPulMortSOJ95_J99.csv")
+GertPollPulMortSOJ60_J70 <- rbind(tablag32, tablag351, tablag381, tablag37, tablag341, tablag301)
+write.csv(GertPollPulMortSOJ60_J70,"Data/GertPollPulMortSOJ60_J70.csv")
 
-NkaPollPulMortNOJ95_J99 <- rbind(tablag33, tablag361, tablag391, tablag371, tablag342, tablag302)
-write.csv(NkaPollPulMortNOJ95_J99,"Data/NkatPollPulMortNOJ95_J99.csv")
+GertPollPulMortNOJ60_J70 <- rbind(tablag33, tablag361, tablag391, tablag371, tablag342, tablag302)
+write.csv(GertPollPulMortNOJ60_J70,"Data/GertPollPulMortNOJ60_J70.csv")
 
 ################################################################################
 # MODEL CHECKING
@@ -2351,7 +2351,7 @@ results <- expand.grid(
           arglag = list(fun = "ns", df = lag_df))
         
         # Fit model
-        m <- glm(J95_J99 ~ cbP + spl_seas + tempdecile,
+        m <- glm(J60_J70 ~ cbP + spl_seas + tempdecile,
                  data = data, family = quasipoisson)
         
         # Estimate dispersion
@@ -2424,7 +2424,7 @@ results2 <- expand.grid(
                                 arglag = list(fun = "integer"))
         
         # Fit model
-        m <- glm(J95_J99 ~ cbP + fourier + cbtempunc,
+        m <- glm(J60_J70 ~ cbP + fourier + cbtempunc,
                  data = data, family = quasipoisson)
         
         # Estimate dispersion

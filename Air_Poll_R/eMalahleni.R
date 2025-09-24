@@ -404,16 +404,25 @@ save(WBoxPM2.5Compare,
 
 
 eMalahleni_COR <- eMalahleni_clean %>%
-  select(pm2.5, pm10, so2, no2, ws, wd, relHum, temp, pressure)
+  select(date, pm2.5, pm10, so2, no2, ws, wd, relHum, temp, pressure)
 
 
-eMalahleni_hourlycor <- rcorr(as.matrix(eMalahleni_COR), type = "pearson")
+eMalahleni_hourlycor <- rcorr(as.matrix(eMalahleni_COR |> select(-date)), type = "pearson")
 eMalahleni_hourlycor.coeff = eMalahleni_hourlycor$r
 eMalahleni_hourlycor.p = eMalahleni_hourlycor$P
 eMalahleni_hourlycor.coeff
 
 eMalahlenihourlycorplot <- corrplot.mixed(eMalahleni_hourlycor.coeff, mar = c(0,0,1,0), lower = 'number', upper = 'ellipse', title = "eMalahleni air pollutant correlation")
 
+polls <- c("pm2.5","pm10","so2","no2","ws","wd","relHum","temp")
+
+corPlot(eMalahleni_COR,
+        pollutant = polls,
+        type      = "year",
+        lower     = TRUE,
+        upper     = FALSE,
+        layout    = c(4,3),
+        main      = paste("eMalahleni air pollutant correlations"))
 # eMalahleni polar --------------------------------------------------------
 
 Wpolar <- eMalahleni_clean %>%
