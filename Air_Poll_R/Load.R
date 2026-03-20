@@ -71,6 +71,9 @@ eMalahleni_clean$date <- format(eMalahleni_clean$date, "%Y-%m-%d %H:%M:%S")
 
 summary(eMalahleni_clean)
 
+
+eMalahleniPtimeseriesR <- summaryPlot(eMalahleni_clean |> select(date, pressure, relHum, temp, ws, wd,o3, co, no, nox, no2, so2, pm10, pm2.5))
+
 eMalahleniIM <- na_kalman(eMalahleni_clean, model = "StructTS", smooth = TRUE, type = "trend")
 summary(eMalahleniIM)
 

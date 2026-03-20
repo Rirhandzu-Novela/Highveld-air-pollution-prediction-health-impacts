@@ -1168,13 +1168,11 @@ W$date <- dateTime
 df <- W %>%
   select(date, o3) %>% 
   mutate(
-    ozone_8hr_avg = rollapply(o3, width = 8, FUN = mean, align = "right", fill = NA)
-  ) %>%
+    ozone_8hr_avg = rollapply(o3, width = 8, FUN = mean, align = "right", fill = NA)) %>%
   mutate(date = as.Date(date)) %>%
   group_by(date) %>%
   summarise(
-    o3 = max(rollapply(ozone_8hr_avg, width = 3, FUN = mean, align = "right", fill = NA), na.rm = TRUE)
-  )
+    o3 = max(rollapply(ozone_8hr_avg, width = 3, FUN = mean, align = "right", fill = NA), na.rm = TRUE))
 
 
 Wdaily <- timeAverage(W, avg.time = "day")

@@ -216,6 +216,84 @@ daily_df <- GertDaily %>%
   select(date, weighted_aqhi, risk_level)
 
 
+GertsPollAqhi <- GertDaily %>% 
+  left_join(daily_df, by = "date")
+
+write.csv(GertsPollAqhi, "AirData/GertsPollAqhi.csv", row.names = TRUE)
+
+# Group by year and risk_level, then count the number of days in each risk_level per year
+
+Gertsrisk_level_counts <- GertsPollAqhi %>%
+  group_by(weighted_aqhi) %>%
+  summarise(days_count = n(),
+            pm2.5 = mean(pm2.5),
+            pm10 = mean(pm10),
+            so2 = mean(so2),
+            no2 = mean(no2),
+            o3 = mean(o3),
+            .groups = "drop")
+
+
+# Optionally, save the result to a CSV file
+write.csv(Gertsrisk_level_counts, "RDA/Gertsrisk_level_counts.csv", row.names = TRUE)
+
+
+# heatmap
+
+df <- GertsPollAqhi %>%
+  mutate(
+    year = format(date, "%Y"),                # Extract the year
+    day_of_year = as.numeric(format(date, "%j")),  # Day of the year (1-365)
+    color = case_when(                        # Categorize risk levels into colors
+      weighted_aqhi >= 1 & weighted_aqhi <= 3 ~ "green",
+      weighted_aqhi >= 4 & weighted_aqhi <= 5 ~ "yellow",
+      weighted_aqhi >= 6 & weighted_aqhi <= 7 ~ "orange",
+      weighted_aqhi >= 8 & weighted_aqhi <= 9 ~ "red",
+      weighted_aqhi == 10 ~ "purple"
+    )
+  ) %>%
+  mutate(
+    risk_category = factor(color, levels = c("green", "yellow", "orange", "red", "purple"),
+                           labels = c("Good (1-3)", "Moderate (4-5)", "Unhealthy (6-7)", "Very Unhealthy (8-9)", "Hazardous (10+)"))
+  )
+
+# Plot the heatmap with a legend
+ggplot(df, aes(x = day_of_year, y = year, fill = risk_category)) +
+  geom_tile(color = "white") +                    # Add white grid lines
+  scale_fill_manual(
+    values = c(
+      "Good (1-3)" = "green",
+      "Moderate (4-5)" = "yellow",
+      "Unhealthy (6-7)" = "orange",
+      "Very Unhealthy (8-9)" = "red",
+      "Hazardous (10+)" = "purple"
+    ),
+    name = "Risk Levels"                          # Legend title
+  ) +
+  scale_x_continuous(
+    breaks = c(1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335),  # Approximate start of each month
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) +
+  labs(
+    title = "eMalahleni Daily Air Quality Health Index",
+    x = "Month",
+    y = "Year"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(face = "bold", angle = 90, hjust = 1), # Rotate x-axis labels for better readability
+    axis.text.y = element_text(face = "bold"),
+    legend.position = "bottom",                        # Move legend below the plot
+    legend.title = element_text(size = 10, face = "bold"),            # Adjust legend title size
+    legend.text = element_text(face = "bold", size = 8),
+    plot.title = element_text(face = "bold"),   
+    axis.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold"))
+
+
+# 30+ ---------------------------------------------------------------------
+
+
 GertMort30 = read.csv("MortData/GertPollMort30.csv", header = T, sep = ";")
 GertMort30$date <- as.Date(GertMort30$date, format = "%Y/%m/%d")
 
