@@ -1,14 +1,3 @@
-"""
-Graph Transformer for Air Pollution Prediction - FIXED VERSION
-==============================================================
-Fixed implementation with critical issues resolved:
-1. Edge attributes properly used in attention computation
-2. Removed sigmoid output for proper regression
-3. Fixed unscaling to use correct PM2.5 column
-
-Notebook-style implementation following the original structure
-"""
-
 # Import Libraries
 import numpy as np
 import pandas as pd
@@ -477,7 +466,7 @@ print("Training FIXED Graph Transformer model...")
 best_val_loss = float('inf')
 patience = 20
 patience_counter = 0
-epochs = 150
+epochs = 100
 
 training_start_time = time.time()
 
@@ -572,35 +561,5 @@ metrics_df.to_csv('fixed_graph_transformer_metrics.csv', index=False)
 # VISUALIZATIONS
 # =============================================================================
 
-print("Creating visualizations...")
 
-# Scatter plot
-plt.figure(figsize=(10, 8))
-plt.scatter(targets, predictions, alpha=0.5, s=20)
-plt.plot([targets.min(), targets.max()], [targets.min(), targets.max()], 'r--', lw=2)
-plt.xlabel('Actual PM2.5 (μg/m³)')
-plt.ylabel('Predicted PM2.5 (μg/m³)')
-plt.title(f'FIXED Graph Transformer: Actual vs Predicted PM2.5\nR² = {r2:.4f}, RMSE = {rmse:.4f}')
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig('fixed_graph_transformer_scatter.png', dpi=300, bbox_inches='tight')
-plt.show()
 
-# Residual plot
-residuals = predictions - targets
-plt.figure(figsize=(10, 6))
-plt.scatter(predictions, residuals, alpha=0.5, s=20)
-plt.axhline(y=0, color='r', linestyle='--')
-plt.xlabel('Predicted PM2.5 (μg/m³)')
-plt.ylabel('Residuals (μg/m³)')
-plt.title('FIXED Graph Transformer: Residual Plot')
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig('fixed_graph_transformer_residuals.png', dpi=300, bbox_inches='tight')
-plt.show()
-
-print("✅ FIXED Graph Transformer model training and evaluation completed!")
-print("Critical fixes applied:")
-print("  1. Edge attributes properly used in attention computation")
-print("  2. Removed sigmoid output for proper regression")
-print("  3. Fixed unscaling to use correct PM2.5 column")

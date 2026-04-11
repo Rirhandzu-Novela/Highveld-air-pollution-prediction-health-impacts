@@ -1,17 +1,3 @@
-"""
-2D Graph Transformer Air Pollution Prediction - FIXED VERSION
-============================================================= 
-Fixed Graph Transformer Network for multi-station air pollution prediction using 2D spatial-temporal data
-
-FIXES APPLIED:
-1. Deterministic graph construction (removes randomness)
-2. Edge attributes properly used in attention
-3. Removed sigmoid output for regression
-4. Added temporal positional encoding
-5. Fixed batch dimension handling
-6. Proper temporal sequence processing
-"""
-
 # Import Libraries
 import numpy as np
 import pandas as pd
@@ -678,20 +664,4 @@ metrics_df.to_csv('fixed_2d_graph_transformer_metrics.csv', index=False)
 # VISUALIZATIONS
 # =============================================================================
 
-print("Creating visualizations...")
 
-# Scatter plot
-plt.figure(figsize=(10, 8))
-plt.scatter(targets_unscaled, predictions_unscaled, alpha=0.5, s=20)
-plt.plot([targets_unscaled.min(), targets_unscaled.max()], 
-         [targets_unscaled.min(), targets_unscaled.max()], 'r--', lw=2)
-plt.xlabel('Actual PM2.5 (μg/m³)')
-plt.ylabel('Predicted PM2.5 (μg/m³)')
-plt.title(f'FIXED 2D Graph Transformer: Actual vs Predicted PM2.5\nR² = {r2:.4f}, RMSE = {rmse:.4f}')
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig('fixed_2d_graph_transformer_scatter.png', dpi=300, bbox_inches='tight')
-plt.show()
-
-print("✅ FIXED 2D Graph Transformer model evaluation completed!")
-print("All critical fixes have been applied for proper mathematical implementation.")

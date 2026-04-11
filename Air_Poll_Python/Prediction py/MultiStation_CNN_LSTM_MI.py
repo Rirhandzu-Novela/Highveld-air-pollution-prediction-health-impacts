@@ -132,7 +132,7 @@ def create_sequences(data, target_data, n_in=1):
     
     return np.array(X), np.array(y)
 
-n_in = 1
+n_in = 24
 X, y = create_sequences(selected_features, target_norm, n_in=n_in)
 
 print(f"Sequences created: X {X.shape}, y {y.shape}")
@@ -172,17 +172,17 @@ keras.backend.clear_session()
 model = keras.Sequential([
     layers.Input(shape=(X_train.shape[1], X_train.shape[2])),
     
-    # Conv1D layers
+    # Conv1D layers with SpatialDropout1D
     layers.Conv1D(best_params['filters'], 3, padding='same', activation='relu'),
     layers.BatchNormalization(),
-    layers.Dropout(best_params['dropout']),
+    layers.SpatialDropout1D(best_params['dropout']),
     
     layers.Conv1D(best_params['filters'], 3, padding='same', activation='relu'),
     layers.BatchNormalization(),
-    layers.Dropout(best_params['dropout']),
+    layers.SpatialDropout1D(best_params['dropout']),
     
-    # LSTM layer
-    layers.LSTM(best_params['lstm_units'], activation='relu', return_sequences=False),
+    # Bidirectional LSTM layer
+    layers.Bidirectional(layers.LSTM(best_params['lstm_units'], activation='relu', return_sequences=False)),
     layers.Dropout(best_params['dropout']),
     layers.BatchNormalization(),
     
@@ -221,7 +221,7 @@ print(f"\nTraining with {len(X_train)} samples and {X_train.shape[2]} features..
 history = model.fit(
     X_train, y_train,
     validation_data=(X_val, y_val),
-    epochs=60,
+    epochs=100,
     batch_size=best_params['batch_size'],
     callbacks=callbacks,
     verbose=1
@@ -254,12 +254,16 @@ def calc_metrics(y_true, y_pred, set_name=""):
 
 train_metrics = calc_metrics(y_train, y_train_pred, "Train")
 val_metrics = calc_metrics(y_val, y_val_pred, "Validation")
-test_metrics = calc_metrics(y_test, y_test_pred, "Test")
+
+# Denormalize test data for metrics reporting
+y_test_denorm = scaler_target.inverse_transform(y_test.reshape(-1, 1)).flatten()
+y_test_pred_denorm = scaler_target.inverse_transform(y_test_pred.reshape(-1, 1)).flatten()
+test_metrics = calc_metrics(y_test_denorm, y_test_pred_denorm, "Test")
 
 metrics_df = pd.DataFrame([train_metrics, val_metrics, test_metrics])
 
 print("\n" + "="*80)
-print("PERFORMANCE METRICS")
+print("PERFORMANCE METRICS (Test: denormalized, Train/Val: normalized)")
 print("="*80)
 print(metrics_df.to_string(index=False))
 
@@ -270,107 +274,112 @@ os.makedirs('Results', exist_ok=True)
 metrics_df.to_csv(f'Results/EmaMultiStation_CNN_LSTM_MI{int(MI_THRESHOLD*100)}_metrics_PM2.csv', index=False)
 print(f"Metrics saved to: Results/EmaMultiStation_CNN_LSTM_MI{int(MI_THRESHOLD*100)}_metrics_PM2.csv")
 
-# Save predictions
-y_test_flat = y_test.flatten()
-y_test_pred_flat = y_test_pred.flatten()
+# ============================================================================
+# PREDICTION INTERVALS (Narrow - 25th-75th percentile)
+# ============================================================================
+print("\n" + "="*80)
+print("PREDICTION INTERVALS (25th-75th Percentile)")
+print("="*80)
 
-# Denormalize predictions to original scale
-y_test_denorm = scaler_target.inverse_transform(y_test_flat.reshape(-1, 1)).flatten()
-y_test_pred_denorm = scaler_target.inverse_transform(y_test_pred_flat.reshape(-1, 1)).flatten()
+# Calculate empirical percentiles from training residuals
+train_residuals = y_train - y_train_pred
+lower_percentile = np.percentile(train_residuals, 25)
+upper_percentile = np.percentile(train_residuals, 75)
 
-residuals_test = y_test_denorm - y_test_pred_denorm
+print(f"\nTraining residual 25th percentile: {lower_percentile:.6f}")
+print(f"Training residual 75th percentile: {upper_percentile:.6f}")
+
+# Apply intervals to test predictions
+y_test_lower = y_test_pred + lower_percentile
+y_test_upper = y_test_pred + upper_percentile
+
+# Denormalize interval bounds
+y_test_lower_denorm = scaler_target.inverse_transform(y_test_lower.reshape(-1, 1)).flatten()
+y_test_upper_denorm = scaler_target.inverse_transform(y_test_upper.reshape(-1, 1)).flatten()
+
+print(f"\nTest Predictions with IQR (25-75%):")
+print(f"  Mean prediction: {np.mean(y_test_pred_denorm):.4f}")
+print(f"  Mean interval: [{np.mean(y_test_lower_denorm):.4f}, {np.mean(y_test_upper_denorm):.4f}]")
+
+# Save predictions with intervals
 predictions_df = pd.DataFrame({
     'Actual': y_test_denorm,
     'Predicted': y_test_pred_denorm,
-    'Residual': residuals_test,
-    'Abs_Error': np.abs(residuals_test)
+    'Lower_25Percentile': y_test_lower_denorm,
+    'Upper_75Percentile': y_test_upper_denorm,
+    'Residual': y_test_denorm - y_test_pred_denorm,
+    'Abs_Error': np.abs(y_test_denorm - y_test_pred_denorm)
 })
 predictions_df.to_csv(f'Results/MultiStation_CNN_LSTM_MI{int(MI_THRESHOLD*100)}_Predictions.csv', index=False)
 print(f"Predictions saved to: Results/MultiStation_CNN_LSTM_MI{int(MI_THRESHOLD*100)}_Predictions.csv")
 
 # ============================================================================
-# VISUALIZATIONS
+# VISUALIZATIONS (Time Series, Quantile Analysis, SHAP)
 # ============================================================================
-print("\nCreating visualizations...")
+print("\n[7/7] Creating visualizations...")
 
-fig = plt.figure(figsize=(18, 12))
+fig = plt.figure(figsize=(16, 10))
 
-# MI Scores
-ax1 = plt.subplot(2, 3, 1)
+# 1. MI Scores
+ax1 = plt.subplot(2, 2, 1)
 mi_df_plot = mi_df.copy()
 colors = ['green' if score > MI_THRESHOLD else 'red' for score in mi_df_plot['MI_Score']]
 ax1.barh(mi_df_plot['Feature'], mi_df_plot['MI_Score'], color=colors)
 ax1.axvline(x=MI_THRESHOLD, color='blue', linestyle='--', linewidth=2, label=f'Threshold={MI_THRESHOLD}')
 ax1.set_xlabel('Mutual Information Score')
-ax1.set_title(f'Feature Importance (MI > {MI_THRESHOLD} selected)', fontsize=12, fontweight='bold')
+ax1.set_title(f'Feature Selection (MI > {MI_THRESHOLD})', fontsize=12, fontweight='bold')
 ax1.legend()
 ax1.grid(axis='x', alpha=0.3)
 
-# Training history
-ax2 = plt.subplot(2, 3, 2)
-ax2.plot(history.history['loss'], label='Train Loss', linewidth=2)
-ax2.plot(history.history['val_loss'], label='Val Loss', linewidth=2)
-ax2.set_title('Model Loss', fontsize=12, fontweight='bold')
-ax2.set_xlabel('Epoch')
-ax2.set_ylabel('Loss (MSE)')
-ax2.legend()
+# 2. Time Series: Actual vs Predicted
+ax2 = plt.subplot(2, 2, 2)
+time_steps = np.arange(len(y_test_denorm))
+ax2.plot(time_steps, y_test_denorm, label='Actual', linewidth=2, alpha=0.7)
+ax2.plot(time_steps, y_test_pred_denorm, label='Predicted', linewidth=2, alpha=0.7)
+ax2.set_title('Time Series: Actual vs Predicted (Denormalized)', fontsize=12, fontweight='bold')
+ax2.set_xlabel('Time Step')
+ax2.set_ylabel('PM2.5 (µg/m³)')
+ax2.legend(fontsize=10)
 ax2.grid(alpha=0.3)
 
-# MAE history
-ax3 = plt.subplot(2, 3, 3)
-ax3.plot(history.history['mae'], label='Train MAE', linewidth=2)
-ax3.plot(history.history['val_mae'], label='Val MAE', linewidth=2)
-ax3.set_title('Model MAE', fontsize=12, fontweight='bold')
-ax3.set_xlabel('Epoch')
-ax3.set_ylabel('MAE')
-ax3.legend()
-ax3.grid(alpha=0.3)
+# 3. Quantile Analysis: Average Error by Quantile
+ax3 = plt.subplot(2, 2, 3)
+errors = np.abs(y_test_denorm - y_test_pred_denorm)
+bins = pd.qcut(y_test_denorm, q=5, retbins=True)[1]
 
-# Predictions vs Actual
-ax4 = plt.subplot(2, 3, 4)
-ax4.scatter(y_test_denorm, y_test_pred_denorm, alpha=0.6, s=20)
-ax4.plot([y_test_denorm.min(), y_test_denorm.max()], [y_test_denorm.min(), y_test_denorm.max()],
-         'r--', lw=2, label='Perfect Prediction')
-ax4.set_title(f'Test Set Predictions (R²={test_metrics["R²"]:.4f})',
-              fontsize=12, fontweight='bold')
-ax4.set_xlabel('Actual (µg/m³)')
-ax4.set_ylabel('Predicted (µg/m³)')
-ax4.legend()
-ax4.grid(alpha=0.3)
+quantile_errors = []
+for i in range(len(bins) - 1):
+    group_indices = np.where((y_test_denorm >= bins[i]) & (y_test_denorm < bins[i+1]))[0]
+    if len(group_indices) > 0:
+        quantile_errors.append(errors[group_indices].mean())
+    else:
+        quantile_errors.append(0)
 
-# Residuals
-ax5 = plt.subplot(2, 3, 5)
-ax5.scatter(y_test_pred_denorm, residuals_test, alpha=0.6, s=20)
-ax5.axhline(y=0, color='r', linestyle='--', lw=2)
-ax5.set_title('Residual Plot', fontsize=12, fontweight='bold')
-ax5.set_xlabel('Predicted (µg/m³)')
-ax5.set_ylabel('Residuals (µg/m³)')
-ax5.grid(alpha=0.3)
+rounded_bins = np.round(bins, decimals=2)
 
-# Error metrics comparison
-ax6 = plt.subplot(2, 3, 6)
+ax3.plot(range(1, len(quantile_errors) + 1), quantile_errors, marker='o', linewidth=2, markersize=8, color='steelblue')
+ax3.set_xlabel('Quantile', fontweight='bold', size=11)
+ax3.set_ylabel('Average Absolute Error (µg/m³)', fontweight='bold', size=11)
+ax3.set_title('Quantile Analysis: Average Error by PM2.5 Level', fontweight='bold', size=12)
+ax3.set_xticks(range(1, len(quantile_errors) + 1))
+ax3.set_xticklabels([f'{rounded_bins[i]:.1f}-{rounded_bins[i+1]:.1f}' for i in range(len(rounded_bins) - 1)], rotation=45)
+ax3.grid(True, alpha=0.3)
+
+# 4. Prediction Accuracy Metrics
+ax4 = plt.subplot(2, 2, 4)
 metrics_names = ['MAE', 'RMSE', 'MAPE']
-train_vals = [train_metrics['MAE'], train_metrics['RMSE'], train_metrics['MAPE']]
-val_vals = [val_metrics['MAE'], val_metrics['RMSE'], val_metrics['MAPE']]
 test_vals = [test_metrics['MAE'], test_metrics['RMSE'], test_metrics['MAPE']]
+colors_metrics = ['#1f77b4', '#ff7f0e', '#2ca02c']
 
-x = np.arange(len(metrics_names))
-width = 0.25
-
-ax6.bar(x - width, train_vals, width, label='Train', alpha=0.8)
-ax6.bar(x, val_vals, width, label='Val', alpha=0.8)
-ax6.bar(x + width, test_vals, width, label='Test', alpha=0.8)
-
-ax6.set_ylabel('Error')
-ax6.set_title('Error Metrics Comparison', fontsize=12, fontweight='bold')
-ax6.set_xticks(x)
-ax6.set_xticklabels(metrics_names)
-ax6.legend()
-ax6.grid(axis='y', alpha=0.3)
+ax4.bar(metrics_names, test_vals, color=colors_metrics, alpha=0.7, edgecolor='black', linewidth=1.5)
+ax4.set_ylabel('Error Value')
+ax4.set_title(f'Test Set Performance Metrics (R²={test_metrics["R²"]:.4f})', fontsize=12, fontweight='bold')
+ax4.grid(axis='y', alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(f'Results/MultiStation_CNN_LSTM_MI{int(MI_THRESHOLD*100)}_Training_Analysis.png', dpi=300, bbox_inches='tight')
-print(f"Training analysis saved to: Results/MultiStation_CNN_LSTM_MI{int(MI_THRESHOLD*100)}_Training_Analysis.png")
+plt.savefig(f'Results/MultiStation_CNN_LSTM_MI{int(MI_THRESHOLD*100)}_Analysis.png', dpi=300, bbox_inches='tight')
+print(f"Analysis visualization saved to: Results/MultiStation_CNN_LSTM_MI{int(MI_THRESHOLD*100)}_Analysis.png")
+plt.close()
 
 # Save feature selection info
 feature_info = {
@@ -381,8 +390,6 @@ feature_info = {
     'removed_feature_names': removed_feature_names,
     'mi_scores': {name: float(score) for name, score in zip(feature_names, mi_scores)}
 }
-
-
 
 model.save(f'multistation_cnn_lstm_mi_best_model.h5')
 print(f"Model saved to: multistation_cnn_lstm_mi_best_model.h5")

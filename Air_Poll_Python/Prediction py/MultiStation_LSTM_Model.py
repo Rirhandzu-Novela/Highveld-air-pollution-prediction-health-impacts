@@ -28,6 +28,8 @@ except ImportError:
 np.random.seed(42)
 tf.random.set_seed(42)
 
+import os
+
 print("="*80)
 print("MULTI-STATION LSTM MODEL - TRAINING WITH OPTIMAL PARAMETERS")
 print("="*80)
@@ -77,6 +79,8 @@ mb_all = mb.values  # All 13 features including PM2.5
 
 # Combine features from both stations: [13 + 13 = 26 features]
 combined_features = np.concatenate([em_all, mb_all], axis=1)
+
+print(f"Data loaded: Combined features {combined_features.shape}, Target {target.shape}")
 
 scaler_features = MinMaxScaler()
 scaler_target = MinMaxScaler()
@@ -172,7 +176,7 @@ print(f"\nTraining with {len(X_train)} samples...")
 history = model.fit(
     X_train, y_train,
     validation_data=(X_val, y_val),
-    epochs=60,
+    epochs=100,
     batch_size=best_params['batch_size'],
     callbacks=callbacks,
     verbose=1
@@ -189,6 +193,10 @@ print("\n[6/7] Evaluating model...")
 y_train_pred = model.predict(X_train, verbose=0).flatten()
 y_val_pred = model.predict(X_val, verbose=0).flatten()
 y_test_pred = model.predict(X_test, verbose=0).flatten()
+
+# Denormalize test data for metrics reporting
+y_test_denorm = scaler_target.inverse_transform(y_test.reshape(-1, 1)).flatten()
+y_test_pred_denorm = scaler_target.inverse_transform(y_test_pred.reshape(-1, 1)).flatten()
 
 # Metrics function
 def calc_metrics(y_true, y_pred, set_name=""):
@@ -207,117 +215,111 @@ def calc_metrics(y_true, y_pred, set_name=""):
 
 train_metrics = calc_metrics(y_train, y_train_pred, "Train")
 val_metrics = calc_metrics(y_val, y_val_pred, "Validation")
-test_metrics = calc_metrics(y_test, y_test_pred, "Test")
+test_metrics = calc_metrics(y_test_denorm, y_test_pred_denorm, "Test")
 
 metrics_df = pd.DataFrame([train_metrics, val_metrics, test_metrics])
 
 print("\n" + "="*80)
-print("PERFORMANCE METRICS")
+print("PERFORMANCE METRICS (Test: denormalized, Train/Val: normalized)")
 print("="*80)
 print(metrics_df.to_string(index=False))
 
-# Save metrics
-metrics_df.to_csv('Results/EmaMultiStation_LSTM_metrics_PM2.csv', index=False)
-print("\nMetrics saved to: Results/EmaMultiStation_LSTM_metrics_PM2.csv")
-
 # ============================================================================
-# 7. VISUALIZATIONS
+# CALCULATE PREDICTION INTERVALS (Narrow - 25th-75th percentile)
 # ============================================================================
-print("\n[7/7] Creating visualizations...")
+print("\n" + "="*80)
+print("PREDICTION INTERVALS (25th-75th Percentile)")
+print("="*80)
 
-fig = plt.figure(figsize=(16, 12))
+# Calculate empirical percentiles from training residuals
+train_residuals = y_train - y_train_pred
+lower_percentile = np.percentile(train_residuals, 25)
+upper_percentile = np.percentile(train_residuals, 75)
 
-# Training history
-ax1 = plt.subplot(2, 3, 1)
-ax1.plot(history.history['loss'], label='Train Loss', linewidth=2)
-ax1.plot(history.history['val_loss'], label='Val Loss', linewidth=2)
-ax1.set_title('Model Loss', fontsize=12, fontweight='bold')
-ax1.set_xlabel('Epoch')
-ax1.set_ylabel('Loss (MSE)')
-ax1.legend()
-ax1.grid(alpha=0.3)
+print(f"\nTraining residual 25th percentile: {lower_percentile:.6f}")
+print(f"Training residual 75th percentile: {upper_percentile:.6f}")
+print(f"Interquartile range: {upper_percentile - lower_percentile:.6f}")
 
-ax2 = plt.subplot(2, 3, 2)
-ax2.plot(history.history['mae'], label='Train MAE', linewidth=2)
-ax2.plot(history.history['val_mae'], label='Val MAE', linewidth=2)
-ax2.set_title('Model MAE', fontsize=12, fontweight='bold')
-ax2.set_xlabel('Epoch')
-ax2.set_ylabel('MAE')
-ax2.legend()
-ax2.grid(alpha=0.3)
+# Apply intervals to test predictions
+y_test_lower = y_test_pred + lower_percentile
+y_test_upper = y_test_pred + upper_percentile
 
-# Predictions vs Actual
-ax3 = plt.subplot(2, 3, 3)
-y_test_flat_viz = y_test.flatten()
-y_test_pred_flat_viz = y_test_pred.flatten()
-ax3.scatter(y_test_flat_viz, y_test_pred_flat_viz, alpha=0.6, s=20)
-ax3.plot([y_test_flat_viz.min(), y_test_flat_viz.max()], [y_test_flat_viz.min(), y_test_flat_viz.max()],
-         'r--', lw=2, label='Perfect Prediction')
-ax3.set_title(f'Test Set Predictions (R²={test_metrics["R²"]:.4f})',
-              fontsize=12, fontweight='bold')
-ax3.set_xlabel('Actual (normalized)')
-ax3.set_ylabel('Predicted (normalized)')
-ax3.legend()
-ax3.grid(alpha=0.3)
-
-# Residuals
-ax4 = plt.subplot(2, 3, 4)
-residuals = y_test_flat_viz - y_test_pred_flat_viz
-ax4.scatter(y_test_pred_flat_viz, residuals, alpha=0.6, s=20)
-ax4.axhline(y=0, color='r', linestyle='--', lw=2)
-ax4.set_title('Residual Plot', fontsize=12, fontweight='bold')
-ax4.set_xlabel('Predicted (normalized)')
-ax4.set_ylabel('Residuals')
-ax4.grid(alpha=0.3)
-
-# Distribution of residuals
-ax5 = plt.subplot(2, 3, 5)
-ax5.hist(residuals, bins=50, edgecolor='black', alpha=0.7)
-ax5.set_title('Residual Distribution', fontsize=12, fontweight='bold')
-ax5.set_xlabel('Residuals')
-ax5.set_ylabel('Frequency')
-ax5.grid(alpha=0.3)
-
-# Error metrics comparison
-ax6 = plt.subplot(2, 3, 6)
-metrics_names = ['MAE', 'RMSE', 'MAPE']
-train_vals = [train_metrics['MAE'], train_metrics['RMSE'], train_metrics['MAPE']]
-val_vals = [val_metrics['MAE'], val_metrics['RMSE'], val_metrics['MAPE']]
-test_vals = [test_metrics['MAE'], test_metrics['RMSE'], test_metrics['MAPE']]
-
-x = np.arange(len(metrics_names))
-width = 0.25
-
-ax6.bar(x - width, train_vals, width, label='Train', alpha=0.8)
-ax6.bar(x, val_vals, width, label='Val', alpha=0.8)
-ax6.bar(x + width, test_vals, width, label='Test', alpha=0.8)
-
-ax6.set_ylabel('Error')
-ax6.set_title('Error Metrics Comparison', fontsize=12, fontweight='bold')
-ax6.set_xticks(x)
-ax6.set_xticklabels(metrics_names)
-ax6.legend()
-ax6.grid(axis='y', alpha=0.3)
-
-plt.tight_layout()
-plt.savefig('Results/MultiStation_LSTM_Training_Analysis.png', dpi=300, bbox_inches='tight')
-print("Training analysis saved to: Results/MultiStation_LSTM_Training_Analysis.png")
-
-# Save predictions with denormalization
+# Denormalize predictions and actual values for saving
 y_test_flat = y_test.flatten()
 y_test_pred_flat = y_test_pred.flatten()
+y_test_lower_flat = y_test_lower.flatten()
+y_test_upper_flat = y_test_upper.flatten()
+
 y_test_denorm = scaler_target.inverse_transform(y_test_flat.reshape(-1, 1)).flatten()
 y_test_pred_denorm = scaler_target.inverse_transform(y_test_pred_flat.reshape(-1, 1)).flatten()
-residuals_denorm = y_test_denorm - y_test_pred_denorm
+y_test_lower_denorm = scaler_target.inverse_transform(y_test_lower_flat.reshape(-1, 1)).flatten()
+y_test_upper_denorm = scaler_target.inverse_transform(y_test_upper_flat.reshape(-1, 1)).flatten()
 
+print(f"\nTest Predictions with IQR (25-75%):")
+print(f"  Mean prediction: {np.mean(y_test_pred_denorm):.4f}")
+print(f"  Mean interval: [{np.mean(y_test_lower_denorm):.4f}, {np.mean(y_test_upper_denorm):.4f}]")
+
+# Save predictions with intervals (DENORMALIZED)
 predictions_df = pd.DataFrame({
     'Actual': y_test_denorm,
     'Predicted': y_test_pred_denorm,
-    'Residual': residuals_denorm,
-    'Abs_Error': np.abs(residuals_denorm)
+    'Lower_25Percentile': y_test_lower_denorm,
+    'Upper_75Percentile': y_test_upper_denorm,
+    'Residual': y_test_denorm - y_test_pred_denorm
 })
+
+# Save metrics
+os.makedirs('Results', exist_ok=True)
+metrics_df.to_csv('Results/EmaMultiStation_LSTM_metrics_PM2.csv', index=False)
 predictions_df.to_csv('Results/MultiStation_LSTM_Predictions.csv', index=False)
-print("Predictions saved to: Results/MultiStation_LSTM_Predictions.csv")
+print("\nMetrics saved to: Results/EmaMultiStation_LSTM_metrics_PM2.csv")
+print("Predictions with intervals saved to: Results/MultiStation_LSTM_Predictions.csv")
+
+# ============================================================================
+# 7. VISUALIZATIONS (Time Series, Quantile Analysis, SHAP)
+# ============================================================================
+print("\n[7/7] Creating visualizations...")
+
+fig = plt.figure(figsize=(14, 5))
+
+# 1. Time Series: Actual vs Predicted
+ax1 = plt.subplot(1, 2, 1)
+time_steps = np.arange(len(y_test_denorm))
+ax1.plot(time_steps, y_test_denorm, label='Actual', linewidth=2, alpha=0.7)
+ax1.plot(time_steps, y_test_pred_denorm, label='Predicted', linewidth=2, alpha=0.7)
+ax1.set_title('Time Series: Actual vs Predicted (Denormalized)', fontsize=12, fontweight='bold')
+ax1.set_xlabel('Time Step')
+ax1.set_ylabel('PM2.5 (µg/m³)')
+ax1.legend(fontsize=10)
+ax1.grid(alpha=0.3)
+
+# 2. Quantile Analysis: Average Error by Quantile
+ax2 = plt.subplot(1, 2, 2)
+errors = np.abs(y_test_denorm - y_test_pred_denorm)
+bins = pd.qcut(y_test_denorm, q=5, retbins=True)[1]
+
+quantile_errors = []
+for i in range(len(bins) - 1):
+    group_indices = np.where((y_test_denorm >= bins[i]) & (y_test_denorm < bins[i+1]))[0]
+    if len(group_indices) > 0:
+        quantile_errors.append(errors[group_indices].mean())
+    else:
+        quantile_errors.append(0)
+
+rounded_bins = np.round(bins, decimals=2)
+
+ax2.plot(range(1, len(quantile_errors) + 1), quantile_errors, marker='o', linewidth=2, markersize=8, color='steelblue')
+ax2.set_xlabel('Quantile', fontweight='bold', size=11)
+ax2.set_ylabel('Average Absolute Error (µg/m³)', fontweight='bold', size=11)
+ax2.set_title('Quantile Analysis: Average Error by PM2.5 Level', fontweight='bold', size=12)
+ax2.set_xticks(range(1, len(quantile_errors) + 1))
+ax2.set_xticklabels([f'{rounded_bins[i]:.1f}-{rounded_bins[i+1]:.1f}' for i in range(len(rounded_bins) - 1)], rotation=45)
+ax2.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('Results/MultiStation_LSTM_Analysis.png', dpi=300, bbox_inches='tight')
+print("Analysis visualization saved to: Results/MultiStation_LSTM_Analysis.png")
+plt.close()
 
 # Save model
 model.save('multistation_lstm_best_model.h5')

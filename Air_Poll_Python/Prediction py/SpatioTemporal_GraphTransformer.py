@@ -1,17 +1,3 @@
-"""
-2D Spatiotemporal Graph Transformer Air Pollution Prediction - FIXED VERSION
-============================================================================
-FIXED Graph Transformer Network for multi-station air pollution prediction using 2D spatial + temporal data
-
-CRITICAL FIXES APPLIED:
-1. Deterministic graph construction (removes randomness) 
-2. Edge attributes properly used in attention computation
-3. Removed sigmoid output for proper regression
-4. Fixed unscaling to use correct PM2.5 column
-5. Optimized spatial-temporal processing (removed nested loops)
-6. Enhanced architecture stability and efficiency
-"""
-
 # Import Libraries
 import numpy as np
 import pandas as pd
@@ -77,50 +63,30 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
         agg.dropna(inplace=True)
     return agg
 
-def create_deterministic_2d_spatial_graph(n_stations=2, n_features=13):
-    """FIXED: Create deterministic 2D spatial graph for multi-station modeling."""
+def create_deterministic_2d_spatial_graph(n_stations=2, n_features=13, feature_correlations=None,
+                                         inter_station_weight=0.8, cross_mult=0.5):
+    """FIXED: Create deterministic 2D spatial graph from data correlations."""
     total_nodes = n_stations * n_features
     adj_matrix = np.zeros((total_nodes, total_nodes))
     
-    # Define scientific feature correlation strengths (deterministic)
-    feature_correlations = {
-        'pm2.5': {'pm10': 0.85, 'no2': 0.65, 'so2': 0.55, 'co': 0.60, 'o3': -0.3},
-        'pm10': {'pm2.5': 0.85, 'no2': 0.70, 'so2': 0.60, 'co': 0.55},
-        'no2': {'pm2.5': 0.65, 'pm10': 0.70, 'co': 0.75, 'so2': 0.45},
-        'so2': {'pm2.5': 0.55, 'pm10': 0.60, 'no2': 0.45, 'co': 0.40},
-        'co': {'pm2.5': 0.60, 'pm10': 0.55, 'no2': 0.75, 'so2': 0.40},
-        'o3': {'pm2.5': -0.3, 'no2': -0.4}  # Negative correlation
-    }
-    
-    feature_names = ['pm2.5', 'pm10', 'no2', 'so2', 'o3', 'co', 
-                    'temperature', 'humidity', 'pressure', 'wind_speed', 
-                    'wind_direction', 'solar_radiation', 'rainfall']
-    
-    # 1. Intra-station connections (deterministic based on air quality science)
+    # 1. Intra-station connections (use provided correlations)
     for station in range(n_stations):
         start_idx = station * n_features
         for i in range(n_features):
             for j in range(n_features):
                 if i != j:
-                    feat_i = feature_names[i] if i < len(feature_names) else f'feature_{i}'
-                    feat_j = feature_names[j] if j < len(feature_names) else f'feature_{j}'
-                    
-                    # Use scientific correlations if available
                     weight = 0.3  # Default weak connection
-                    if feat_i in feature_correlations and feat_j in feature_correlations[feat_i]:
-                        weight = abs(feature_correlations[feat_i][feat_j])
-                    elif feat_j in feature_correlations and feat_i in feature_correlations[feat_j]:
-                        weight = abs(feature_correlations[feat_j][feat_i])
-                    
+                    if feature_correlations is not None:
+                        weight = abs(feature_correlations[i, j])
                     adj_matrix[start_idx + i, start_idx + j] = weight
     
-    # 2. Inter-station connections (same features across stations)
+    # 2. Inter-station connections (same features across stations) - Use data-driven weight
     for feature in range(n_features):
         for station1 in range(n_stations):
             for station2 in range(station1 + 1, n_stations):
                 idx1 = station1 * n_features + feature
                 idx2 = station2 * n_features + feature
-                weight = 0.8  # Strong connection for same feature across stations
+                weight = inter_station_weight  # Data-driven weight
                 adj_matrix[idx1, idx2] = weight
                 adj_matrix[idx2, idx1] = weight
     
@@ -132,11 +98,13 @@ def create_deterministic_2d_spatial_graph(n_stations=2, n_features=13):
             
             for i in range(start1, end1):
                 for j in range(start2, end2):
-                    # Only connect air quality features across stations
-                    if i % n_features < 5 and j % n_features < 5:  # First 5 features are air quality
-                        weight = 0.25  # Weak but deterministic cross-feature connection
-                        adj_matrix[i, j] = weight
-                        adj_matrix[j, i] = weight
+                    if feature_correlations is not None:
+                        # Use data-driven weights for cross-feature connections
+                        weight = abs(feature_correlations[i % n_features, j % n_features]) * cross_mult
+                    else:
+                        weight = 0.25  # Fallback default
+                    adj_matrix[i, j] = weight
+                    adj_matrix[j, i] = weight
     
     # Add self-connections
     np.fill_diagonal(adj_matrix, 1.0)
@@ -185,12 +153,16 @@ def create_enhanced_positional_encoding_2d_temporal(n_stations, n_features, seq_
     
     return pe_spatial, pe_temporal
 
-def create_fixed_2d_spatiotemporal_graph_sequence_data(X, Y, seq_length, n_stations=2, n_features=13):
+def create_fixed_2d_spatiotemporal_graph_sequence_data(X, Y, seq_length, n_stations=2, n_features=13,
+                                                    feature_correlations=None, inter_station_weight=0.8, cross_mult=0.5):
     """FIXED: Convert 2D multi-station spatiotemporal sequence data to graph format."""
     graph_data_list = []
     
-    # Create deterministic graph structure for 2D spatial connections
-    edge_index, edge_attr = create_deterministic_2d_spatial_graph(n_stations, n_features)
+    # Create deterministic graph structure for 2D spatial connections with data-driven correlations
+    edge_index, edge_attr = create_deterministic_2d_spatial_graph(n_stations, n_features,
+                                                                 feature_correlations=feature_correlations,
+                                                                 inter_station_weight=inter_station_weight,
+                                                                 cross_mult=cross_mult)
     total_nodes = n_stations * n_features
     expected_size = seq_length * n_stations * n_features
     
@@ -327,9 +299,34 @@ print(f"Y shape: {Y.shape}")
 
 print("Splitting data (consistent with other models)...")
 
+# Compute data-driven correlations from normalized features
+print("\nComputing feature correlations from data...")
+# Compute correlation matrix from ORIGINAL scaled data (before supervised transformation)
+feature_correlations = np.corrcoef(scaled.T)
+# Extract the feature correlation submatrix (first n_feats x n_feats)
+feature_corr_subset = feature_correlations[:n_feats, :n_feats]
+
+# Compute inter-station weight from cross-station correlations
+station_wise_corrs = []
+for feat_idx in range(n_feats):
+    idx1 = feat_idx  # Station 1
+    idx2 = n_feats + feat_idx  # Station 2
+    if idx1 < feature_correlations.shape[0] and idx2 < feature_correlations.shape[1]:
+        corr = abs(feature_correlations[idx1, idx2])
+        station_wise_corrs.append(corr)
+
+inter_station_weight = np.mean(station_wise_corrs) if station_wise_corrs else 0.8
+cross_feature_mult = 0.5 * inter_station_weight
+
+print(f"Data-driven inter-station weight: {inter_station_weight:.4f}")
+print(f"Cross-feature multiplier: {cross_feature_mult:.4f}")
+
 # Convert to graph sequence format first
 print("Converting to FIXED graph data format...")
-graph_data = create_fixed_2d_spatiotemporal_graph_sequence_data(X, Y, seq_length, n_stations, n_feats)
+graph_data = create_fixed_2d_spatiotemporal_graph_sequence_data(X, Y, seq_length, n_stations, n_feats,
+                                                               feature_correlations=feature_corr_subset,
+                                                               inter_station_weight=inter_station_weight,
+                                                               cross_mult=cross_feature_mult)
 print(f"Created {len(graph_data)} graph sequence samples")
 
 # Split indices
@@ -421,7 +418,7 @@ class FixedTemporalTransformerLayer(nn.Module):
         
         # FIXED: Efficient batch processing instead of nested loops
         # Reshape for batch temporal attention: [batch_size*total_nodes, seq_length, d_model]
-        x_temporal = x.view(batch_size * total_nodes, seq_length, d_model)
+        x_temporal = x.reshape(batch_size * total_nodes, seq_length, d_model)
         
         # Temporal self-attention
         attn_out, _ = self.temporal_attention(x_temporal, x_temporal, x_temporal)
@@ -434,7 +431,7 @@ class FixedTemporalTransformerLayer(nn.Module):
         x_temporal = self.layer_norm2(x_temporal)
         
         # Reshape back: [batch_size, total_nodes, seq_length, d_model]
-        x = x_temporal.view(batch_size, total_nodes, seq_length, d_model)
+        x = x_temporal.reshape(batch_size, total_nodes, seq_length, d_model)
         
         return x
 
@@ -477,42 +474,42 @@ class FixedSpatialTemporalLayer(nn.Module):
         
         # FIXED: Efficient batch processing instead of nested loops
         # Reshape to [batch_size, seq_length, stations, features, d_model]
-        x_reshaped = x.view(batch_size, self.n_stations, self.n_features, seq_length, d_model)
+        x_reshaped = x.reshape(batch_size, self.n_stations, self.n_features, seq_length, d_model)
         x_reshaped = x_reshaped.permute(0, 3, 1, 2, 4)  # [batch, seq, stations, features, d_model]
         
         # Station-wise attention: process all timesteps and features together
         # Reshape to [batch*seq*features, stations, d_model]
-        station_input = x_reshaped.view(batch_size * seq_length * self.n_features, self.n_stations, d_model)
+        station_input = x_reshaped.reshape(batch_size * seq_length * self.n_features, self.n_stations, d_model)
         station_attn, _ = self.station_attention(station_input, station_input, station_input)
         station_output = station_input + self.dropout(station_attn)
         
         # Reshape back and apply layer norm
-        x_station = station_output.view(batch_size, seq_length, self.n_features, self.n_stations, d_model)
+        x_station = station_output.reshape(batch_size, seq_length, self.n_features, self.n_stations, d_model)
         x_station = x_station.permute(0, 3, 2, 1, 4).contiguous()  # [batch, stations, features, seq, d_model]
-        x_station = x_station.view(batch_size, total_nodes, seq_length, d_model)
+        x_station = x_station.reshape(batch_size, total_nodes, seq_length, d_model)
         x = x + x_station  # Residual connection
         x = self.layer_norm1(x)
         
         # Feature-wise attention: process all timesteps and stations together
-        x_reshaped = x.view(batch_size, self.n_stations, self.n_features, seq_length, d_model)
+        x_reshaped = x.reshape(batch_size, self.n_stations, self.n_features, seq_length, d_model)
         x_reshaped = x_reshaped.permute(0, 3, 2, 1, 4)  # [batch, seq, features, stations, d_model]
         
         # Reshape to [batch*seq*stations, features, d_model]
-        feature_input = x_reshaped.view(batch_size * seq_length * self.n_stations, self.n_features, d_model)
+        feature_input = x_reshaped.reshape(batch_size * seq_length * self.n_stations, self.n_features, d_model)
         feature_attn, _ = self.feature_attention(feature_input, feature_input, feature_input)
         feature_output = feature_input + self.dropout(feature_attn)
         
         # Reshape back and apply layer norm
-        x_feature = feature_output.view(batch_size, seq_length, self.n_stations, self.n_features, d_model)
+        x_feature = feature_output.reshape(batch_size, seq_length, self.n_stations, self.n_features, d_model)
         x_feature = x_feature.permute(0, 2, 3, 1, 4).contiguous()  # [batch, stations, features, seq, d_model]
-        x_feature = x_feature.view(batch_size, total_nodes, seq_length, d_model)
+        x_feature = x_feature.reshape(batch_size, total_nodes, seq_length, d_model)
         x = x + x_feature  # Residual connection
         x = self.layer_norm2(x)
         
         # Feed-forward (process all positions efficiently)
-        x_flat = x.view(batch_size * total_nodes * seq_length, d_model)
+        x_flat = x.reshape(batch_size * total_nodes * seq_length, d_model)
         ff_out = self.feed_forward(x_flat)
-        x = x + self.dropout(ff_out.view(batch_size, total_nodes, seq_length, d_model))
+        x = x + self.dropout(ff_out.reshape(batch_size, total_nodes, seq_length, d_model))
         x = self.layer_norm3(x)
         
         return x
@@ -625,7 +622,7 @@ class FixedGraphTransformer2DSpatioTemporalModel(nn.Module):
         x_temporal = torch.stack(x_seq, dim=1)  # [total_nodes, seq_length, d_model]
         
         # Reshape for batch processing: [batch_size, nodes_per_graph, seq_length, d_model]
-        x_batch = x_temporal.view(batch_size, nodes_per_graph, self.seq_length, self.d_model)
+        x_batch = x_temporal.reshape(batch_size, nodes_per_graph, self.seq_length, self.d_model)
         
         # FIXED: Optimized spatial-temporal modeling
         for spatial_layer in self.spatial_layers:
@@ -637,7 +634,7 @@ class FixedGraphTransformer2DSpatioTemporalModel(nn.Module):
         
         # FIXED: More efficient aggregation - average over time, then aggregate nodes
         x_temporal_avg = x_batch.mean(dim=2)  # Average over time: [batch_size, nodes_per_graph, d_model]
-        x_flat = x_temporal_avg.view(batch_size, -1)  # Flatten nodes
+        x_flat = x_temporal_avg.reshape(batch_size, -1)  # Flatten nodes
         x_aggregated = self.station_aggregation(x_flat)
         
         # Final prediction
@@ -834,37 +831,120 @@ metrics_df.to_csv('fixed_2d_spatiotemporal_graph_transformer_metrics.csv', index
 
 print("Creating visualizations...")
 
-# Scatter plot
-plt.figure(figsize=(12, 8))
-plt.scatter(targets_unscaled, predictions_unscaled, alpha=0.5, s=20)
-plt.plot([targets_unscaled.min(), targets_unscaled.max()], 
-         [targets_unscaled.min(), targets_unscaled.max()], 'r--', lw=2)
-plt.xlabel('Actual PM2.5 (μg/m³)')
-plt.ylabel('Predicted PM2.5 (μg/m³)')
-plt.title(f'FIXED 2D Spatiotemporal Graph Transformer: Actual vs Predicted PM2.5\nR² = {r2:.4f}, RMSE = {rmse:.4f}')
-plt.grid(True, alpha=0.3)
+# 1. TIME SERIES PLOT (Actual vs Predicted)
+fig, ax = plt.subplots(figsize=(14, 5))
+time_range = np.arange(len(targets_unscaled))
+ax.plot(time_range, targets_unscaled, 'o-', label='Actual', alpha=0.7, linewidth=2, markersize=4)
+ax.plot(time_range, predictions_unscaled, 's-', label='Predicted', alpha=0.7, linewidth=2, markersize=4)
+ax.set_xlabel('Time Step')
+ax.set_ylabel('PM2.5 (μg/m³)')
+ax.set_title('FIXED 2D Spatiotemporal Graph Transformer: Time Series - Actual vs Predicted PM2.5')
+ax.legend(loc='best')
+ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('fixed_2d_spatiotemporal_graph_transformer_scatter.png', dpi=300, bbox_inches='tight')
-plt.show()
+plt.savefig('fixed_2d_spatiotemporal_graph_transformer_timeseries.png', dpi=300, bbox_inches='tight')
+plt.close()
 
-# Residual plot
-residuals = predictions_unscaled - targets_unscaled
-plt.figure(figsize=(10, 6))
-plt.scatter(predictions_unscaled, residuals, alpha=0.5, s=20)
-plt.axhline(y=0, color='r', linestyle='--')
-plt.xlabel('Predicted PM2.5 (μg/m³)')
-plt.ylabel('Residuals (μg/m³)')
-plt.title('FIXED 2D Spatiotemporal Graph Transformer: Residual Plot')
-plt.grid(True, alpha=0.3)
+# 2. QUANTILE ANALYSIS (Error distribution across value ranges)
+errors = np.abs(predictions_unscaled - targets_unscaled)
+bins = pd.qcut(targets_unscaled, q=5, retbins=True)[1]
+
+quantile_errors = []
+for i in range(len(bins) - 1):
+    group_indices = np.where((targets_unscaled >= bins[i]) & (targets_unscaled < bins[i+1]))[0]
+    if len(group_indices) > 0:
+        quantile_errors.append(errors[group_indices].mean())
+    else:
+        quantile_errors.append(0)
+
+rounded_bins = np.round(bins, decimals=2)
+
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(range(1, len(quantile_errors) + 1), quantile_errors, marker='o', linewidth=2, markersize=8, color='steelblue')
+ax.set_xlabel('Quantile', fontweight='bold')
+ax.set_ylabel('Average Absolute Error (μg/m³)', fontweight='bold')
+ax.set_title('FIXED 2D Spatiotemporal Graph Transformer: Quantile Analysis - Error by PM2.5 Level')
+ax.set_xticks(range(1, len(quantile_errors) + 1))
+ax.set_xticklabels([f'{rounded_bins[i]:.1f}-{rounded_bins[i+1]:.1f}' for i in range(len(rounded_bins) - 1)], rotation=45)
+ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('fixed_2d_spatiotemporal_graph_transformer_residuals.png', dpi=300, bbox_inches='tight')
-plt.show()
+plt.savefig('fixed_2d_spatiotemporal_graph_transformer_quantile_analysis.png', dpi=300, bbox_inches='tight')
+plt.close()
 
-print("✅ FIXED 2D Spatiotemporal Graph Transformer model evaluation completed!")
-print("All critical fixes applied:")
-print("  1. Deterministic graph construction (removes randomness)")
-print("  2. Edge attributes properly used in attention computation")
-print("  3. Removed sigmoid output for proper regression")
-print("  4. Fixed unscaling to use correct PM2.5 column")
-print("  5. Optimized spatial-temporal processing (removed inefficient nested loops)")
-print("  6. Enhanced positional encoding and memory efficiency")
+# =============================================================================
+# SHAP ANALYSIS FOR 2D SPATIOTEMPORAL MODEL INTERPRETABILITY
+# =============================================================================
+
+print("Performing SHAP analysis for 2D Spatiotemporal Graph Transformer interpretability...")
+
+# Create a wrapper function for SHAP analysis (using template graph approach from V0)
+def graph_transformer_predict_wrapper(X_flat):
+    """Wrapper function for Spatiotemporal Graph Transformer prediction compatible with SHAP."""
+    predictions = []
+    
+    # Use first test sample as template for edge information
+    template_graph = test_data[0]
+    total_nodes = n_stations * n_feats
+    
+    model.eval()
+    with torch.no_grad():
+        for i in range(X_flat.shape[0]):
+            # Reshape back to [total_nodes, seq_length]
+            node_features = X_flat[i].reshape(total_nodes, seq_length)
+            
+            # Create a Data object using template graph structure
+            data = Data(
+                x=torch.tensor(node_features, dtype=torch.float32),
+                edge_index=template_graph.edge_index,
+                edge_attr=template_graph.edge_attr,
+                batch=torch.zeros(total_nodes, dtype=torch.long)
+            ).to(device)
+            
+            # Get prediction
+            pred = model(data)
+            predictions.append(pred.cpu().numpy())
+    
+    return np.array(predictions).flatten()
+
+# Prepare sample data for SHAP
+n_shap_samples = min(80, len(test_data))
+X_shap = np.array([test_data[i].x.cpu().numpy().flatten() for i in range(n_shap_samples)])
+X_background = X_shap[:30]  # Use first 30 samples as background
+
+try:
+    print("Initializing SHAP KernelExplainer for 2D Spatiotemporal Graph Transformer...")
+    explainer = shap.KernelExplainer(graph_transformer_predict_wrapper, X_background)
+    
+    print("Computing SHAP values...")
+    shap_values = explainer.shap_values(X_shap[:15], nsamples=80)
+    
+    # Create feature names for 2D spatiotemporal model using actual column names WITH temporal indicators
+    feature_names = []
+    for station_idx, station in enumerate(stations):
+        for feat_name in unique_feature_names:
+            for t in range(seq_length):
+                feature_names.append(f't{t}_{station}_{feat_name}')
+    
+    # SHAP summary plot
+    plt.figure(figsize=(12, 8))
+    shap.summary_plot(shap_values, X_shap[:15], feature_names=feature_names[:X_shap.shape[1]], show=False)
+    plt.title('2D Spatiotemporal Graph Transformer SHAP Feature Importance Summary', fontweight='bold', size=14)
+    plt.tight_layout()
+    plt.savefig('fixed_2d_spatiotemporal_graph_transformer_shap_summary.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # SHAP bar plot
+    plt.figure(figsize=(12, 8))
+    shap.summary_plot(shap_values, X_shap[:15], feature_names=feature_names[:X_shap.shape[1]], plot_type="bar", show=False)
+    plt.title('2D Spatiotemporal Graph Transformer SHAP Feature Importance (Mean)', fontweight='bold', size=14)
+    plt.tight_layout()
+    plt.savefig('fixed_2d_spatiotemporal_graph_transformer_shap_bar.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print("[SUCCESS] SHAP analysis completed successfully!")
+    
+except ImportError:
+    print("⚠ SHAP not available. Install with: pip install shap")
+except Exception as e:
+    print(f"⚠ SHAP analysis encountered an error: {e}")
+    print("Continuing without SHAP analysis...")

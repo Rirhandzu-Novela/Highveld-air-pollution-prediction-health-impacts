@@ -1,9 +1,3 @@
-"""
-Graph Transformer for Air Pollution Prediction
-===============================================
-Notebook-style implementation following the original structure
-"""
-
 # Import Libraries
 import numpy as np
 import pandas as pd
@@ -25,14 +19,16 @@ from torch_geometric.utils import dense_to_sparse
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from scipy.spatial.distance import pdist, squareform
+
+# SHAP for interpretability
+import shap
 
 # Suppress warnings
 import warnings
 warnings.filterwarnings('ignore')
 
 print(f"PyTorch version: {torch.__version__}")
-print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"FIXED GraphTransformer started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -150,10 +146,19 @@ def create_graph_sequence_data(X, Y, seq_length=24):
 # =============================================================================
 
 print("Loading dataset...")
-dataset = pd.read_csv("C:/Users/User/Documents/GitHub/Health-impacts-of-air-pollution/AirData/SecundaIM.csv", sep=';', header=0, index_col=0)
+dataset = pd.read_csv("eMalahleniIM.csv", sep=';', header=0, index_col=0)
 values = dataset.values
 print(f"Dataset shape: {dataset.shape}")
 print(f"Columns: {list(dataset.columns)}")
+
+# Find PM2.5 column index for correct unscaling
+pm25_columns = [col for col in dataset.columns if 'PM2.5' in col.upper()]
+if pm25_columns:
+    pm25_index = dataset.columns.get_loc(pm25_columns[0])
+    print(f"PM2.5 target column: {pm25_columns[0]} at index {pm25_index}")
+else:
+    pm25_index = 0  # Default fallback
+    print(f"Warning: No PM2.5 column found, using index 0")
 
 # =============================================================================
 # DATA PREPROCESSING
@@ -169,13 +174,13 @@ scaler = MinMaxScaler(feature_range=(0, 1))
 scaled = scaler.fit_transform(values)
 
 # Create overlapping sequences for temporal modeling
-seq_length = 24  # 12-hour sequence
+seq_length = 24  # 24-hour sequence
 X_sequences = []
 Y_sequences = []
 
 for i in range(len(scaled) - seq_length):
     X_sequences.append(scaled[i:i+seq_length])
-    Y_sequences.append(scaled[i+seq_length, 0])  # Predict PM2.5 (column 0)
+    Y_sequences.append(scaled[i+seq_length, pm25_index])  # Use correct PM2.5 index
 
 X = np.array(X_sequences)  # [samples, seq_length, features]
 Y = np.array(Y_sequences)  # [samples]
@@ -210,23 +215,25 @@ test_data = [graph_data[i] for i in test_idx]
 print(f"Train: {len(train_data)} sequences")
 print(f"Val: {len(val_data)} sequences")
 print(f"Test: {len(test_data)} sequences")
+
 # =============================================================================
-# GRAPH TRANSFORMER MODEL COMPONENTS
+# FIXED GRAPH TRANSFORMER MODEL COMPONENTS
 # =============================================================================
 
-class MultiHeadGraphAttention(nn.Module):
-    """Multi-head graph attention layer for spatial modeling."""
+class FixedMultiHeadGraphAttention(nn.Module):
+    """FIXED Multi-head graph attention layer for spatial modeling with edge attributes."""
     
     def __init__(self, in_dim, out_dim, num_heads=4, dropout=0.1):
-        super(MultiHeadGraphAttention, self).__init__()
+        super(FixedMultiHeadGraphAttention, self).__init__()
         self.num_heads = num_heads
         self.out_dim = out_dim
         self.head_dim = out_dim // num_heads
         
         assert self.head_dim * num_heads == out_dim
         
+        # FIXED: Use TransformerConv with edge_dim to properly handle edge attributes
         self.transformers = nn.ModuleList([
-            TransformerConv(in_dim, self.head_dim, heads=1, dropout=dropout)
+            TransformerConv(in_dim, self.head_dim, heads=1, dropout=dropout, edge_dim=1)
             for _ in range(num_heads)
         ])
         
@@ -235,10 +242,14 @@ class MultiHeadGraphAttention(nn.Module):
         self.dropout = nn.Dropout(dropout)
     
     def forward(self, x, edge_index, edge_attr=None):
-        # Multi-head attention (ignore edge_attr to avoid dimension mismatch)
+        # FIXED: Properly use edge attributes in attention computation
         head_outputs = []
         for transformer in self.transformers:
-            head_out = transformer(x, edge_index)  # Remove edge_attr parameter
+            if edge_attr is not None:
+                # Include edge attributes with proper dimensionality
+                head_out = transformer(x, edge_index, edge_attr.unsqueeze(-1))
+            else:
+                head_out = transformer(x, edge_index)
             head_outputs.append(head_out)
         
         # Concatenate heads
@@ -246,7 +257,10 @@ class MultiHeadGraphAttention(nn.Module):
         
         # Output projection and residual connection
         out = self.output_projection(multi_head_out)
-        out = self.layer_norm(out + x if x.size(-1) == self.out_dim else out)
+        if x.size(-1) == self.out_dim:
+            out = self.layer_norm(out + x)  # Residual only if dimensions match
+        else:
+            out = self.layer_norm(out)
         out = self.dropout(out)
         
         return out
@@ -283,16 +297,16 @@ class TemporalTransformerLayer(nn.Module):
         return x
 
 # =============================================================================
-# GRAPH TRANSFORMER MODEL DEFINITION
+# FIXED GRAPH TRANSFORMER MODEL DEFINITION
 # =============================================================================
 
-class GraphTransformerModel(nn.Module):
-    """Graph Transformer Network for air pollution prediction."""
+class FixedGraphTransformerModel(nn.Module):
+    """FIXED Graph Transformer Network for air pollution prediction."""
     
     def __init__(self, n_features, seq_length, d_model=64, 
                  num_graph_layers=1, num_temporal_layers=1, 
                  num_heads=4, dropout=0.1):
-        super(GraphTransformerModel, self).__init__()
+        super(FixedGraphTransformerModel, self).__init__()
         
         self.n_features = n_features
         self.seq_length = seq_length
@@ -304,9 +318,9 @@ class GraphTransformerModel(nn.Module):
         # Positional encoding
         self.register_buffer('pos_encoding', create_positional_encoding(n_features, d_model))
         
-        # Spatial graph attention layers
+        # Spatial graph attention layers - FIXED to use edge attributes
         self.graph_layers = nn.ModuleList([
-            MultiHeadGraphAttention(d_model, d_model, num_heads, dropout)
+            FixedMultiHeadGraphAttention(d_model, d_model, num_heads, dropout)
             for _ in range(num_graph_layers)
         ])
         
@@ -326,13 +340,13 @@ class GraphTransformerModel(nn.Module):
             nn.Dropout(dropout)
         )
         
-        # Final prediction head
+        # FIXED: Final prediction head without sigmoid for proper regression
         self.prediction_head = nn.Sequential(
             nn.Linear(d_model // 2, d_model // 4),
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(d_model // 4, 1),
-            nn.Sigmoid()
+            nn.Linear(d_model // 4, 1)
+            # REMOVED: nn.Sigmoid() - not appropriate for regression
         )
     
     def forward(self, data):
@@ -347,7 +361,7 @@ class GraphTransformerModel(nn.Module):
         pos_enc = self.pos_encoding[:nodes_per_graph].repeat(batch_size, 1)
         x = x + pos_enc
         
-        # Spatial modeling with graph attention
+        # FIXED: Spatial modeling with graph attention using edge attributes
         for graph_layer in self.graph_layers:
             x = graph_layer(x, edge_index, edge_attr)
         
@@ -383,8 +397,8 @@ train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False)
 test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
-# Initialize model
-model = GraphTransformerModel(
+# Initialize FIXED model
+model = FixedGraphTransformerModel(
     n_features=n_features,
     seq_length=seq_length,
     d_model=64,
@@ -394,107 +408,100 @@ model = GraphTransformerModel(
     dropout=0.1
 ).to(device)
 
-print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
+print(f"FIXED Model parameters: {sum(p.numel() for p in model.parameters()):,}")
 
 # Loss function and optimizer
 criterion = nn.MSELoss()
-optimizer = torch.optim.AdamW(model.parameters(), lr=0.0001, weight_decay=1e-4)
-scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=1e-5)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=10)
 
 # =============================================================================
 # TRAINING FUNCTIONS
 # =============================================================================
 
-def train_epoch(model, train_loader, optimizer, criterion, device):
-    """Train for one epoch."""
+def train_epoch(model, train_loader, criterion, optimizer, device):
     model.train()
     total_loss = 0
+    num_batches = 0
     
     for batch in train_loader:
         batch = batch.to(device)
         optimizer.zero_grad()
         
-        out = model(batch)
-        loss = criterion(out, batch.y)
+        predictions = model(batch)
+        loss = criterion(predictions, batch.y)
         
         loss.backward()
+        # Add gradient clipping for stability
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
         
         total_loss += loss.item()
+        num_batches += 1
     
-    return total_loss / len(train_loader)
+    return total_loss / num_batches
 
-def evaluate_model(model, data_loader, criterion, device):
-    """Evaluate the model."""
+def evaluate_model(model, loader, criterion, device):
     model.eval()
     total_loss = 0
     predictions = []
     targets = []
     
     with torch.no_grad():
-        for batch in data_loader:
+        for batch in loader:
             batch = batch.to(device)
-            out = model(batch)
-            loss = criterion(out, batch.y)
+            pred = model(batch)
+            loss = criterion(pred, batch.y)
             
             total_loss += loss.item()
-            predictions.extend(out.cpu().numpy())
+            predictions.extend(pred.cpu().numpy())
             targets.extend(batch.y.cpu().numpy())
     
-    return total_loss / len(data_loader), np.array(predictions), np.array(targets)
+    return total_loss / len(loader), np.array(predictions), np.array(targets)
 
 # =============================================================================
 # TRAINING LOOP
 # =============================================================================
 
-print("Starting Graph Transformer training...")
-epochs = 5
-patience = 15
-best_val_loss = float('inf')
-patience_counter = 0
-history = {'train_loss': [], 'val_loss': []}
+print("Training FIXED Graph Transformer model...")
 
-start_time = time.time()
+best_val_loss = float('inf')
+patience = 20
+patience_counter = 0
+epochs = 100
+
+training_start_time = time.time()
 
 for epoch in range(epochs):
-    # Train
-    train_loss = train_epoch(model, train_loader, optimizer, criterion, device)
+    # Training
+    train_loss = train_epoch(model, train_loader, criterion, optimizer, device)
     
-    # Validate
-    val_loss, _, _ = evaluate_model(model, val_loader, criterion, device)
+    # Validation
+    val_loss, val_pred, val_target = evaluate_model(model, val_loader, criterion, device)
     
     # Learning rate scheduling
-    scheduler.step()
-    
-    # Store history
-    history['train_loss'].append(train_loss)
-    history['val_loss'].append(val_loss)
+    scheduler.step(val_loss)
     
     # Early stopping
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         patience_counter = 0
-        # Save best model
-        torch.save(model.state_dict(), 'best_graph_transformer_model.pth')
+        torch.save(model.state_dict(), 'fixed_graph_transformer_best_model.pth')
     else:
         patience_counter += 1
     
-    if epoch % 10 == 0:
-        current_lr = scheduler.get_last_lr()[0]
-        print(f'Epoch {epoch:03d}: Train Loss: {train_loss:.6f}, '
-              f'Val Loss: {val_loss:.6f}, LR: {current_lr:.6f}')
+    if epoch % 20 == 0:
+        print(f"Epoch {epoch:3d}/{epochs}: Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}, Best: {best_val_loss:.6f}")
     
     if patience_counter >= patience:
-        print(f'Early stopping at epoch {epoch}')
+        print(f"Early stopping at epoch {epoch}")
         break
 
-training_time = time.time() - start_time
-print(f'Training completed in {training_time:.2f} seconds')
-print(f'Best validation loss: {best_val_loss:.6f}')
+training_time = time.time() - training_start_time
+print(f"\nTraining completed in {training_time:.2f} seconds")
 
 # Load best model
-model.load_state_dict(torch.load('best_graph_transformer_model.pth'))
+model.load_state_dict(torch.load('fixed_graph_transformer_best_model.pth'))
 
 # =============================================================================
 # EVALUATION
@@ -503,14 +510,14 @@ model.load_state_dict(torch.load('best_graph_transformer_model.pth'))
 print("Evaluating on test set...")
 test_loss, predictions, targets = evaluate_model(model, test_loader, criterion, device)
 
-def unscale(scaled_value):
-    # if target variable is the first column, then, data_max_[0]
-    unscaled_value = scaled_value * (scaler.data_max_[0] - scaler.data_min_[0]) + (scaler.data_min_[0])
+# FIXED: Unscale using correct PM2.5 column
+def unscale_fixed(scaled_value):
+    """FIXED unscaling function using correct PM2.5 column."""
+    unscaled_value = scaled_value * (scaler.data_max_[pm25_index] - scaler.data_min_[pm25_index]) + (scaler.data_min_[pm25_index])
     return unscaled_value
 
-predictions = unscale(predictions)
-
-targets = unscale(targets)
+predictions = unscale_fixed(predictions)
+targets = unscale_fixed(targets)
 
 # Calculate metrics
 mse = mean_squared_error(targets, predictions)
@@ -518,11 +525,39 @@ mae = mean_absolute_error(targets, predictions)
 rmse = sqrt(mse)
 r2 = r2_score(targets, predictions)
 
-print(f"\nGraph Transformer Test Results:")
-#print(f"MSE:  {mse:.6f}")
+print(f"\nFIXED Graph Transformer Test Results:")
 print(f"MAE:  {mae:.6f}")
 print(f"RMSE: {rmse:.6f}")
 print(f"R²:   {r2:.6f}")
+
+# =============================================================================
+# SAVE RESULTS
+# =============================================================================
+
+print("Saving FIXED model results...")
+
+# Save predictions
+results_df = pd.DataFrame({
+    'Actual': targets,
+    'Predicted': predictions,
+    'Error': np.abs(predictions - targets)
+})
+results_df.to_csv('fixed_graph_transformer_predictions.csv', index=False)
+
+# Save model metrics
+metrics_df = pd.DataFrame({
+    'Model': ['FIXED Graph Transformer'],
+    'MSE': [mse],
+    'RMSE': [rmse],
+    'MAE': [mae],
+    'R2': [r2],
+    'Training_Time': [training_time],
+    'Parameters': [sum(p.numel() for p in model.parameters())],
+    'Features': [n_features],
+    'Seq_Length': [seq_length],
+    'Fixes_Applied': ['Edge attributes, No sigmoid, Correct PM2.5 unscaling']
+})
+metrics_df.to_csv('fixed_graph_transformer_metrics.csv', index=False)
 
 # =============================================================================
 # VISUALIZATIONS
@@ -530,171 +565,120 @@ print(f"R²:   {r2:.6f}")
 
 print("Creating visualizations...")
 
-#rrcParams['font.weight'] = 'bold'
-plt.plot(targets[0:240], color='blue', label = 'Observed')
-plt.plot(predictions[0:240], color='red', label = 'Predicted')
-plt.ylabel('PM2.5', fontname="Times New Roman", size=20,fontweight="bold")
-plt.xlabel('Time(Hrs)', fontname="Times New Roman", size=20,fontweight="bold")
-plt.title('Secunda Graph Transformer Model', fontname="Times New Roman", size=28,fontweight="bold")
-legend_properties = {'weight':'bold'}
-plt.legend(prop=legend_properties)
-plt.savefig("GraphTransPred.png", dpi=300, bbox_inches='tight')
-plt.show()
-# =============================================================================
-# QUANTILE ANALYSIS
-# =============================================================================
+# 1. TIME SERIES PLOT (Actual vs Predicted)
+fig, ax = plt.subplots(figsize=(14, 5))
+time_range = np.arange(len(targets))
+ax.plot(time_range, targets, 'o-', label='Actual', alpha=0.7, linewidth=2, markersize=4)
+ax.plot(time_range, predictions, 's-', label='Predicted', alpha=0.7, linewidth=2, markersize=4)
+ax.set_xlabel('Time Step')
+ax.set_ylabel('PM2.5 (μg/m³)')
+ax.set_title('FIXED Graph Transformer: Time Series - Actual vs Predicted PM2.5')
+ax.legend(loc='best')
+ax.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('fixed_graph_transformer_timeseries.png', dpi=300, bbox_inches='tight')
+plt.close()
 
-print("Performing quantile analysis...")
+# 2. QUANTILE ANALYSIS (Error distribution across value ranges)
+errors = np.abs(predictions - targets)
+bins = pd.qcut(targets, q=5, retbins=True)[1]
 
-# Calculate errors
-errors = predictions.flatten() - targets
-
-# Calculate quantiles based on actual values
-quantiles, bins = pd.qcut(targets, q=10, duplicates='drop', retbins=True)
-
-# Calculate average error for each quantile
 quantile_errors = []
 for i in range(len(bins) - 1):
     group_indices = np.where((targets >= bins[i]) & (targets < bins[i+1]))[0]
     if len(group_indices) > 0:
         quantile_errors.append(errors[group_indices].mean())
+    else:
+        quantile_errors.append(0)
 
-# Round the bin edges for better readability
-rounded_bins = np.round(bins, decimals=3)
+rounded_bins = np.round(bins, decimals=2)
 
-# Plot quantile analysis
-# Plot quantiles vs. average errors
-rcParams['font.weight'] = 'bold'
-plt.figure(figsize=(8, 6))
-plt.plot(range(1, len(quantiles.categories) + 1), quantile_errors, marker='o')
-plt.xlabel('Quantile', fontname="Times New Roman", size=20,fontweight="bold")
-plt.ylabel('Average Error', fontname="Times New Roman", size=20,fontweight="bold")
-plt.title('Secunda Graph Transformer Model', fontname="Times New Roman", size=28,fontweight="bold")
-plt.xticks(range(1, len(quantiles.categories) + 1), [str(q) for q in quantiles.categories], rotation=45)
-plt.grid(True)
-plt.savefig("eMaGraphTransQuan.png", dpi=300, bbox_inches='tight')
-plt.show()
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(range(1, len(quantile_errors) + 1), quantile_errors, marker='o', linewidth=2, markersize=8, color='steelblue')
+ax.set_xlabel('Quantile', fontweight='bold')
+ax.set_ylabel('Average Absolute Error (μg/m³)', fontweight='bold')
+ax.set_title('FIXED Graph Transformer: Quantile Analysis - Error by PM2.5 Level')
+ax.set_xticks(range(1, len(quantile_errors) + 1))
+ax.set_xticklabels([f'{rounded_bins[i]:.1f}-{rounded_bins[i+1]:.1f}' for i in range(len(rounded_bins) - 1)], rotation=45)
+ax.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('fixed_graph_transformer_quantile_analysis.png', dpi=300, bbox_inches='tight')
+plt.close()
 
 # =============================================================================
-# SHAP ANALYSIS
+# SHAP ANALYSIS FOR GRAPH TRANSFORMER INTERPRETABILITY
 # =============================================================================
 
-print("Performing SHAP analysis...")
+print("Performing SHAP analysis for Graph Transformer interpretability...")
 
-try:
-    import shap
+# Create a wrapper function for SHAP analysis (using template graph approach from V0)
+def graph_transformer_predict_wrapper(X_flat):
+    """Wrapper function for Graph Transformer prediction compatible with SHAP."""
+    predictions = []
     
-    # Sample a subset for SHAP analysis (computationally expensive)
-    n_shap_samples = min(100, len(test_data))
-    shap_indices = np.random.choice(len(test_data), n_shap_samples, replace=False)
-    shap_data = [test_data[i] for i in shap_indices]
+    # Use first test sample as template for edge information
+    template_graph = test_data[0]
     
-    # Create a wrapper function for SHAP that handles graph data
-    def model_predict_wrapper(X_flat):
-        """Wrapper function to convert flattened input back to graph format for SHAP."""
-        predictions = []
-        
-        # Convert flattened features back to graph format
+    model.eval()
+    with torch.no_grad():
         for i in range(X_flat.shape[0]):
             # Reshape back to [n_features, seq_length]
             node_features = X_flat[i].reshape(n_features, seq_length)
             
-            # Create a sample graph data object
-            sample_graph = shap_data[0]  # Use first sample as template
+            # Create a Data object using template graph structure
             data = Data(
                 x=torch.tensor(node_features, dtype=torch.float32),
-                edge_index=sample_graph.edge_index,
-                edge_attr=sample_graph.edge_attr,
-                batch=torch.zeros(n_features, dtype=torch.long)  # Single graph
+                edge_index=template_graph.edge_index,
+                edge_attr=template_graph.edge_attr,
+                batch=torch.zeros(n_features, dtype=torch.long)
             ).to(device)
             
             # Get prediction
-            model.eval()
-            with torch.no_grad():
-                pred = model(data)
-                predictions.append(pred.cpu().numpy())
-        
-        return np.array(predictions)
+            pred = model(data)
+            predictions.append(pred.cpu().numpy())
     
-    # Prepare data for SHAP
-    # Flatten the graph node features for SHAP analysis
-    background_data = []
-    test_sample_data = []
+    return np.array(predictions).flatten()
+
+# Prepare sample data for SHAP
+n_shap_samples = min(80, len(test_data))
+X_shap = np.array([test_data[i].x.cpu().numpy().flatten() for i in range(n_shap_samples)])
+X_background = X_shap[:30]  # Use first 30 samples as background
+
+try:
+    print("Initializing SHAP KernelExplainer for Graph Transformer...")
+    explainer = shap.KernelExplainer(graph_transformer_predict_wrapper, X_background)
     
-    for i in range(min(50, len(train_data))):  # Background samples
-        node_features = train_data[i].x.numpy()  # [n_features, seq_length]
-        background_data.append(node_features.flatten())
+    print("Computing SHAP values...")
+    shap_values = explainer.shap_values(X_shap[:15], nsamples=80)
     
-    for i in range(min(20, len(shap_data))):  # Test samples for explanation
-        node_features = shap_data[i].x.numpy()
-        test_sample_data.append(node_features.flatten())
-    
-    background_data = np.array(background_data)
-    test_sample_data = np.array(test_sample_data)
-    
-    # Create SHAP explainer
-    print("Creating SHAP explainer (this may take a while)...")
-    explainer = shap.KernelExplainer(model_predict_wrapper, background_data[:10])  # Use fewer background samples
-    
-    # Calculate SHAP values
-    print("Calculating SHAP values...")
-    shap_values = explainer.shap_values(test_sample_data[:5])  # Analyze fewer test samples
-    
-    # Create feature names for visualization
+    # Create feature names for temporal model
+    unique_features = list(dict.fromkeys(dataset.columns))  # Remove duplicates while preserving order
     feature_names = []
-    for i, col in enumerate(dataset.columns):
+    for feat in unique_features:
         for t in range(seq_length):
-            feature_names.append(f"{col}_t{t}")
+            feature_names.append(f"t{t}_{feat}")
     
     # Ensure feature names match the flattened data
-    if len(feature_names) != test_sample_data.shape[1]:
-        feature_names = [f"Feature_{i}" for i in range(test_sample_data.shape[1])]
+    if len(feature_names) != X_shap.shape[1]:
+        n_features_actual = X_shap.shape[1] // seq_length
+        feature_names = []
+        for feat_idx in range(n_features_actual):
+            for t in range(seq_length):
+                feature_names.append(f"t{t}_feat{feat_idx}")
     
     # Plot SHAP summary
     plt.figure(figsize=(12, 8))
-    shap.summary_plot(shap_values, test_sample_data[:5], 
-                     feature_names=feature_names, show=False, max_display=20)
-    plt.title('Secunda Graph Transformer Model', fontweight='bold', size=14)
+    shap.summary_plot(shap_values, X_shap[:15], feature_names=feature_names, show=False, max_display=20)
+    plt.title('Graph Transformer SHAP Feature Importance', fontweight='bold', size=14)
     plt.tight_layout()
-    plt.savefig("eMaGraphTransShap.png", dpi=300, bbox_inches='tight')
-    plt.show()
+    plt.savefig('fixed_graph_transformer_shap_analysis.png', dpi=300, bbox_inches='tight')
+    plt.close()
     
-    print("SHAP analysis completed successfully!")
+    print("[SUCCESS] SHAP analysis completed successfully!")
     
 except ImportError:
-    print("SHAP not available. Install with: pip install shap")
+    print("[WARNING] SHAP not available. Install with: pip install shap")
 except Exception as e:
-    print(f"SHAP analysis failed: {e}")
-    print("This is normal for complex graph models - SHAP analysis is optional")
+    print(f"[WARNING] SHAP analysis encountered an error: {e}")
+    print("Continuing without SHAP analysis...")
 
-# =============================================================================
-# SAVE RESULTS
-# =============================================================================
-
-# Save predictions
-results_df = pd.DataFrame({
-    'actual': targets,
-    'predicted': predictions,
-    'error': errors
-})
-results_df.to_csv('graph_transformer_predictions.csv', index=False)
-
-# Save metrics
-metrics_dict = {
-    'MSE': mse,
-    'MAE': mae,
-    'RMSE': rmse,
-    'R2': r2,
-    'Training_Time': training_time,
-    'Best_Val_Loss': best_val_loss
-}
-
-metrics_df = pd.DataFrame([metrics_dict])
-metrics_df.to_csv('graph_transformer_metrics.csv', index=False)
-
-print(f"\n✅ Graph Transformer analysis completed successfully!")
-print(f"📁 Results saved in current directory")
-print(f"📊 Predictions: 'graph_transformer_predictions.csv'")
-print(f"📈 Visualizations: 'graph_transformer_results.png', 'graph_transformer_quantile_analysis.png'")
-print(f"🏆 Model saved: 'best_graph_transformer_model.pth'")
-print(f"📋 Metrics: 'graph_transformer_metrics.csv'")
