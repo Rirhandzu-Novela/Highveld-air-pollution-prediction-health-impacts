@@ -936,6 +936,27 @@ df <-  NkaPollMort  %>%
 write.csv(df,"RDA/NkaPulMortSum.csv")
 
 
+# DOW ---------------------------------------------------------------------
+
+## DOW 
+data = read.csv("MortData/DOW_PublicHolidays.csv", header = T, sep = ";")
+
+data$date <- as.Date(data$date, format = "%Y/%m/%d")
+
+# day of the week as numeric (Monday is 1)
+data$weekday1 = as.numeric(format(data$date, format = "%u"))
+
+# abbreviated weekday name
+data$weekday2 = format(data$date, format = "%a")
+
+# full weekday name
+data$weekday3 = format(data$date, format = "%A")
 
 
 
+# public holiday
+
+data <- data %>%
+  mutate(Holiday2 = ifelse(is.na(Holiday1) | trimws(Holiday1) == "", 0, 1))
+
+write.csv(data,"MortData/DOW_PublicHolidays.csv", row.names = TRUE)
